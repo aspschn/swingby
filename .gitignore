@@ -1,0 +1,7 @@
+build/
+
+CMakeLists.txt.user
+
+include/wayland-protocols/stable/*.h
+include/wayland-protocols/stable/*.c
+
