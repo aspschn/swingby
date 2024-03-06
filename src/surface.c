@@ -5,11 +5,16 @@
 #include <wayland-client.h>
 #include <wayland-egl.h>
 
+#include <EGL/egl.h>
+
 #include <foundation/application.h>
+#include <foundation/egl-context.h>
 
 struct ft_surface_t {
     struct wl_surface *_wl_surface;
     struct wl_egl_window *_wl_egl_window;
+    EGLSurface _egl_surface;
+    ft_egl_context_t *_egl_context;
     ft_size_t _size;
 };
 
@@ -24,6 +29,18 @@ ft_surface_t* ft_surface_new()
 
     surface->_wl_surface = wl_compositor_create_surface(
         ft_application_wl_compositor(app));
+
+    surface->_egl_context = ft_egl_context_new();
+
+    surface->_wl_egl_window = wl_egl_window_create(surface->_wl_surface,
+       surface->_size.width,
+       surface->_size.height);
+
+    surface->_egl_surface = eglCreateWindowSurface(
+        surface->_egl_context->egl_display,
+        surface->_egl_context->egl_config,
+        surface->_wl_egl_window,
+        NULL);
 
     return surface;
 }

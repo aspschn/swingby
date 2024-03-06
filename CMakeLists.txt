@@ -15,8 +15,10 @@ set(FOUNDATION_SOURCES
     include/foundation/rect.h
     include/foundation/application.h
     include/foundation/surface.h
+    include/foundation/egl-context.h
     src/application.c
     src/surface.c
+    src/egl-context.c
     ${WAYLAND_PROTOCOLS_SOURCES}
 )
 
@@ -32,6 +34,8 @@ string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
 target_link_options(foundation
     PRIVATE -lwayland-client
+    PRIVATE -lwayland-egl
+    PRIVATE -lEGL
 )
 
 set(FOUNDATION_EXAMPLES_BINARY_DIR ${CMAKE_BINARY_DIR}/examples)
