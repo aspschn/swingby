@@ -82,6 +82,11 @@ struct wl_compositor* ft_application_wl_compositor(
     return application->_wl_compositor;
 }
 
+struct xdg_wm_base* ft_application_xdg_wm_base(ft_application_t *application)
+{
+    return application->_xdg_wm_base;
+}
+
 int ft_application_exec(ft_application_t *application)
 {
     while (wl_display_dispatch(application->_wl_display) != -1) {
@@ -105,7 +110,7 @@ static void app_global_handler(void *data,
             name, &wl_compositor_interface, version);
     } else if (strcmp(interface, "xdg_wm_base") == 0) {
         app->_xdg_wm_base = wl_registry_bind(wl_registry,
-            name, &xdg_wm_base_interface, version);
+            name, &xdg_wm_base_interface, 1);
     }
 }
 
@@ -121,5 +126,5 @@ static void xdg_wm_base_ping_handler(void *data,
                                      struct xdg_wm_base *xdg_wm_base,
                                      uint32_t serial)
 {
-    //
+    xdg_wm_base_pong(xdg_wm_base, serial);
 }

@@ -20,6 +20,10 @@ struct wl_display* ft_application_wl_display(
 struct wl_compositor* ft_application_wl_compositor(
     ft_application_t *application);
 
+/// \brief Get the `struct xdg_wm_base` of the application.
+struct xdg_wm_base* ft_application_xdg_wm_base(
+    ft_application_t *application);
+
 int ft_application_exec(ft_application_t *application);
 
 #endif /* _FOUNDATION_APPLICATION_H */

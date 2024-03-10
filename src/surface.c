@@ -60,9 +60,17 @@ void ft_surface_set_size(ft_surface_t *surface, const ft_size_t *size)
 {
     surface->_size.width = size->width;
     surface->_size.height = size->height;
+
+    wl_egl_window_resize(surface->_wl_egl_window, size->width, size->height,
+        0, 0);
 }
 
 void ft_surface_commit(ft_surface_t *surface)
 {
     wl_surface_commit(surface->_wl_surface);
+}
+
+struct wl_surface* ft_surface_wl_surface(ft_surface_t *surface)
+{
+    return surface->_wl_surface;
 }

@@ -20,4 +20,6 @@ void ft_surface_set_size(ft_surface_t *surface, const ft_size_t *size);
 
 void ft_surface_commit(ft_surface_t *surface);
 
+struct wl_surface* ft_surface_wl_surface(ft_surface_t *surface);
+
 #endif /* _FOUNDATION_SURFACE_H */
