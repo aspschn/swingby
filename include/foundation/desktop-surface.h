@@ -10,4 +10,8 @@ typedef struct ft_desktop_surface_t ft_desktop_surface_t;
 
 ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role);
 
+void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface);
+
+void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface);
+
 #endif /* _FOUNDATION_DESKTOP_SURFACE_H */

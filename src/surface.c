@@ -6,6 +6,9 @@
 #include <wayland-egl.h>
 
 #include <EGL/egl.h>
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
 
 #include <foundation/application.h>
 #include <foundation/egl-context.h>
@@ -18,12 +21,29 @@ struct ft_surface_t {
     ft_size_t _size;
 };
 
+void _gl_init(ft_surface_t *surface)
+{
+    eglMakeCurrent(surface->_egl_context->egl_display,
+        surface->_egl_surface,
+        surface->_egl_surface,
+        surface->_egl_context->egl_context);
+
+    glViewport(0, 0, surface->_size.width, surface->_size.height);
+
+    glClearColor(0.5, 0.5, 0.5, 0.5);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // glUseProgram();
+
+    // eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
+}
+
 ft_surface_t* ft_surface_new()
 {
     ft_surface_t *surface = malloc(sizeof(ft_surface_t));
 
-    surface->_size.width = 100.0f;
-    surface->_size.height = 100.0f;
+    surface->_size.width = 200.0f;
+    surface->_size.height = 200.0f;
 
     ft_application_t *app = ft_application_instance();
 
@@ -41,6 +61,8 @@ ft_surface_t* ft_surface_new()
         surface->_egl_context->egl_config,
         surface->_wl_egl_window,
         NULL);
+
+    // _gl_init(surface);
 
     return surface;
 }
@@ -67,6 +89,25 @@ void ft_surface_set_size(ft_surface_t *surface, const ft_size_t *size)
 
 void ft_surface_commit(ft_surface_t *surface)
 {
+    wl_surface_commit(surface->_wl_surface);
+}
+
+void ft_surface_attach(ft_surface_t *surface)
+{
+    _gl_init(surface);
+    eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
+}
+
+void ft_surface_detach(ft_surface_t *surface)
+{
+    // eglDestroySurface(surface->_egl_context->egl_display,
+    //     surface->_egl_surface);
+
+    // wl_egl_window_destroy(surface->_wl_egl_window);
+
+    // ft_egl_context_free(surface->_egl_context);
+
+    wl_surface_attach(surface->_wl_surface, NULL, 0, 0);
     wl_surface_commit(surface->_wl_surface);
 }
 

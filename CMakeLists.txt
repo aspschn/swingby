@@ -38,6 +38,7 @@ target_link_options(foundation
     PRIVATE -lwayland-client
     PRIVATE -lwayland-egl
     PRIVATE -lEGL
+    PRIVATE -lGL
 )
 
 set(FOUNDATION_EXAMPLES_BINARY_DIR ${CMAKE_BINARY_DIR}/examples)

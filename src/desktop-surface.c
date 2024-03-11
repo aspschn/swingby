@@ -52,31 +52,50 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     // Create a surface.
     d_surface->_surface = ft_surface_new();
 
+    return d_surface;
+}
+
+void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface)
+{
     // Wayland objects.
     ft_application_t *app = ft_application_instance();
     struct xdg_wm_base *xdg_wm_base = ft_application_xdg_wm_base(app);
-    struct wl_surface *wl_surface = ft_surface_wl_surface(d_surface->_surface);
+    struct wl_surface *wl_surface = ft_surface_wl_surface(
+        desktop_surface->_surface);
 
-    //
+    // Create XDG surface.
     struct xdg_surface *xdg_surface = xdg_wm_base_get_xdg_surface(xdg_wm_base,
         wl_surface);
-    d_surface->_xdg_surface = xdg_surface;
-    xdg_surface_add_listener(d_surface->_xdg_surface,
+    desktop_surface->_xdg_surface = xdg_surface;
+    xdg_surface_add_listener(desktop_surface->_xdg_surface,
         &xdg_surface_listener, NULL);
 
     // Create toplevel or popup.
-    if (d_surface->_role == FT_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
-        d_surface->_xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
-        xdg_toplevel_add_listener(d_surface->_xdg_toplevel,
+    if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
+        desktop_surface->_xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
+        xdg_toplevel_add_listener(desktop_surface->_xdg_toplevel,
             &xdg_toplevel_listener, NULL);
-    } else if (d_surface->_role == FT_DESKTOP_SURFACE_ROLE_POPUP) {
+    } else if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_POPUP) {
         //
     }
 
     // Commit.
     wl_surface_commit(wl_surface);
 
-    return d_surface;
+    ft_surface_attach(desktop_surface->_surface);
+}
+
+void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface)
+{
+    if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
+        xdg_toplevel_destroy(desktop_surface->_xdg_toplevel);
+    } else if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_POPUP) {
+        //
+    }
+
+    xdg_surface_destroy(desktop_surface->_xdg_surface);
+
+    ft_surface_detach(desktop_surface->_surface);
 }
 
 

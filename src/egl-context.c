@@ -72,3 +72,8 @@ ft_egl_context_t* ft_egl_context_new()
 
     return context;
 }
+
+void ft_egl_context_free(ft_egl_context_t *context)
+{
+    eglDestroyContext(context->egl_display, context->egl_context);
+}

@@ -8,7 +8,11 @@ int main(int argc, char *argv[])
     ft_desktop_surface_t *surface = ft_desktop_surface_new(
         FT_DESKTOP_SURFACE_ROLE_TOPLEVEL);
 
-    // ft_surface_commit(surface);
+    ft_desktop_surface_show(surface);
+
+    ft_desktop_surface_hide(surface);
+
+    ft_desktop_surface_show(surface);
 
     return ft_application_exec(app);
 }
