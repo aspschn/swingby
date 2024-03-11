@@ -12,6 +12,7 @@
 
 #include <foundation/application.h>
 #include <foundation/egl-context.h>
+#include <foundation/view.h>
 
 struct ft_surface_t {
     struct wl_surface *_wl_surface;
@@ -19,6 +20,7 @@ struct ft_surface_t {
     EGLSurface _egl_surface;
     ft_egl_context_t *_egl_context;
     ft_size_t _size;
+    ft_view_t *_root_view;
 };
 
 void _gl_init(ft_surface_t *surface)
@@ -62,7 +64,14 @@ ft_surface_t* ft_surface_new()
         surface->_wl_egl_window,
         NULL);
 
-    // _gl_init(surface);
+    // Root view.
+    ft_rect_t geo;
+    geo.pos.x = 0.0f;
+    geo.pos.y = 0.0f;
+    geo.size.width = surface->_size.width;
+    geo.size.height = surface->_size.height;
+    surface->_root_view = ft_view_new(NULL, &geo);
+    ft_view_set_surface(surface->_root_view, surface);
 
     return surface;
 }

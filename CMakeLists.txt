@@ -13,13 +13,17 @@ set(FOUNDATION_SOURCES
     include/foundation/point.h
     include/foundation/size.h
     include/foundation/rect.h
+    include/foundation/color.h
     include/foundation/application.h
     include/foundation/surface.h
     include/foundation/desktop-surface.h
+    include/foundation/view.h
     include/foundation/egl-context.h
+    src/color.c
     src/application.c
     src/surface.c
     src/desktop-surface.c
+    src/view.c
     src/egl-context.c
     ${WAYLAND_PROTOCOLS_SOURCES}
 )

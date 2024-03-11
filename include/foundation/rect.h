@@ -4,7 +4,7 @@
 #include <foundation/point.h>
 #include <foundation/size.h>
 
-typedef ft_rect_t {
+typedef struct ft_rect_t {
     ft_point_t pos;
     ft_size_t size;
 } ft_rect_t;

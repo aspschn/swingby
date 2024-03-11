@@ -5,6 +5,8 @@
 
 #include <foundation/size.h>
 
+typedef struct ft_view_t ft_view_t;
+
 typedef struct ft_surface_t ft_surface_t;
 
 ft_surface_t* ft_surface_new();
