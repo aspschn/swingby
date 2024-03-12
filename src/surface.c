@@ -13,6 +13,7 @@
 #include <foundation/application.h>
 #include <foundation/egl-context.h>
 #include <foundation/view.h>
+#include "shaders.h"
 
 struct ft_surface_t {
     struct wl_surface *_wl_surface;
@@ -38,6 +39,79 @@ void _gl_init(ft_surface_t *surface)
     // glUseProgram();
 
     // eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
+}
+
+static GLuint _load_shader(const char *shader_source, GLuint type)
+{
+    GLuint shader;
+    GLint compiled;
+
+    shader = glCreateShader(type);
+    if (shader == 0) {
+        return 0;
+    }
+
+    glShaderSource(shader, 1, &shader_source, NULL);
+
+    glCompileShader(shader);
+
+    // Check the compile status.
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    if (!compiled) {
+        GLint info_len = 0;
+
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_len);
+        if (info_len > 1) {
+            char *info_log = malloc(sizeof(char));
+            // fprintf(stderr, "Error compiling shader: %s\n", info_log);
+            free(info_log);
+        }
+
+        glDeleteShader(shader);
+        return 0;
+    }
+
+    return shader;
+}
+
+static void _calc_points(const ft_rect_t *rect, float *points)
+{
+    float x = rect->pos.x;
+    float y = rect->pos.y;
+    float width = rect->size.width;
+    float height = rect->size.height;
+
+    // Top-left.
+    points[0] = x;
+    points[1] = y;
+    // Bottom-left.
+    points[3] = x;
+    points[4] = y + height;
+    // Bottom-right.
+    points[6] = x + width;
+    points[7] = y + height;
+    // Top-right.
+    points[9] = x + width;
+    points[10] = y;
+}
+
+static void _set_uniform_resolution(GLuint program, const ft_size_t *resolution)
+{
+    GLuint location = glGetUniformLocation(program, "resolution");
+    float resolution_u[2] = { resolution->width, resolution->height };
+    glUniform2fv(location, 1, resolution_u);
+}
+
+static void _set_uniform_color(GLuint program, const ft_color_t *color)
+{
+    GLuint location = glGetUniformLocation(program, "color");
+    float color_u[4] = {
+        color->r / 255.0f,
+        color->g / 255.0f,
+        color->b / 255.0f,
+        color->a / 255.0f,
+    };
+    glUniform4fv(location, 1, color_u);
 }
 
 ft_surface_t* ft_surface_new()
@@ -118,6 +192,79 @@ void ft_surface_detach(ft_surface_t *surface)
 
     wl_surface_attach(surface->_wl_surface, NULL, 0, 0);
     wl_surface_commit(surface->_wl_surface);
+}
+
+void ft_surface_on_request_update(ft_surface_t *surface)
+{
+    // Create program.
+    GLuint program = glCreateProgram();
+
+    // Create shaders.
+    GLuint vert_shader = _load_shader(rect_vert_shader, GL_VERTEX_SHADER);
+    GLuint frag_shader = _load_shader(color_frag_shader, GL_FRAGMENT_SHADER);
+
+    // Attach shaders.
+    glAttachShader(program, vert_shader);
+    glAttachShader(program, frag_shader);
+
+    glLinkProgram(program);
+
+    glUseProgram(program);
+
+    // Set uniforms.
+    _set_uniform_resolution(program, &surface->_size);
+    _set_uniform_color(program, ft_view_color(surface->_root_view));
+
+    // Set coordinates.
+    float vertices[] = {
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+    };
+    _calc_points(ft_view_geometry(surface->_root_view), vertices);
+
+    GLuint indices[] = {
+        0, 1, 3,
+        1, 2, 3,
+    };
+
+    eglMakeCurrent(surface->_egl_context->egl_display,
+        surface->_egl_surface, surface->_egl_surface,
+        surface->_egl_context->egl_context);
+
+    // VAO.
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+
+    // EBO.
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+
+    // VBO.
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+
+    // Bind and draw.
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+        GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER,
+        sizeof(vertices),
+        vertices,
+        GL_STATIC_DRAW
+    );
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+
+    eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
 }
 
 struct wl_surface* ft_surface_wl_surface(ft_surface_t *surface)

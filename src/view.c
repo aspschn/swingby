@@ -19,6 +19,10 @@ ft_view_t* ft_view_new(ft_view_t *parent, const ft_rect_t *geometry)
     view->_parent = parent;
     view->_geometry.pos = geometry->pos;
     view->_geometry.size = geometry->size;
+    view->_color.r = 255;
+    view->_color.g = 255;
+    view->_color.b = 255;
+    view->_color.a = 255;
 
     return view;
 }
