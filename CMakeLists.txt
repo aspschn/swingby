@@ -10,6 +10,7 @@ set(WAYLAND_PROTOCOLS_SOURCES
 )
 
 set(FOUNDATION_SOURCES
+    include/foundation/log.h
     include/foundation/point.h
     include/foundation/size.h
     include/foundation/rect.h
@@ -21,6 +22,7 @@ set(FOUNDATION_SOURCES
     include/foundation/egl-context.h
     include/foundation/event.h
     include/foundation/event-dispatcher.h
+    src/log.c
     src/color.c
     src/application.c
     src/surface.c
@@ -40,6 +42,10 @@ target_include_directories(foundation
 )
 
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+
+if(FOUNDATION_DEBUG)
+    add_definitions(-DFOUNDATION_DEBUG)
+endif()
 
 target_link_options(foundation
     PRIVATE -lwayland-client

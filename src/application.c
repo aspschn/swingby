@@ -6,6 +6,7 @@
 #include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
 
+#include <foundation/log.h>
 #include <foundation/surface.h>
 
 struct ft_application_t {
@@ -64,6 +65,11 @@ static void pointer_enter_handler(void *data,
                                   wl_fixed_t sx,
                                   wl_fixed_t sy);
 
+static void pointer_leave_handler(void *data,
+                                  struct wl_pointer *pointer,
+                                  uint32_t serial,
+                                  struct wl_surface *surface);
+
 static void pointer_motion_handler(void *data,
                                    struct wl_pointer *wl_pointer,
                                    uint32_t time,
@@ -85,6 +91,7 @@ static void pointer_axis_handler(void *data,
 
 static const struct wl_pointer_listener pointer_listener = {
     .enter = pointer_enter_handler,
+    .leave = pointer_leave_handler,
     .motion = pointer_motion_handler,
     .button = pointer_button_handler,
     .axis = pointer_axis_handler,
@@ -160,7 +167,7 @@ struct xdg_wm_base* ft_application_xdg_wm_base(ft_application_t *application)
 int ft_application_exec(ft_application_t *application)
 {
     while (wl_display_dispatch(application->_wl_display) != -1) {
-        ;
+        ft_log_debug("wl_display_dispatch()\n");
     }
 
     return 0;
@@ -224,6 +231,14 @@ static void pointer_enter_handler(void *data,
     //
 }
 
+static void pointer_leave_handler(void *data,
+                                  struct wl_pointer *pointer,
+                                  uint32_t serial,
+                                  struct wl_surface *surface)
+{
+    //
+}
+
 static void pointer_motion_handler(void *data,
                                    struct wl_pointer *wl_pointer,
                                    uint32_t time,
@@ -260,12 +275,18 @@ static void seat_capabilities_handler(void *data,
                                       struct wl_seat *wl_seat,
                                       uint32_t capabilities)
 {
-    //
+    ft_application_t *app = (ft_application_t*)data;
+
+    if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
+        app->_wl_pointer = wl_seat_get_pointer(wl_seat);
+        wl_pointer_add_listener(app->_wl_pointer, &pointer_listener,
+            (void*)app);
+    }
 }
 
 static void seat_name_handler(void *data,
                               struct wl_seat *wl_seat,
                               const char *name)
 {
-    //
+    ft_log_debug("Seat name: %s\n", name);
 }
