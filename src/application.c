@@ -8,6 +8,7 @@
 
 #include <foundation/log.h>
 #include <foundation/surface.h>
+#include <foundation/event-dispatcher.h>
 
 struct ft_application_t {
     struct wl_display *_wl_display;
@@ -18,6 +19,7 @@ struct ft_application_t {
     struct wl_pointer *_wl_pointer;
     struct wl_keyboard *_wl_keyboard;
     struct wl_touch *_wl_touch;
+    ft_event_dispatcher_t *_event_dispatcher;
 };
 
 // Singleton object.
@@ -114,6 +116,9 @@ static const struct wl_seat_listener seat_listener = {
     .name = seat_name_handler,
 };
 
+//!<===============
+//!< Application
+//!<===============
 
 ft_application_t* ft_application_new(int argc, char *argv[])
 {
@@ -137,6 +142,9 @@ ft_application_t* ft_application_new(int argc, char *argv[])
     xdg_wm_base_add_listener(app->_xdg_wm_base, &app_xdg_wm_base_listener,
         NULL);
 
+    // Event dispatcher.
+    app->_event_dispatcher = ft_event_dispatcher_new();
+
     _ft_application_instance = app;
 
     return app;
@@ -145,6 +153,12 @@ ft_application_t* ft_application_new(int argc, char *argv[])
 ft_application_t* ft_application_instance()
 {
     return _ft_application_instance;
+}
+
+void ft_application_post_event(ft_application_t *application,
+                               ft_event_t *event)
+{
+    ft_event_dispatcher_post_event(application->_event_dispatcher, event);
 }
 
 struct wl_display* ft_application_wl_display(

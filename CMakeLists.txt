@@ -20,6 +20,7 @@ set(FOUNDATION_SOURCES
     include/foundation/desktop-surface.h
     include/foundation/view.h
     include/foundation/egl-context.h
+    include/foundation/input.h
     include/foundation/event.h
     include/foundation/event-dispatcher.h
     src/log.c
@@ -29,6 +30,7 @@ set(FOUNDATION_SOURCES
     src/desktop-surface.c
     src/view.c
     src/egl-context.c
+    src/event.c
     src/event-dispatcher.c
     ${WAYLAND_PROTOCOLS_SOURCES}
 )
