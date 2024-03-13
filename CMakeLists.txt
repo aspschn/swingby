@@ -27,6 +27,7 @@ set(FOUNDATION_SOURCES
     include/foundation/foundation.h
     src/log.c
     src/list.c
+    src/rect.c
     src/color.c
     src/application.c
     src/surface.c
