@@ -1,5 +1,4 @@
-#include <foundation/application.h>
-#include <foundation/desktop-surface.h>
+#include <foundation/foundation.h>
 
 int main(int argc, char *argv[])
 {

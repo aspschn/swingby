@@ -23,6 +23,7 @@ set(FOUNDATION_SOURCES
     include/foundation/input.h
     include/foundation/event.h
     include/foundation/event-dispatcher.h
+    include/foundation/foundation.h
     src/log.c
     src/color.c
     src/application.c
