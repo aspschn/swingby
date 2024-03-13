@@ -15,6 +15,9 @@ struct ft_desktop_surface_t {
     struct xdg_popup *_xdg_popup;
 };
 
+//!<==============
+//!< XDG Surface
+//!<==============
 
 static void xdg_surface_configure_handler(void *data,
                                           struct xdg_surface *xdg_surface,
@@ -24,6 +27,9 @@ static struct xdg_surface_listener xdg_surface_listener = {
     .configure = xdg_surface_configure_handler,
 };
 
+//!<===============
+//!< XDG Toplevel
+//!<===============
 
 static void xdg_toplevel_configure_handler(void *data,
                                            struct xdg_toplevel *xdg_toplevel,
@@ -53,6 +59,12 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     d_surface->_surface = ft_surface_new();
 
     return d_surface;
+}
+
+ft_surface_t*
+ft_desktop_surface_surface(ft_desktop_surface_t *desktop_surface)
+{
+    return desktop_surface->_surface;
 }
 
 void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface)
