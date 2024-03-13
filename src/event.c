@@ -48,7 +48,7 @@ ft_event_t* ft_pointer_event_new(ft_event_target_type target_type,
                                  ft_pointer_button button,
                                  const ft_point_t *position)
 {
-    ft_event_t *event = malloc(sizeof(ft_event_t));
+    ft_event_t *event = ft_event_new(target_type, target, type);
 
     event->pointer.button = button;
     event->pointer.position = *position;

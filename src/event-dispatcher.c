@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <foundation/log.h>
 #include <foundation/event.h>
 
 #ifdef __cplusplus
@@ -95,7 +96,7 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
         } else if (event->target_type == FT_EVENT_TARGET_TYPE_SURFACE) {
             switch (event->type) {
             case FT_EVENT_TYPE_POINTER_ENTER:
-                //
+                ft_log_debug("Pointer enter!\n");
                 break;
             default:
                 break;

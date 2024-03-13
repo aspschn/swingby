@@ -8,6 +8,9 @@
 
 #include <foundation/log.h>
 #include <foundation/surface.h>
+#include <foundation/desktop-surface.h>
+#include <foundation/list.h>
+#include <foundation/event.h>
 #include <foundation/event-dispatcher.h>
 
 struct ft_application_t {
@@ -19,6 +22,7 @@ struct ft_application_t {
     struct wl_pointer *_wl_pointer;
     struct wl_keyboard *_wl_keyboard;
     struct wl_touch *_wl_touch;
+    ft_list_t *_desktop_surfaces;
     ft_event_dispatcher_t *_event_dispatcher;
 };
 
@@ -142,6 +146,9 @@ ft_application_t* ft_application_new(int argc, char *argv[])
     xdg_wm_base_add_listener(app->_xdg_wm_base, &app_xdg_wm_base_listener,
         NULL);
 
+    // Desktop surface list.
+    app->_desktop_surfaces = ft_list_new();
+
     // Event dispatcher.
     app->_event_dispatcher = ft_event_dispatcher_new();
 
@@ -159,6 +166,18 @@ void ft_application_post_event(ft_application_t *application,
                                ft_event_t *event)
 {
     ft_event_dispatcher_post_event(application->_event_dispatcher, event);
+}
+
+void ft_application_register_desktop_surface(ft_application_t *application,
+    ft_desktop_surface_t *desktop_surface)
+{
+    ft_list_push(application->_desktop_surfaces, (void*)desktop_surface);
+}
+
+void ft_application_unregister_desktop_surface(ft_application_t *application,
+    ft_desktop_surface_t *desktop_surface)
+{
+    // TODO: Implementation.
 }
 
 struct wl_display* ft_application_wl_display(
@@ -182,6 +201,7 @@ int ft_application_exec(ft_application_t *application)
 {
     while (wl_display_dispatch(application->_wl_display) != -1) {
         ft_log_debug("wl_display_dispatch()\n");
+        ft_event_dispatcher_process_events(application->_event_dispatcher);
     }
 
     return 0;
@@ -238,11 +258,37 @@ static void xdg_wm_base_ping_handler(void *data,
 static void pointer_enter_handler(void *data,
                                   struct wl_pointer *wl_pointer,
                                   uint32_t serial,
-                                  struct wl_surface *surface,
+                                  struct wl_surface *wl_surface,
                                   wl_fixed_t sx,
                                   wl_fixed_t sy)
 {
-    //
+    ft_application_t *app = (ft_application_t*)data;
+
+    float x = wl_fixed_to_double(sx);
+    float y = wl_fixed_to_double(sy);
+
+    // Find the surface.
+    ft_surface_t *found = NULL;
+    for (uint64_t i = 0; i < ft_list_length(app->_desktop_surfaces); ++i) {
+        ft_desktop_surface_t *desktop_surface =
+            ft_list_at(app->_desktop_surfaces, i);
+        ft_surface_t *surface = ft_desktop_surface_surface(desktop_surface);
+        if (ft_surface_wl_surface(surface) == wl_surface) {
+            found = surface;
+            break;
+        }
+    }
+
+    // Make an event.
+    ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_SURFACE,
+        (void*)found,
+        FT_EVENT_TYPE_POINTER_ENTER);
+    event->pointer.button = FT_POINTER_BUTTON_NONE;
+    event->pointer.position.x = x;
+    event->pointer.position.y = y;
+
+    // Post the event.
+    ft_application_post_event(app, event);
 }
 
 static void pointer_leave_handler(void *data,

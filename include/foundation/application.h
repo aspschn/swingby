@@ -4,6 +4,7 @@
 #include <wayland-client.h>
 
 typedef struct ft_surface_t ft_surface_t;
+typedef struct ft_desktop_surface_t ft_desktop_surface_t;
 typedef struct ft_event_t ft_event_t;
 
 /// \brief A global application object.
@@ -12,6 +13,17 @@ typedef struct ft_application_t ft_application_t;
 ft_application_t* ft_application_new(int argc, char *argv[]);
 
 ft_application_t* ft_application_instance();
+
+/// \brief Register a desktop surface.
+///
+/// A desktop surface must be registered to the application. This method is
+/// for creation of a desktop surface.
+void ft_application_register_desktop_surface(ft_application_t *application,
+    ft_desktop_surface_t *desktop_surface);
+
+/// \brief Unregister a desktop surface.
+void ft_application_unregister_desktop_surface(ft_application_t *application,
+    ft_desktop_surface_t *desktop_surface);
 
 void ft_application_post_event(ft_application_t *application,
                                ft_event_t *event);
