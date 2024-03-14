@@ -13,6 +13,7 @@
 #include <foundation/application.h>
 #include <foundation/egl-context.h>
 #include <foundation/view.h>
+#include <foundation/list.h>
 #include "shaders.h"
 
 struct ft_surface_t {
@@ -114,6 +115,55 @@ static void _set_uniform_color(GLuint program, const ft_color_t *color)
     glUniform4fv(location, 1, color_u);
 }
 
+static void _draw_recursive(GLuint program,
+                            ft_view_t *view,
+                            GLuint vao,
+                            GLuint ebo,
+                            GLuint vbo)
+{
+    _set_uniform_color(program, ft_view_color(view));
+
+    // Set coordinates.
+    float vertices[] = {
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+    };
+    _calc_points(ft_view_geometry(view), vertices);
+
+    GLuint indices[] = {
+        0, 1, 3,
+        1, 2, 3,
+    };
+
+    // Bind and draw.
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+                 GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER,
+                 sizeof(vertices),
+                 vertices,
+                 GL_STATIC_DRAW
+                 );
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+
+    // Child views.
+    ft_list_t *children = ft_view_children(view);
+    for (int i = 0; i < ft_list_length(children); ++i) {
+        ft_view_t *child = ft_list_at(children, i);
+        _draw_recursive(program, child, vao, ebo, vbo);
+    }
+}
+
 ft_surface_t* ft_surface_new()
 {
     ft_surface_t *surface = malloc(sizeof(ft_surface_t));
@@ -170,6 +220,11 @@ void ft_surface_set_size(ft_surface_t *surface, const ft_size_t *size)
         0, 0);
 }
 
+ft_view_t* ft_surface_root_view(ft_surface_t *surface)
+{
+    return surface->_root_view;
+}
+
 void ft_surface_commit(ft_surface_t *surface)
 {
     wl_surface_commit(surface->_wl_surface);
@@ -215,20 +270,6 @@ void ft_surface_on_request_update(ft_surface_t *surface)
     _set_uniform_resolution(program, &surface->_size);
     _set_uniform_color(program, ft_view_color(surface->_root_view));
 
-    // Set coordinates.
-    float vertices[] = {
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,
-    };
-    _calc_points(ft_view_geometry(surface->_root_view), vertices);
-
-    GLuint indices[] = {
-        0, 1, 3,
-        1, 2, 3,
-    };
-
     eglMakeCurrent(surface->_egl_context->egl_display,
         surface->_egl_surface, surface->_egl_surface,
         surface->_egl_context->egl_context);
@@ -245,24 +286,7 @@ void ft_surface_on_request_update(ft_surface_t *surface)
     GLuint vbo;
     glGenBuffers(1, &vbo);
 
-    // Bind and draw.
-    glBindVertexArray(vao);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-        GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER,
-        sizeof(vertices),
-        vertices,
-        GL_STATIC_DRAW
-    );
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+    _draw_recursive(program, surface->_root_view, vao, ebo, vbo);
 
     eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
 }

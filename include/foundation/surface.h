@@ -19,6 +19,8 @@ const ft_size_t* ft_surface_size(ft_surface_t *surface);
 
 void ft_surface_set_size(ft_surface_t *surface, const ft_size_t *size);
 
+ft_view_t* ft_surface_root_view(ft_surface_t *surface);
+
 void ft_surface_commit(ft_surface_t *surface);
 
 void ft_surface_attach(ft_surface_t *surface);
