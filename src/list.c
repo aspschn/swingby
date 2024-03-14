@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <foundation/log.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

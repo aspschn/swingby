@@ -1,6 +1,8 @@
 #ifndef _FOUNDATION_LOG_H
 #define _FOUNDATION_LOG_H
 
+#include <stdarg.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -12,7 +14,7 @@ typedef enum ft_log_level {
 } ft_log_level;
 
 /// \brief Print log with log level.
-void ft_log(ft_log_level level, const char *format, ...);
+void ft_log(ft_log_level level, const char *format, va_list args);
 
 void ft_log_debug(const char *format, ...);
 

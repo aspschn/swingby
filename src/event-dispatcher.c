@@ -98,6 +98,11 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
             case FT_EVENT_TYPE_POINTER_ENTER:
                 ft_log_debug("Pointer enter!\n");
                 break;
+            case FT_EVENT_TYPE_POINTER_LEAVE:
+                break;
+            case FT_EVENT_TYPE_POINTER_MOVE:
+                ft_log_debug("Surface pointer move event\n");
+                break;
             default:
                 break;
             }

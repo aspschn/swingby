@@ -58,6 +58,9 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     // Create a surface.
     d_surface->_surface = ft_surface_new();
 
+    ft_application_register_desktop_surface(ft_application_instance(),
+        d_surface);
+
     return d_surface;
 }
 

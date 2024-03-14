@@ -10,6 +10,7 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
+#include <foundation/log.h>
 #include <foundation/application.h>
 #include <foundation/egl-context.h>
 #include <foundation/view.h>
@@ -197,6 +198,8 @@ ft_surface_t* ft_surface_new()
     surface->_root_view = ft_view_new(NULL, &geo);
     ft_view_set_surface(surface->_root_view, surface);
 
+    ft_log_debug("ft_surface_new() - surface: %p\n", surface);
+    ft_log_debug("ft_surface_new() - root_view: %p\n", surface->_root_view);
     return surface;
 }
 
@@ -247,6 +250,11 @@ void ft_surface_detach(ft_surface_t *surface)
 
     wl_surface_attach(surface->_wl_surface, NULL, 0, 0);
     wl_surface_commit(surface->_wl_surface);
+}
+
+void ft_surface_on_pointer_enter(ft_surface_t *surface, ft_event_t *event)
+{
+    //
 }
 
 void ft_surface_on_request_update(ft_surface_t *surface)

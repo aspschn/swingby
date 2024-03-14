@@ -62,7 +62,7 @@ ft_view_t* ft_view_child_at(ft_view_t *view, const ft_point_t *position)
     }
 
     for (int i = ft_list_length(view->_children); i > 0; --i) {
-        ft_view_t *child = ft_list_at(view->_children, i + 0);
+        ft_view_t *child = ft_list_at(view->_children, i - 1);
         if (ft_rect_contains_point(&child->_geometry, position)) {
             return child;
         }

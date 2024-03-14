@@ -6,6 +6,7 @@
 #include <foundation/size.h>
 
 typedef struct ft_view_t ft_view_t;
+typedef struct ft_event_t ft_event_t;
 
 /// \brief A basic rectangular region.
 typedef struct ft_surface_t ft_surface_t;
@@ -28,6 +29,8 @@ void ft_surface_attach(ft_surface_t *surface);
 void ft_surface_detach(ft_surface_t *surface);
 
 // void ft_surface_add_event_listener(ft_surface_t *surface);
+
+void ft_surface_on_pointer_enter(ft_surface_t *surface, ft_event_t *event);
 
 void ft_surface_on_request_update(ft_surface_t *surface);
 
