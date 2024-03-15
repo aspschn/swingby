@@ -1,5 +1,6 @@
 #include <foundation/application.h>
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -31,6 +32,8 @@ struct ft_application_t {
     /// Pointer motion handler not pass `struct wl_surface` object.
     /// Store this information when pointer entered to the surface.
     struct wl_surface *_pointer_surface;
+    /// \brief Current pointer view.
+    ft_view_t *_pointer_view;
     ft_list_t *_desktop_surfaces;
     ft_event_dispatcher_t *_event_dispatcher;
 };
@@ -175,6 +178,25 @@ static ft_view_t* _find_most_child(ft_view_t *view,
     return _find_most_child(child, position);
 }
 
+bool _is_child_of(ft_view_t *view, ft_view_t *other)
+{
+    ft_list_t *children = ft_view_children(view);
+
+    if (ft_list_length(children) == 0) {
+        return false;
+    }
+
+    for (int i = 0; i < ft_list_length(children); ++i) {
+        ft_view_t *child = ft_list_at(children, i);
+        bool result = _is_child_of(child, other);
+        if (result == true) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 //!<===============
 //!< Application
 //!<===============
@@ -191,6 +213,7 @@ ft_application_t* ft_application_new(int argc, char *argv[])
     app->_wl_keyboard = NULL;
     app->_wl_touch = NULL;
     app->_pointer_surface = NULL;
+    app->_pointer_view = NULL;
 
     app->_wl_registry = wl_display_get_registry(app->_wl_display);
     wl_registry_add_listener(app->_wl_registry, &app_registry_listener,
@@ -346,6 +369,8 @@ static void pointer_enter_handler(void *data,
     ft_log_debug("root_view: %p\n", root_view);
     ft_view_t *view = _find_most_child(root_view, &position);
 
+    app->_pointer_view = view;
+
     ft_event_t *view_event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
         (void*)view,
         FT_EVENT_TYPE_POINTER_ENTER);
@@ -379,16 +404,26 @@ static void pointer_motion_handler(void *data,
     // Find the surface.
     ft_surface_t *surface = _find_surface(app, app->_pointer_surface);
 
-    // Make an event.
-    ft_event_t *surface_event = ft_event_new(FT_EVENT_TARGET_TYPE_SURFACE,
-        (void*)surface,
-        FT_EVENT_TYPE_POINTER_MOVE);
-    surface_event->pointer.button = FT_POINTER_BUTTON_NONE;
-    surface_event->pointer.position.x = x;
-    surface_event->pointer.position.y = y;
+    // Find most child view.
+    ft_point_t pos;
+    pos.x = x;
+    pos.y = y;
+    ft_view_t *view = _find_most_child(ft_surface_root_view(surface), &pos);
 
-    // Post the event.
-    ft_application_post_event(app, surface_event);
+    // Check difference.
+    if (view != app->_pointer_view) {
+        ft_event_t *enter_event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
+            (void*)view,
+            FT_EVENT_TYPE_POINTER_ENTER);
+        enter_event->pointer.button = FT_POINTER_BUTTON_NONE;
+        enter_event->pointer.position.x = x;
+        enter_event->pointer.position.y = y;
+
+        app->_pointer_view = view;
+
+        // Post the event.
+        ft_application_post_event(app, enter_event);
+    }
 }
 
 static void pointer_button_handler(void *data,

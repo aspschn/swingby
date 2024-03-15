@@ -107,7 +107,14 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
                 break;
             }
         } else if (event->target_type == FT_EVENT_TARGET_TYPE_VIEW) {
-            //
+            switch (event->type) {
+            case FT_EVENT_TYPE_POINTER_ENTER:
+                ft_log_debug("View pointer enter: (%f, %f)\n",
+                    event->pointer.position.x, event->pointer.position.y);
+                break;
+            default:
+                break;
+            }
         }
     }
 }
