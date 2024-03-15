@@ -12,7 +12,7 @@ bool ft_rect_contains_point(ft_rect_t *rect, const ft_point_t *point)
     }
 
     // Check bottom-right.
-    if (point->x > rect->pos.x + rect->size.width &&
+    if (point->x > rect->pos.x + rect->size.width ||
         point->y > rect->pos.y + rect->size.height) {
         return false;
     }

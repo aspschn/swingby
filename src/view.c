@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include <foundation/log.h>
 #include <foundation/surface.h>
 #include <foundation/list.h>
 
@@ -57,13 +58,19 @@ ft_list_t* ft_view_children(ft_view_t *view)
 
 ft_view_t* ft_view_child_at(ft_view_t *view, const ft_point_t *position)
 {
-    if (ft_rect_contains_point(&view->_geometry, position) == false) {
+    ft_rect_t local_geo;
+    local_geo.pos.x = 0;
+    local_geo.pos.y = 0;
+    local_geo.size = ft_view_geometry(view)->size;
+
+    if (ft_rect_contains_point(&local_geo, position) == false) {
         return NULL;
     }
 
     for (int i = ft_list_length(view->_children); i > 0; --i) {
         ft_view_t *child = ft_list_at(view->_children, i - 1);
-        if (ft_rect_contains_point(&child->_geometry, position)) {
+        if (ft_rect_contains_point((ft_rect_t*)ft_view_geometry(child),
+            position)) {
             return child;
         }
     }

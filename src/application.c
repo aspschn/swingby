@@ -142,11 +142,9 @@ static ft_surface_t* _find_surface(ft_application_t *app,
 {
     ft_surface_t *found = NULL;
     ft_list_t *list = app->_desktop_surfaces;
-    fprintf(stderr, "length: %ld\n", ft_list_length(list));
     for (int i = 0; i < ft_list_length(list); ++i) {
         ft_desktop_surface_t *desktop_surface = ft_list_at(list, i);
         ft_surface_t *surface = ft_desktop_surface_surface(desktop_surface);
-        ft_log_debug("Surface: %p\n", surface);
         if (ft_surface_wl_surface(surface) == wl_surface) {
             found = surface;
             break;
@@ -170,10 +168,8 @@ static ft_view_t* _find_most_child(ft_view_t *view,
         return view;
     }
 
-    position->x =
-        ft_view_geometry(child)->pos.x - ft_view_geometry(view)->pos.x;
-    position->y =
-        ft_view_geometry(child)->pos.y - ft_view_geometry(view)->pos.y;
+    position->x = position->x - ft_view_geometry(child)->pos.x;
+    position->y = position->y - ft_view_geometry(child)->pos.y;
 
     return _find_most_child(child, position);
 }
@@ -279,7 +275,7 @@ struct xdg_wm_base* ft_application_xdg_wm_base(ft_application_t *application)
 int ft_application_exec(ft_application_t *application)
 {
     while (wl_display_dispatch(application->_wl_display) != -1) {
-        ft_log_debug("wl_display_dispatch()\n");
+        // ft_log_debug("wl_display_dispatch()\n");
         ft_event_dispatcher_process_events(application->_event_dispatcher);
     }
 
@@ -363,10 +359,11 @@ static void pointer_enter_handler(void *data,
     ft_application_post_event(app, event);
 
     // Find most child.
-    ft_log_debug("Found: %p\n", found);
     ft_view_t *root_view = ft_surface_root_view(found);
-    ft_point_t position = ft_view_geometry(root_view)->pos;
-    ft_log_debug("root_view: %p\n", root_view);
+    ft_point_t position;
+    position.x = x;
+    position.y = y;
+    ft_log_debug(" == root view: %p ==\n", root_view);
     ft_view_t *view = _find_most_child(root_view, &position);
 
     app->_pointer_view = view;
@@ -374,9 +371,9 @@ static void pointer_enter_handler(void *data,
     ft_event_t *view_event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
         (void*)view,
         FT_EVENT_TYPE_POINTER_ENTER);
-    event->pointer.button = FT_POINTER_BUTTON_NONE;
-    event->pointer.position.x = position.x;
-    event->pointer.position.y = position.y;
+    view_event->pointer.button = FT_POINTER_BUTTON_NONE;
+    view_event->pointer.position.x = position.x;
+    view_event->pointer.position.y = position.y;
 
     // Post the event (view).
     ft_application_post_event(app, view_event);
@@ -416,8 +413,8 @@ static void pointer_motion_handler(void *data,
             (void*)view,
             FT_EVENT_TYPE_POINTER_ENTER);
         enter_event->pointer.button = FT_POINTER_BUTTON_NONE;
-        enter_event->pointer.position.x = x;
-        enter_event->pointer.position.y = y;
+        enter_event->pointer.position.x = pos.x;
+        enter_event->pointer.position.y = pos.y;
 
         app->_pointer_view = view;
 

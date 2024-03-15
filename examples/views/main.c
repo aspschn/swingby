@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include <foundation/foundation.h>
 
 int main(int argc, char *argv[])
@@ -12,15 +14,17 @@ int main(int argc, char *argv[])
         ft_surface_root_view(ft_desktop_surface_surface(surface)), &geometry);
     ft_color_t color = { 255, 0, 0, 255 };
     ft_view_set_color(view, &color);
+    fprintf(stderr, "view:          %p\n", view);
 
-    geometry.pos.x = 5.0f;
-    geometry.pos.y = 5.0f;
+    geometry.pos.x = 10.0f;
+    geometry.pos.y = 10.0f;
     geometry.size.width = 30.0f;
     geometry.size.height = 30.0f;
     ft_view_t *child_view = ft_view_new(view, &geometry);
     color.r = 0;
     color.g = 255;
     ft_view_set_color(child_view, &color);
+    fprintf(stderr, "child_view:    %p\n", child_view);
 
     ft_desktop_surface_show(surface);
 
