@@ -21,6 +21,8 @@ ft_list_t* ft_view_children(ft_view_t *view);
 
 ft_view_t* ft_view_child_at(ft_view_t *view, const ft_point_t *position);
 
+ft_view_t* ft_view_parent(ft_view_t *view);
+
 void ft_view_set_color(ft_view_t *view, const ft_color_t *color);
 
 #endif /* _FOUNDATION_VIEW_H */

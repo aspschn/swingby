@@ -131,7 +131,15 @@ static void _draw_recursive(GLuint program,
         0.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.0f,
     };
-    _calc_points(ft_view_geometry(view), vertices);
+    ft_rect_t absolute_geometry;
+    absolute_geometry = *ft_view_geometry(view);
+
+    ft_view_t *parent = ft_view_parent(view);
+    for (ft_view_t *it = parent; it != NULL; it = ft_view_parent(it)) {
+        absolute_geometry.pos.x += ft_view_geometry(it)->pos.x;
+        absolute_geometry.pos.y += ft_view_geometry(it)->pos.y;
+    }
+    _calc_points(&absolute_geometry, vertices);
 
     GLuint indices[] = {
         0, 1, 3,
@@ -143,14 +151,14 @@ static void _draw_recursive(GLuint program,
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-                 GL_STATIC_DRAW);
+        GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER,
-                 sizeof(vertices),
-                 vertices,
-                 GL_STATIC_DRAW
-                 );
+        sizeof(vertices),
+        vertices,
+        GL_STATIC_DRAW
+    );
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(0);

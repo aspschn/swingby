@@ -71,6 +71,11 @@ ft_view_t* ft_view_child_at(ft_view_t *view, const ft_point_t *position)
     return NULL;
 }
 
+ft_view_t* ft_view_parent(ft_view_t *view)
+{
+    return view->_parent;
+}
+
 void ft_view_set_color(ft_view_t *view, const ft_color_t *color)
 {
     view->_color = *color;
