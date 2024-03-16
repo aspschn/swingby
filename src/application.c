@@ -44,6 +44,11 @@ struct ft_application_t {
     /// Pointer button and axis event not pass the position.
     /// Store this information when pointer moved.
     ft_point_t _pointer_pos;
+    /// \brief Click event information.
+    struct {
+        ft_view_t *view;
+        ft_pointer_button button;
+    } click;
     /// \brief List of the desktop surfaces.
     ft_list_t *_desktop_surfaces;
     ft_event_dispatcher_t *_event_dispatcher;
@@ -238,6 +243,8 @@ ft_application_t* ft_application_new(int argc, char *argv[])
     app->_wl_touch = NULL;
     app->_pointer_surface = NULL;
     app->_pointer_view = NULL;
+    app->click.view = NULL;
+    app->click.button = FT_POINTER_BUTTON_NONE;
 
     app->_wl_registry = wl_display_get_registry(app->_wl_display);
     wl_registry_add_listener(app->_wl_registry, &app_registry_listener,
@@ -502,6 +509,24 @@ static void pointer_button_handler(void *data,
 
     // Post the event.
     ft_application_post_event(app, event);
+
+    // Click event.
+    if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+        app->click.view = view;
+        app->click.button = _from_linux_button(button);
+    } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
+        if (view == app->click.view) {
+            ft_event_t *click_event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
+                (void*)view,
+                FT_EVENT_TYPE_POINTER_CLICK);
+            click_event->pointer.button = app->click.button;
+            click_event->pointer.position = pos;
+
+            app->click.view = NULL;
+
+            ft_application_post_event(app, click_event);
+        }
+    }
 }
 
 static void pointer_axis_handler(void *data,

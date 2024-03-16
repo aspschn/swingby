@@ -82,6 +82,8 @@ void _propagate_pointer_event(ft_view_t *view, ft_event_t *event)
             ft_view_on_pointer_press(parent, event);
         } else if (event->type == FT_EVENT_TYPE_POINTER_RELEASE) {
             ft_view_on_pointer_release(parent, event);
+        } else if (event->type == FT_EVENT_TYPE_POINTER_CLICK) {
+            ft_view_on_pointer_click(parent, event);
         }
 
         x = event->pointer.position.x + ft_view_geometry(parent)->pos.x;
@@ -149,9 +151,15 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
             case FT_EVENT_TYPE_POINTER_PRESS:
                 ft_view_on_pointer_press(event->target, event);
                 _propagate_pointer_event(event->target, event);
+                break;
             case FT_EVENT_TYPE_POINTER_RELEASE:
                 ft_view_on_pointer_release(event->target, event);
                 _propagate_pointer_event(event->target, event);
+                break;
+            case FT_EVENT_TYPE_POINTER_CLICK:
+                ft_view_on_pointer_click(event->target, event);
+                _propagate_pointer_event(event->target, event);
+                break;
             default:
                 break;
             }

@@ -26,6 +26,10 @@ ft_view_t* ft_view_parent(ft_view_t *view);
 
 void ft_view_set_color(ft_view_t *view, const ft_color_t *color);
 
+//!<====================
+//!< Event Handlers
+//!<====================
+
 void ft_view_on_pointer_enter(ft_view_t *view, ft_event_t *event);
 
 void ft_view_on_pointer_leave(ft_view_t *view, ft_event_t *event);
@@ -33,6 +37,8 @@ void ft_view_on_pointer_leave(ft_view_t *view, ft_event_t *event);
 void ft_view_on_pointer_move(ft_view_t *view, ft_event_t *event);
 
 void ft_view_on_pointer_press(ft_view_t *view, ft_event_t *event);
+
+void ft_view_on_pointer_click(ft_view_t *view, ft_event_t *event);
 
 void ft_view_on_pointer_release(ft_view_t *view, ft_event_t *event);
 
