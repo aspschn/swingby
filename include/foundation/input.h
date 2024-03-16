@@ -10,6 +10,7 @@ typedef enum ft_pointer_button {
     FT_POINTER_BUTTON_LEFT      = 1,
     FT_POINTER_BUTTON_RIGHT     = 2,
     FT_POINTER_BUTTON_MIDDLE    = 4,
+    FT_POINTER_BUTTON_UNIMPLEMENTED = 65536,
 } ft_pointer_button;
 
 typedef ft_pointer_button ft_pointer_button_flags;

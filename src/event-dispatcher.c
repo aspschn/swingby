@@ -65,7 +65,7 @@ void* ft_queue_dequeue(ft_queue_t *queue)
 //!< Helper Functions
 //!<===================
 
-void _propagete_pointer_event(ft_view_t *view, ft_event_t *event)
+void _propagate_pointer_event(ft_view_t *view, ft_event_t *event)
 {
     ft_view_t *parent = ft_view_parent(view);
 
@@ -78,6 +78,10 @@ void _propagete_pointer_event(ft_view_t *view, ft_event_t *event)
 
         if (event->type == FT_EVENT_TYPE_POINTER_MOVE) {
             ft_view_on_pointer_move(parent, event);
+        } else if (event->type == FT_EVENT_TYPE_POINTER_PRESS) {
+            ft_view_on_pointer_press(parent, event);
+        } else if (event->type == FT_EVENT_TYPE_POINTER_RELEASE) {
+            ft_view_on_pointer_release(parent, event);
         }
 
         x = event->pointer.position.x + ft_view_geometry(parent)->pos.x;
@@ -140,8 +144,14 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
                 break;
             case FT_EVENT_TYPE_POINTER_MOVE:
                 ft_view_on_pointer_move(event->target, event);
-                _propagete_pointer_event(event->target, event);
+                _propagate_pointer_event(event->target, event);
                 break;
+            case FT_EVENT_TYPE_POINTER_PRESS:
+                ft_view_on_pointer_press(event->target, event);
+                _propagate_pointer_event(event->target, event);
+            case FT_EVENT_TYPE_POINTER_RELEASE:
+                ft_view_on_pointer_release(event->target, event);
+                _propagate_pointer_event(event->target, event);
             default:
                 break;
             }

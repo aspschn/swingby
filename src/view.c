@@ -93,3 +93,13 @@ void ft_view_on_pointer_move(ft_view_t *view, ft_event_t *event)
 {
     ft_log_debug("ft_view_on_pointer_move() - (%f, %f)\n", event->pointer.position.x, event->pointer.position.y);
 }
+
+void ft_view_on_pointer_press(ft_view_t *view, ft_event_t *event)
+{
+    ft_log_debug("ft_view_on_pointer_press() - (%.2f, %.2f)\n", event->pointer.position.x, event->pointer.position.y);
+}
+
+void ft_view_on_pointer_release(ft_view_t *view, ft_event_t *event)
+{
+    //
+}

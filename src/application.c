@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <linux/input.h>
+
 #include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
 
@@ -13,6 +15,7 @@
 #include <foundation/desktop-surface.h>
 #include <foundation/view.h>
 #include <foundation/list.h>
+#include <foundation/input.h>
 #include <foundation/event.h>
 #include <foundation/event-dispatcher.h>
 
@@ -33,7 +36,15 @@ struct ft_application_t {
     /// Store this information when pointer entered to the surface.
     struct wl_surface *_pointer_surface;
     /// \brief Current pointer view.
+    ///
+    /// Store the position of the view under the pointer.
     ft_view_t *_pointer_view;
+    /// \brief Pointer event position.
+    ///
+    /// Pointer button and axis event not pass the position.
+    /// Store this information when pointer moved.
+    ft_point_t _pointer_pos;
+    /// \brief List of the desktop surfaces.
     ft_list_t *_desktop_surfaces;
     ft_event_dispatcher_t *_event_dispatcher;
 };
@@ -154,6 +165,7 @@ static ft_surface_t* _find_surface(ft_application_t *app,
     return found;
 }
 
+/// \brief Find most child view of the root view.
 static ft_view_t* _find_most_child(ft_view_t *view,
                                    ft_point_t *position)
 {
@@ -174,6 +186,22 @@ static ft_view_t* _find_most_child(ft_view_t *view,
     return _find_most_child(child, position);
 }
 
+/// \brief Linux button to Foundation pointer button.
+ft_pointer_button _from_linux_button(uint32_t button)
+{
+    switch (button) {
+    case BTN_LEFT:
+        return FT_POINTER_BUTTON_LEFT;
+    case BTN_RIGHT:
+        return FT_POINTER_BUTTON_RIGHT;
+    case BTN_MIDDLE:
+        return FT_POINTER_BUTTON_MIDDLE;
+    default:
+        return FT_POINTER_BUTTON_UNIMPLEMENTED;
+    }
+}
+
+/// \brief What is this function's purpose?
 bool _is_child_of(ft_view_t *view, ft_view_t *other)
 {
     ft_list_t *children = ft_view_children(view);
@@ -398,6 +426,10 @@ static void pointer_motion_handler(void *data,
     float x = wl_fixed_to_double(sx);
     float y = wl_fixed_to_double(sy);
 
+    // Store the position.
+    app->_pointer_pos.x = x;
+    app->_pointer_pos.y = y;
+
     // Find the surface.
     ft_surface_t *surface = _find_surface(app, app->_pointer_surface);
 
@@ -442,7 +474,34 @@ static void pointer_button_handler(void *data,
                                    uint32_t button,
                                    uint32_t state)
 {
-    //
+    ft_application_t *app = (ft_application_t*)data;
+
+    float x = app->_pointer_pos.x;
+    float y = app->_pointer_pos.y;
+
+    // Find the surface.
+    ft_surface_t *surface = _find_surface(app, app->_pointer_surface);
+
+    // Find most child view.
+    ft_point_t pos = { .x = x, .y = y };
+    ft_view_t *view = _find_most_child(ft_surface_root_view(surface), &pos);
+
+    // Set the event type.
+    ft_event_type evt_type = FT_EVENT_TYPE_POINTER_PRESS;
+    if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+        evt_type = FT_EVENT_TYPE_POINTER_PRESS;
+    } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
+        evt_type = FT_EVENT_TYPE_POINTER_RELEASE;
+    }
+    ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
+        (void*)view,
+        evt_type);
+
+    event->pointer.button = _from_linux_button(button);
+    event->pointer.position = pos;
+
+    // Post the event.
+    ft_application_post_event(app, event);
 }
 
 static void pointer_axis_handler(void *data,
