@@ -5,6 +5,7 @@
 
 #include <foundation/log.h>
 #include <foundation/event.h>
+#include <foundation/view.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,6 +62,32 @@ void* ft_queue_dequeue(ft_queue_t *queue)
 }
 
 //!<===================
+//!< Helper Functions
+//!<===================
+
+void _propagete_pointer_event(ft_view_t *view, ft_event_t *event)
+{
+    ft_view_t *parent = ft_view_parent(view);
+
+    float x = event->pointer.position.x + ft_view_geometry(view)->pos.x;
+    float y = event->pointer.position.y + ft_view_geometry(view)->pos.y;
+    while (parent != NULL) {
+        event->pointer.position.x = x;
+        event->pointer.position.y = y;
+        // TODO: Propagation stop.
+
+        if (event->type == FT_EVENT_TYPE_POINTER_MOVE) {
+            ft_view_on_pointer_move(parent, event);
+        }
+
+        x = event->pointer.position.x + ft_view_geometry(parent)->pos.x;
+        y = event->pointer.position.y + ft_view_geometry(parent)->pos.y;
+
+        parent = ft_view_parent(parent);
+    }
+}
+
+//!<===================
 //!< Event Dispatcher
 //!<===================
 
@@ -112,6 +139,11 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
                 ft_log_debug("View pointer enter: (%f, %f) view: %p\n",
                     event->pointer.position.x, event->pointer.position.y,
                     event->target);
+            case FT_EVENT_TYPE_POINTER_LEAVE:
+                break;
+            case FT_EVENT_TYPE_POINTER_MOVE:
+                ft_view_on_pointer_move(event->target, event);
+                _propagete_pointer_event(event->target, event);
                 break;
             default:
                 break;

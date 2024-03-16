@@ -5,6 +5,7 @@
 #include <foundation/log.h>
 #include <foundation/surface.h>
 #include <foundation/list.h>
+#include <foundation/event.h>
 
 struct ft_view_t {
     ft_surface_t *_surface;
@@ -86,4 +87,9 @@ ft_view_t* ft_view_parent(ft_view_t *view)
 void ft_view_set_color(ft_view_t *view, const ft_color_t *color)
 {
     view->_color = *color;
+}
+
+void ft_view_on_pointer_move(ft_view_t *view, ft_event_t *event)
+{
+    ft_log_debug("ft_view_on_pointer_move() - (%f, %f)\n", event->pointer.position.x, event->pointer.position.y);
 }

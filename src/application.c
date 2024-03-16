@@ -407,6 +407,18 @@ static void pointer_motion_handler(void *data,
     pos.y = y;
     ft_view_t *view = _find_most_child(ft_surface_root_view(surface), &pos);
 
+    // Pointer move event.
+    {
+        ft_event_t *move_event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
+            (void*)view,
+            FT_EVENT_TYPE_POINTER_MOVE);
+        move_event->pointer.button = FT_POINTER_BUTTON_NONE;
+        move_event->pointer.position.x = pos.x;
+        move_event->pointer.position.y = pos.y;
+
+        ft_application_post_event(app, move_event);
+    }
+
     // Check difference.
     if (view != app->_pointer_view) {
         ft_event_t *enter_event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
