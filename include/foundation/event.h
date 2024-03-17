@@ -24,13 +24,18 @@ typedef enum ft_event_type {
     FT_EVENT_TYPE_REQUEST_UPDATE,
 } ft_event_type;
 
+typedef struct ft_event_t ft_event_t;
+
+typedef struct ft_event_listener_tuple_t {
+    ft_event_type type;
+    void (*listener)(ft_event_t*);
+} ft_event_listener_tuple_t;
+
 typedef struct ft_pointer_event_t {
     ft_pointer_button button;
     ft_point_t position;
 } ft_pointer_event_t;
 
-
-typedef struct ft_event_t ft_event_t;
 struct ft_event_t {
     ft_event_target_type target_type;
     void *target;
@@ -63,6 +68,16 @@ ft_event_t* ft_pointer_event_new(ft_event_target_type target_type,
                                  const ft_point_t *position);
 
 ft_pointer_button ft_pointer_event_button(ft_pointer_event_t *event);
+
+//!<=====================
+//!< Event Listener
+//!<=====================
+
+ft_event_listener_tuple_t*
+ft_event_listener_tuple_new(ft_event_type type,
+                            void (*listener)(ft_event_t*));
+
+void ft_event_listener_tuple_free(ft_event_listener_tuple_t *tuple);
 
 #ifdef __cplusplus
 }

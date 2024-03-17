@@ -56,6 +56,28 @@ ft_event_t* ft_pointer_event_new(ft_event_target_type target_type,
     return event;
 }
 
+//!<=====================
+//!< Event Listener
+//!<=====================
+
+ft_event_listener_tuple_t*
+ft_event_listener_tuple_new(ft_event_type type,
+                            void (*listener)(ft_event_t*))
+{
+    ft_event_listener_tuple_t *tuple = malloc(
+        sizeof(ft_event_listener_tuple_t));
+
+    tuple->type = type;
+    tuple->listener = listener;
+
+    return tuple;
+}
+
+void ft_event_listener_tuple_free(ft_event_listener_tuple_t *tuple)
+{
+    free(tuple);
+}
+
 #ifdef __cplusplus
 }
 #endif

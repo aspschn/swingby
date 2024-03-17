@@ -17,6 +17,8 @@ void* ft_list_at(ft_list_t *list, uint64_t index);
 
 uint64_t ft_list_length(ft_list_t *list);
 
+void* ft_list_remove(ft_list_t *list, uint64_t index);
+
 void ft_list_free(ft_list_t *list);
 
 #ifdef __cplusplus

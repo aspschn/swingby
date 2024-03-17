@@ -4,6 +4,7 @@
 #include <foundation/rect.h>
 #include <foundation/surface.h>
 #include <foundation/color.h>
+#include <foundation/event.h>
 
 typedef struct ft_list_t ft_list_t;
 typedef struct ft_event_t ft_event_t;
@@ -25,6 +26,10 @@ ft_view_t* ft_view_child_at(ft_view_t *view, const ft_point_t *position);
 ft_view_t* ft_view_parent(ft_view_t *view);
 
 void ft_view_set_color(ft_view_t *view, const ft_color_t *color);
+
+void ft_view_add_event_listener(ft_view_t *view,
+                                ft_event_type event_type,
+                                void (*listener)(ft_event_t*));
 
 //!<====================
 //!< Event Handlers

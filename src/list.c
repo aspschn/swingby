@@ -47,6 +47,19 @@ uint64_t ft_list_length(ft_list_t *list)
     return list->length;
 }
 
+void* ft_list_remove(ft_list_t *list, uint64_t index)
+{
+    void *item = list->data[index];
+
+    for (uint64_t i = index; i < list->length - 1; ++i) {
+        list->data[i] = list->data[i + 1];
+    }
+
+    list->length -= 1;
+
+    return item;
+}
+
 #ifdef __cplusplus
 }
 #endif
