@@ -100,7 +100,7 @@ void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface)
     ft_surface_attach(desktop_surface->_surface);
 
     // TEST
-    ft_surface_on_request_update(desktop_surface->_surface);
+    // ft_surface_on_request_update(desktop_surface->_surface);
 }
 
 void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface)

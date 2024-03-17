@@ -1,5 +1,6 @@
 #include <foundation/surface.h>
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include <wayland-client.h>
@@ -15,6 +16,7 @@
 #include <foundation/egl-context.h>
 #include <foundation/view.h>
 #include <foundation/list.h>
+#include <foundation/event.h>
 #include "shaders.h"
 
 struct ft_surface_t {
@@ -24,6 +26,7 @@ struct ft_surface_t {
     ft_egl_context_t *_egl_context;
     ft_size_t _size;
     ft_view_t *_root_view;
+    bool updated;
     struct wl_callback *frame_callback;
 };
 
@@ -205,6 +208,14 @@ static void _draw_recursive(GLuint program,
     }
 }
 
+void _add_frame_callback(ft_surface_t *surface)
+{
+    surface->frame_callback = wl_surface_frame(surface->_wl_surface);
+    wl_callback_add_listener(surface->frame_callback, &callback_listener,
+        (void*)surface);
+    ft_log_debug(" = frame_callback now %p\n", surface->frame_callback);
+}
+
 //!<===============
 //!< Surface
 //!<===============
@@ -215,6 +226,7 @@ ft_surface_t* ft_surface_new()
 
     surface->_size.width = 200.0f;
     surface->_size.height = 200.0f;
+    surface->updated = false;
 
     ft_application_t *app = ft_application_instance();
 
@@ -305,6 +317,18 @@ void ft_surface_detach(ft_surface_t *surface)
     wl_surface_commit(surface->_wl_surface);
 }
 
+void ft_surface_update(ft_surface_t *surface)
+{
+    surface->updated = false;
+
+    _add_frame_callback(surface);
+
+    // Post request update event.
+    ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_SURFACE,
+        (void*)surface, FT_EVENT_TYPE_REQUEST_UPDATE);
+    ft_application_post_event(ft_application_instance(), event);
+}
+
 void ft_surface_on_pointer_enter(ft_surface_t *surface, ft_event_t *event)
 {
     //
@@ -350,6 +374,9 @@ void ft_surface_on_request_update(ft_surface_t *surface)
     _draw_recursive(program, surface->_root_view, vao, ebo, vbo);
 
     eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
+
+    // Set updated flag to true.
+    surface->updated = true;
 }
 
 struct wl_surface* ft_surface_wl_surface(ft_surface_t *surface)
@@ -366,9 +393,15 @@ static void callback_done_handler(void *data,
                                   uint32_t time)
 {
     ft_surface_t *surface = (ft_surface_t*)data;
+    ft_log_debug("callback_done_handler() %p %p\n",
+                 wl_callback, surface->frame_callback);
+
+    // Post request update event.
+    if (surface->updated == false) {
+        ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_SURFACE,
+            (void*)surface, FT_EVENT_TYPE_REQUEST_UPDATE);
+        ft_application_post_event(ft_application_instance(), event);
+    }
 
     wl_callback_destroy(wl_callback);
-    surface->frame_callback = wl_surface_frame(surface->_wl_surface);
-    wl_callback_add_listener(surface->frame_callback, &callback_listener,
-        (void*)surface);
 }

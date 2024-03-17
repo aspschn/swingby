@@ -8,6 +8,12 @@ void on_click(ft_event_t *event)
         event->pointer.position.x,
         event->pointer.position.y
     );
+
+    const ft_color_t *color = ft_view_color(event->target);
+    ft_color_t new_color = *color;
+    new_color.r += 100;
+    new_color.b += 50;
+    ft_view_set_color(event->target, &new_color);
 }
 
 int main(int argc, char *argv[])
@@ -32,7 +38,7 @@ int main(int argc, char *argv[])
     color.g = 255;
     ft_view_set_color(child_view, &color);
 
-    fprintf(stderr, "Click the green rectangle and see the message.\n");
+    fprintf(stderr, "Click the smallest rectangle and see the change.\n");
 
     ft_view_add_event_listener(child_view,
         FT_EVENT_TYPE_POINTER_CLICK, on_click);

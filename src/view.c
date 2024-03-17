@@ -55,7 +55,10 @@ ft_view_t* ft_view_new(ft_view_t *parent, const ft_rect_t *geometry)
     view->event_listeners = ft_list_new();
 
     if (parent != NULL) {
+        // Append the new view to the child list of the parent view.
         ft_list_push(parent->_children, (void*)view);
+        // Inherit parent's surface.
+        view->_surface = parent->_surface;
     }
 
     return view;
@@ -110,7 +113,10 @@ ft_view_t* ft_view_parent(ft_view_t *view)
 
 void ft_view_set_color(ft_view_t *view, const ft_color_t *color)
 {
+    // TODO: Equality check.
     view->_color = *color;
+
+    ft_surface_update(view->_surface);
 }
 
 void ft_view_add_event_listener(ft_view_t *view,
@@ -124,7 +130,7 @@ void ft_view_add_event_listener(ft_view_t *view,
 
 void ft_view_on_pointer_move(ft_view_t *view, ft_event_t *event)
 {
-    ft_log_debug("ft_view_on_pointer_move() - (%f, %f)\n", event->pointer.position.x, event->pointer.position.y);
+    // ft_log_debug("ft_view_on_pointer_move() - (%f, %f)\n", event->pointer.position.x, event->pointer.position.y);
 
     _event_listener_filter_for_each(view->event_listeners,
         FT_EVENT_TYPE_POINTER_MOVE, event);
