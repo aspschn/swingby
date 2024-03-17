@@ -24,7 +24,24 @@ struct ft_surface_t {
     ft_egl_context_t *_egl_context;
     ft_size_t _size;
     ft_view_t *_root_view;
+    struct wl_callback *frame_callback;
 };
+
+//!<===============
+//!< Callback
+//!<===============
+
+static void callback_done_handler(void *data,
+                                  struct wl_callback *wl_callback,
+                                  uint32_t time);
+
+static const struct wl_callback_listener callback_listener = {
+    .done = callback_done_handler,
+};
+
+//!<======================
+//!< Helper Functions
+//!<======================
 
 void _gl_init(ft_surface_t *surface)
 {
@@ -173,6 +190,10 @@ static void _draw_recursive(GLuint program,
     }
 }
 
+//!<===============
+//!< Surface
+//!<===============
+
 ft_surface_t* ft_surface_new()
 {
     ft_surface_t *surface = malloc(sizeof(ft_surface_t));
@@ -182,15 +203,24 @@ ft_surface_t* ft_surface_new()
 
     ft_application_t *app = ft_application_instance();
 
+    // Create wl_surface.
     surface->_wl_surface = wl_compositor_create_surface(
         ft_application_wl_compositor(app));
 
+    // Frame callback.
+    surface->frame_callback = wl_surface_frame(surface->_wl_surface);
+    wl_callback_add_listener(surface->frame_callback, &callback_listener,
+        (void*)surface);
+
+    // Initialize EGL context.
     surface->_egl_context = ft_egl_context_new();
 
+    // Create wl_egl_window.
     surface->_wl_egl_window = wl_egl_window_create(surface->_wl_surface,
        surface->_size.width,
        surface->_size.height);
 
+    // Create EGL surface.
     surface->_egl_surface = eglCreateWindowSurface(
         surface->_egl_context->egl_display,
         surface->_egl_context->egl_config,
@@ -310,4 +340,20 @@ void ft_surface_on_request_update(ft_surface_t *surface)
 struct wl_surface* ft_surface_wl_surface(ft_surface_t *surface)
 {
     return surface->_wl_surface;
+}
+
+//!<=================
+//!< Callback
+//!<=================
+
+static void callback_done_handler(void *data,
+                                  struct wl_callback *wl_callback,
+                                  uint32_t time)
+{
+    ft_surface_t *surface = (ft_surface_t*)data;
+
+    wl_callback_destroy(wl_callback);
+    surface->frame_callback = wl_surface_frame(surface->_wl_surface);
+    wl_callback_add_listener(surface->frame_callback, &callback_listener,
+        (void*)surface);
 }
