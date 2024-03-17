@@ -1,8 +1,8 @@
-add_subdirectory(application)
-add_subdirectory(surface)
-add_subdirectory(desktop-surface)
-add_subdirectory(views)
-add_subdirectory(event-listener)
+add_subdirectory(00_application)
+add_subdirectory(01_surface)
+add_subdirectory(02_desktop-surface)
+add_subdirectory(03_views)
+add_subdirectory(04_event-listener)
 
 add_custom_target(example)
 
