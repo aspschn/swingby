@@ -60,6 +60,7 @@ void _gl_init(ft_surface_t *surface)
     // eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
 }
 
+/// \brief Compile shader source and returns the shader object.
 static GLuint _load_shader(const char *shader_source, GLuint type)
 {
     GLuint shader;
@@ -93,6 +94,13 @@ static GLuint _load_shader(const char *shader_source, GLuint type)
     return shader;
 }
 
+/// \brief Calculate points used in the vertex shader based on the rect.
+///
+/// The vertex shader requires four points (top-left, bottom-left,
+/// bottom-right, top-right).
+/// This function calculate that points in a display coordinate. Then the
+/// vertex shader converts each point to the OpenGL coordinate (from -1.0 to
+/// 1.0).
 static void _calc_points(const ft_rect_t *rect, float *points)
 {
     float x = rect->pos.x;
@@ -114,6 +122,12 @@ static void _calc_points(const ft_rect_t *rect, float *points)
     points[10] = y;
 }
 
+/// \brief Set the uniform variable `resolution`.
+///
+/// Uniform `resolution` used in the vertex shader to calculate OpenGL
+/// coordinate.
+///
+/// The `resolution` should be same as surface's width and height.
 static void _set_uniform_resolution(GLuint program, const ft_size_t *resolution)
 {
     GLuint location = glGetUniformLocation(program, "resolution");
@@ -121,6 +135,7 @@ static void _set_uniform_resolution(GLuint program, const ft_size_t *resolution)
     glUniform2fv(location, 1, resolution_u);
 }
 
+/// \brief Set the uniform variable `color`.
 static void _set_uniform_color(GLuint program, const ft_color_t *color)
 {
     GLuint location = glGetUniformLocation(program, "color");
