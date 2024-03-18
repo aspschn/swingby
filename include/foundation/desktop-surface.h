@@ -8,6 +8,18 @@ typedef enum ft_desktop_surface_role {
     FT_DESKTOP_SURFACE_ROLE_POPUP,
 } ft_desktop_surface_role;
 
+typedef enum ft_desktop_surface_toplevel_resize_edge {
+    FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_NONE            = 0,
+    FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP             = 1,
+    FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM          = 2,
+    FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_LEFT            = 4,
+    FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_LEFT        = 5,
+    FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT     = 6,
+    FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_RIGHT           = 8,
+    FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT       = 9,
+    FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT    = 10,
+} ft_desktop_surface_toplevel_resize_edge;
+
 typedef struct ft_desktop_surface_t ft_desktop_surface_t;
 
 ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role);
@@ -19,5 +31,10 @@ ft_desktop_surface_surface(ft_desktop_surface_t *desktop_surface);
 void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface);
 
 void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface);
+
+void ft_desktop_surface_toplevel_move(ft_desktop_surface_t *desktop_surface);
+
+void ft_desktop_surface_toplevel_resize(ft_desktop_surface_t *desktop_surface,
+    ft_desktop_surface_toplevel_resize_edge edge);
 
 #endif /* _FOUNDATION_DESKTOP_SURFACE_H */

@@ -25,6 +25,8 @@ void ft_application_register_desktop_surface(ft_application_t *application,
 void ft_application_unregister_desktop_surface(ft_application_t *application,
     ft_desktop_surface_t *desktop_surface);
 
+uint32_t ft_application_pointer_button_serial(ft_application_t *application);
+
 void ft_application_post_event(ft_application_t *application,
                                ft_event_t *event);
 
@@ -39,6 +41,9 @@ struct wl_compositor* ft_application_wl_compositor(
 /// \brief Get the `struct xdg_wm_base` of the application.
 struct xdg_wm_base* ft_application_xdg_wm_base(
     ft_application_t *application);
+
+/// \brief Get the `struct wl_seat` of the application.
+struct wl_seat* ft_application_wl_seat(ft_application_t *application);
 
 int ft_application_exec(ft_application_t *application);
 

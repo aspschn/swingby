@@ -116,6 +116,60 @@ void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface)
     ft_surface_detach(desktop_surface->_surface);
 }
 
+void ft_desktop_surface_toplevel_move(ft_desktop_surface_t *desktop_surface)
+{
+    ft_application_t *app = ft_application_instance();
+
+    xdg_toplevel_move(desktop_surface->_xdg_toplevel,
+        ft_application_wl_seat(app),
+        ft_application_pointer_button_serial(app));
+}
+
+void ft_desktop_surface_toplevel_resize(ft_desktop_surface_t *desktop_surface,
+    ft_desktop_surface_toplevel_resize_edge edge)
+{
+    ft_application_t *app = ft_application_instance();
+
+    enum xdg_toplevel_resize_edge resize_edge = 0;
+    switch (edge) {
+    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_NONE:
+        resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+        break;
+    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP:
+        resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_TOP;
+        break;
+    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM:
+        resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM;
+        break;
+    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_LEFT:
+        resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_LEFT;
+        break;
+    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_LEFT:
+        resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
+        break;
+    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT:
+        resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT;
+        break;
+    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_RIGHT:
+        resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_RIGHT;
+        break;
+    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT:
+        resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
+        break;
+    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT:
+        resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT;
+        break;
+    default:
+        resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+        break;
+    }
+
+    xdg_toplevel_resize(desktop_surface->_xdg_toplevel,
+        ft_application_wl_seat(app),
+        ft_application_pointer_button_serial(app),
+        resize_edge);
+}
+
 
 static void xdg_surface_configure_handler(void *data,
                                           struct xdg_surface *xdg_surface,

@@ -74,6 +74,14 @@ const ft_rect_t* ft_view_geometry(ft_view_t *view)
     return &view->_geometry;
 }
 
+void ft_view_set_geometry(ft_view_t *view, const ft_rect_t *geometry)
+{
+    // TODO: Equality check.
+    view->_geometry = *geometry;
+
+    ft_surface_update(view->_surface);
+}
+
 const ft_color_t* ft_view_color(ft_view_t *view)
 {
     return &view->_color;

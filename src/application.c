@@ -44,6 +44,8 @@ struct ft_application_t {
     /// Pointer button and axis event not pass the position.
     /// Store this information when pointer moved.
     ft_point_t _pointer_pos;
+    /// \brief Pointer button event serial.
+    uint32_t pointer_button_serial;
     /// \brief Click event information.
     struct {
         ft_view_t *view;
@@ -272,6 +274,11 @@ ft_application_t* ft_application_instance()
     return _ft_application_instance;
 }
 
+uint32_t ft_application_pointer_button_serial(ft_application_t *application)
+{
+    return application->pointer_button_serial;
+}
+
 void ft_application_post_event(ft_application_t *application,
                                ft_event_t *event)
 {
@@ -305,6 +312,11 @@ struct wl_compositor* ft_application_wl_compositor(
 struct xdg_wm_base* ft_application_xdg_wm_base(ft_application_t *application)
 {
     return application->_xdg_wm_base;
+}
+
+struct wl_seat* ft_application_wl_seat(ft_application_t *application)
+{
+    return application->_wl_seat;
 }
 
 int ft_application_exec(ft_application_t *application)
@@ -482,6 +494,8 @@ static void pointer_button_handler(void *data,
                                    uint32_t state)
 {
     ft_application_t *app = (ft_application_t*)data;
+
+    app->pointer_button_serial = serial;
 
     float x = app->_pointer_pos.x;
     float y = app->_pointer_pos.y;
