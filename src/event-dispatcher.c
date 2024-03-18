@@ -139,6 +139,9 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
             case FT_EVENT_TYPE_REQUEST_UPDATE:
                 ft_surface_on_request_update(event->target);
                 break;
+            case FT_EVENT_TYPE_RESIZE:
+                ft_surface_on_resize(event->target, event);
+                break;
             default:
                 break;
             }
@@ -148,7 +151,9 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
                 ft_log_debug("View pointer enter: (%f, %f) view: %p\n",
                     event->pointer.position.x, event->pointer.position.y,
                     event->target);
+                ft_view_on_pointer_enter(event->target, event);
             case FT_EVENT_TYPE_POINTER_LEAVE:
+                ft_view_on_pointer_leave(event->target, event);
                 break;
             case FT_EVENT_TYPE_POINTER_MOVE:
                 ft_view_on_pointer_move(event->target, event);

@@ -20,7 +20,7 @@ struct ft_view_t {
 //!< Helper Functions
 //!<====================
 
-void _event_listener_filter_for_each(ft_list_t *listeners,
+static void _event_listener_filter_for_each(ft_list_t *listeners,
                                      ft_event_type type,
                                      ft_event_t *event)
 {
@@ -134,6 +134,18 @@ void ft_view_add_event_listener(ft_view_t *view,
     ft_event_listener_tuple_t *tuple = ft_event_listener_tuple_new(
         event_type, listener);
     ft_list_push(view->event_listeners, (void*)tuple);
+}
+
+void ft_view_on_pointer_enter(ft_view_t *view, ft_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        FT_EVENT_TYPE_POINTER_ENTER, event);
+}
+
+void ft_view_on_pointer_leave(ft_view_t *view, ft_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        FT_EVENT_TYPE_POINTER_LEAVE, event);
 }
 
 void ft_view_on_pointer_move(ft_view_t *view, ft_event_t *event)

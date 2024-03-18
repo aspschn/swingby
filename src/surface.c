@@ -31,6 +31,7 @@ struct ft_surface_t {
     ft_view_t *_root_view;
     bool updated;
     struct wl_callback *frame_callback;
+    ft_list_t *event_listeners;
 };
 
 //!<===============
@@ -219,6 +220,19 @@ void _add_frame_callback(ft_surface_t *surface)
     // ft_log_debug(" = frame_callback now %p\n", surface->frame_callback);
 }
 
+static void _event_listener_filter_for_each(ft_list_t *listeners,
+                                     ft_event_type type,
+                                     ft_event_t *event)
+{
+    uint64_t length = ft_list_length(listeners);
+    for (uint64_t i = 0; i < length; ++i) {
+        ft_event_listener_tuple_t *tuple = ft_list_at(listeners, i);
+        if (tuple->type == type) {
+            tuple->listener(event);
+        }
+    }
+}
+
 //!<===============
 //!< Surface
 //!<===============
@@ -265,6 +279,9 @@ ft_surface_t* ft_surface_new()
     geo.size.height = surface->_size.height;
     surface->_root_view = ft_view_new(NULL, &geo);
     ft_view_set_surface(surface->_root_view, surface);
+
+    // Event listeners.
+    surface->event_listeners = ft_list_new();
 
     ft_log_debug("ft_surface_new() - surface: %p\n", surface);
     ft_log_debug("ft_surface_new() - root_view: %p\n", surface->_root_view);
@@ -357,9 +374,25 @@ void ft_surface_update(ft_surface_t *surface)
     ft_bench_end(bench);
 }
 
+void ft_surface_add_event_listener(ft_surface_t *surface,
+                                   ft_event_type event_type,
+                                   void (*listener)(ft_event_t*))
+{
+    ft_event_listener_tuple_t *tuple = ft_event_listener_tuple_new(
+        event_type, listener);
+    ft_list_push(surface->event_listeners, (void*)tuple);
+}
+
 void ft_surface_on_pointer_enter(ft_surface_t *surface, ft_event_t *event)
 {
-    //
+    _event_listener_filter_for_each(surface->event_listeners,
+        FT_EVENT_TYPE_POINTER_ENTER, event);
+}
+
+void ft_surface_on_pointer_leave(ft_surface_t *surface, ft_event_t *event)
+{
+    _event_listener_filter_for_each(surface->event_listeners,
+        FT_EVENT_TYPE_POINTER_LEAVE, event);
 }
 
 void ft_surface_on_request_update(ft_surface_t *surface)
@@ -414,7 +447,8 @@ void ft_surface_on_request_update(ft_surface_t *surface)
 
 void ft_surface_on_resize(ft_surface_t *surface, ft_event_t *event)
 {
-    //
+    _event_listener_filter_for_each(surface->event_listeners,
+        FT_EVENT_TYPE_RESIZE, event);
 }
 
 struct wl_surface* ft_surface_wl_surface(ft_surface_t *surface)
