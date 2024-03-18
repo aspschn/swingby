@@ -36,6 +36,8 @@ void ft_surface_on_pointer_enter(ft_surface_t *surface, ft_event_t *event);
 
 void ft_surface_on_request_update(ft_surface_t *surface);
 
+void ft_surface_on_resize(ft_surface_t *surface, ft_event_t *event);
+
 struct wl_surface* ft_surface_wl_surface(ft_surface_t *surface);
 
 #endif /* _FOUNDATION_SURFACE_H */

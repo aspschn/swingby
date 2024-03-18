@@ -284,6 +284,27 @@ void ft_surface_set_size(ft_surface_t *surface, const ft_size_t *size)
     surface->_size.width = size->width;
     surface->_size.height = size->height;
 
+    // Set the root view's size.
+    ft_rect_t new_geo;
+    new_geo.pos.x = 0;
+    new_geo.pos.y = 0;
+    new_geo.size.width = size->width;
+    new_geo.size.height = size->height;
+    ft_view_set_geometry(surface->_root_view, &new_geo);
+
+    // Create event.
+    ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_SURFACE,
+        (void*)surface,
+        FT_EVENT_TYPE_RESIZE);
+    event->resize.old_size = *ft_surface_size(surface);
+    event->resize.size.width = size->width;
+    event->resize.size.height = size->height;
+
+    // Post the event.
+    ft_application_post_event(ft_application_instance(), event);
+
+    ft_surface_update(surface);
+
     wl_egl_window_resize(surface->_wl_egl_window, size->width, size->height,
         0, 0);
 }
@@ -319,14 +340,17 @@ void ft_surface_detach(ft_surface_t *surface)
 
 void ft_surface_update(ft_surface_t *surface)
 {
+    bool prev_updated = surface->updated;
     surface->updated = false;
 
-    _add_frame_callback(surface);
+    if (prev_updated == true) {
+        _add_frame_callback(surface);
 
-    // Post request update event.
-    ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_SURFACE,
-        (void*)surface, FT_EVENT_TYPE_REQUEST_UPDATE);
-    ft_application_post_event(ft_application_instance(), event);
+        // Post request update event.
+        ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_SURFACE,
+                                         (void*)surface, FT_EVENT_TYPE_REQUEST_UPDATE);
+        ft_application_post_event(ft_application_instance(), event);
+    }
 }
 
 void ft_surface_on_pointer_enter(ft_surface_t *surface, ft_event_t *event)
@@ -336,6 +360,8 @@ void ft_surface_on_pointer_enter(ft_surface_t *surface, ft_event_t *event)
 
 void ft_surface_on_request_update(ft_surface_t *surface)
 {
+    _gl_init(surface);
+
     // Create program.
     GLuint program = glCreateProgram();
 
@@ -377,6 +403,11 @@ void ft_surface_on_request_update(ft_surface_t *surface)
 
     // Set updated flag to true.
     surface->updated = true;
+}
+
+void ft_surface_on_resize(ft_surface_t *surface, ft_event_t *event)
+{
+    //
 }
 
 struct wl_surface* ft_surface_wl_surface(ft_surface_t *surface)

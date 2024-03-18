@@ -4,8 +4,10 @@
 
 #include <wayland-protocols/stable/xdg-shell.h>
 
+#include <foundation/log.h>
 #include <foundation/surface.h>
 #include <foundation/application.h>
+#include <foundation/event.h>
 
 struct ft_desktop_surface_t {
     ft_surface_t *_surface;
@@ -89,7 +91,7 @@ void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface)
     if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
         desktop_surface->_xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
         xdg_toplevel_add_listener(desktop_surface->_xdg_toplevel,
-            &xdg_toplevel_listener, NULL);
+            &xdg_toplevel_listener, (void*)desktop_surface);
     } else if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_POPUP) {
         //
     }
@@ -170,6 +172,9 @@ void ft_desktop_surface_toplevel_resize(ft_desktop_surface_t *desktop_surface,
         resize_edge);
 }
 
+//!<===================
+//!< XDG Surface
+//!<===================
 
 static void xdg_surface_configure_handler(void *data,
                                           struct xdg_surface *xdg_surface,
@@ -178,6 +183,9 @@ static void xdg_surface_configure_handler(void *data,
     xdg_surface_ack_configure(xdg_surface, serial);
 }
 
+//!<===================
+//!< XDG Toplevel
+//!<===================
 
 static void xdg_toplevel_configure_handler(void *data,
                                            struct xdg_toplevel *xdg_toplevel,
@@ -185,7 +193,28 @@ static void xdg_toplevel_configure_handler(void *data,
                                            int32_t height,
                                            struct wl_array *states)
 {
-    //
+    ft_desktop_surface_t *desktop_surface = (ft_desktop_surface_t*)data;
+    // ft_application_t *app = ft_application_instance();
+
+    void *it;
+    wl_array_for_each(it, states) {
+        enum xdg_toplevel_state state = *(enum xdg_toplevel_state*)it;
+        switch (state) {
+        case XDG_TOPLEVEL_STATE_RESIZING:
+        {
+            ft_surface_t *surface = desktop_surface->_surface;
+
+            ft_size_t new_size;
+            new_size.width = width;
+            new_size.height = height;
+            ft_surface_set_size(surface, &new_size);
+
+            break;
+        }
+        default:
+            break;
+        }
+    }
 }
 
 static void xdg_toplevel_close_handler(void *data,

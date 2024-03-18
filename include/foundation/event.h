@@ -3,6 +3,7 @@
 
 #include <foundation/input.h>
 #include <foundation/point.h>
+#include <foundation/size.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,6 +23,8 @@ typedef enum ft_event_type {
     FT_EVENT_TYPE_POINTER_RELEASE,
     FT_EVENT_TYPE_POINTER_CLICK,
     FT_EVENT_TYPE_REQUEST_UPDATE,
+    FT_EVENT_TYPE_MOVE,
+    FT_EVENT_TYPE_RESIZE,
 } ft_event_type;
 
 typedef struct ft_event_t ft_event_t;
@@ -36,12 +39,24 @@ typedef struct ft_pointer_event_t {
     ft_point_t position;
 } ft_pointer_event_t;
 
+typedef struct ft_move_event_t {
+    ft_point_t old_position;
+    ft_point_t position;
+} ft_move_event_t;
+
+typedef struct ft_resize_event_t {
+    ft_size_t old_size;
+    ft_size_t size;
+} ft_resize_event_t;
+
 struct ft_event_t {
     ft_event_target_type target_type;
     void *target;
     ft_event_type type;
     union {
         ft_pointer_event_t pointer;
+        ft_move_event_t move;
+        ft_resize_event_t resize;
     };
 };
 
