@@ -11,6 +11,7 @@ set(WAYLAND_PROTOCOLS_SOURCES
 
 set(FOUNDATION_SOURCES
     include/foundation/log.h
+    include/foundation/bench.h
     include/foundation/list.h
     include/foundation/point.h
     include/foundation/size.h
@@ -26,6 +27,7 @@ set(FOUNDATION_SOURCES
     include/foundation/event-dispatcher.h
     include/foundation/foundation.h
     src/log.c
+    src/bench.c
     src/list.c
     src/rect.c
     src/color.c
