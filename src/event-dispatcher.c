@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include <foundation/log.h>
+#include <foundation/bench.h>
 #include <foundation/event.h>
 #include <foundation/view.h>
 
@@ -120,6 +121,8 @@ void ft_event_dispatcher_post_event(ft_event_dispatcher_t *event_dispatcher,
 void
 ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
 {
+    ft_bench_t *bench = ft_bench_new("ft_event_dispatcher_process_events");
+
     while (event_dispatcher->queue->length != 0) {
         ft_event_t *event = (ft_event_t*)ft_queue_dequeue(
             event_dispatcher->queue);
@@ -168,6 +171,8 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
             }
         }
     }
+
+    ft_bench_end(bench);
 }
 
 #ifdef __cplusplus
