@@ -21,6 +21,7 @@ set(FOUNDATION_SOURCES
     include/foundation/surface.h
     include/foundation/desktop-surface.h
     include/foundation/view.h
+    include/foundation/image.h
     include/foundation/egl-context.h
     include/foundation/input.h
     include/foundation/cursor.h
@@ -36,6 +37,7 @@ set(FOUNDATION_SOURCES
     src/surface.c
     src/desktop-surface.c
     src/view.c
+    src/image.c
     src/egl-context.c
     src/cursor.c
     src/event.c
