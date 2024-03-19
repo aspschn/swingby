@@ -16,6 +16,7 @@
 #include <foundation/view.h>
 #include <foundation/list.h>
 #include <foundation/input.h>
+#include <foundation/cursor.h>
 #include <foundation/event.h>
 #include <foundation/event-dispatcher.h>
 
@@ -46,6 +47,10 @@ struct ft_application_t {
     ft_point_t _pointer_pos;
     /// \brief Pointer button event serial.
     uint32_t pointer_button_serial;
+    /// \brief Pointer enter event information.
+    struct {
+        uint32_t serial;
+    } enter;
     /// \brief Click event information.
     struct {
         ft_view_t *view;
@@ -53,6 +58,9 @@ struct ft_application_t {
     } click;
     /// \brief List of the desktop surfaces.
     ft_list_t *_desktop_surfaces;
+    /// \brief Default cursor when view not set cursor.
+    ft_cursor_t *cursor;
+    /// \brief An event dispatcher.
     ft_event_dispatcher_t *_event_dispatcher;
 };
 
@@ -264,6 +272,8 @@ ft_application_t* ft_application_new(int argc, char *argv[])
     // Event dispatcher.
     app->_event_dispatcher = ft_event_dispatcher_new();
 
+    app->cursor = NULL;
+
     _ft_application_instance = app;
 
     return app;
@@ -387,6 +397,22 @@ static void pointer_enter_handler(void *data,
     ft_application_t *app = (ft_application_t*)data;
 
     app->_pointer_surface = wl_surface;
+
+    // Set the serial.
+    app->enter.serial = serial;
+
+    // TEST cursor.
+    // Set default cursor.
+    if (app->cursor == NULL) {
+        ft_point_t hot_spot;
+        hot_spot.x = 0;
+        hot_spot.y = 0;
+        app->cursor = ft_cursor_new(FT_CURSOR_SHAPE_ARROW, &hot_spot);
+
+        ft_surface_t *cursor_surface = ft_cursor_surface(app->cursor);
+        wl_pointer_set_cursor(wl_pointer,
+            serial, ft_surface_wl_surface(cursor_surface), 0, 0);
+    }
 
     float x = wl_fixed_to_double(sx);
     float y = wl_fixed_to_double(sy);
