@@ -11,11 +11,11 @@ extern "C" {
 
 struct ft_image_t {
     ft_size_i_t size;
-    ft_image_format format;
+    enum ft_image_format format;
     void *data;
 };
 
-ft_image_t* ft_image_new(const ft_size_i_t *size, ft_image_format format)
+ft_image_t* ft_image_new(const ft_size_i_t *size, enum ft_image_format format)
 {
     ft_image_t *image = malloc(sizeof(ft_image_t));
 
@@ -36,7 +36,7 @@ const ft_size_i_t* ft_image_size(ft_image_t *image)
     return &image->size;
 }
 
-ft_image_format ft_image_image_format(ft_image_t *image)
+enum ft_image_format ft_image_image_format(ft_image_t *image)
 {
     return image->format;
 }
