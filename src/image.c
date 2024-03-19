@@ -26,7 +26,7 @@ ft_image_t* ft_image_new(const ft_size_i_t *size, enum ft_image_format format)
     image->format = format;
 
     image->data = malloc(
-        sizeof(uint8_t) * (image->size.width * image->size.height));
+        sizeof(uint32_t) * (image->size.width * image->size.height));
 
     return image;
 }

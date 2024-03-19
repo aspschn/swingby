@@ -1,8 +1,11 @@
 #version 460 core
 
 layout (location = 0) in vec2 point;
+layout (location = 1) in vec2 vTexCoord;
 
 uniform vec2 resolution;
+
+out vec2 texCoord;
 
 vec2 calculateCoord(vec2 point)
 {
@@ -24,4 +27,5 @@ vec2 calculateCoord(vec2 point)
 void main()
 {
     gl_Position = vec4(calculateCoord(point), 0.0, 1.0);
+    texCoord = vTexCoord;
 }

@@ -18,6 +18,7 @@
 #include <foundation/application.h>
 #include <foundation/egl-context.h>
 #include <foundation/view.h>
+#include <foundation/image.h>
 #include <foundation/list.h>
 #include <foundation/event.h>
 #include "shaders.h"
@@ -30,6 +31,11 @@ struct ft_surface_t {
     ft_size_t _size;
     ft_view_t *_root_view;
     bool updated;
+    /// \brief Program objects for OpenGL.
+    struct {
+        GLuint color;
+        GLuint texture;
+    } programs;
     struct wl_callback *frame_callback;
     ft_list_t *event_listeners;
 };
@@ -155,13 +161,85 @@ static void _set_uniform_color(GLuint program, const ft_color_t *color)
     glUniform4fv(location, 1, color_u);
 }
 
-static void _draw_recursive(GLuint program,
-                            ft_view_t *view,
-                            GLuint vao,
-                            GLuint ebo,
-                            GLuint vbo)
+static void _set_uniform_textureIn(GLuint program, ft_image_t *image)
 {
-    _set_uniform_color(program, ft_view_color(view));
+    ft_log_debug("_set_uniform_textureIn() - %ldx%ld\n",
+                 ft_image_size(image)->width, ft_image_size(image)->height);
+
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+        GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        ft_image_size(image)->width,
+        ft_image_size(image)->height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        ft_image_data(image)
+    );
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture);
+}
+
+static void _draw_recursive(ft_surface_t *surface,
+                            ft_view_t *view)
+{
+    enum ft_view_fill_type fill_type = ft_view_fill_type(view);
+
+    // Create program if not created.
+    if (fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR &&
+        surface->programs.color == 0) {
+        // Create program object.
+        surface->programs.color = glCreateProgram();
+
+        // Create shaders.
+        GLuint vert_shader = _load_shader(rect_vert_shader, GL_VERTEX_SHADER);
+        GLuint frag_shader = _load_shader(color_frag_shader,
+            GL_FRAGMENT_SHADER);
+
+        // Attach shaders.
+        glAttachShader(surface->programs.color, vert_shader);
+        glAttachShader(surface->programs.color, frag_shader);
+    }
+    if (fill_type == FT_VIEW_FILL_TYPE_IMAGE &&
+        surface->programs.texture == 0) {
+        // Create program object.
+        surface->programs.texture = glCreateProgram();
+
+        // Create shaders.
+        GLuint vert_shader = _load_shader(rect_vert_shader, GL_VERTEX_SHADER);
+        GLuint frag_shader = _load_shader(texture_frag_shader,
+            GL_FRAGMENT_SHADER);
+
+        // Attach shaders.
+        glAttachShader(surface->programs.texture, vert_shader);
+        glAttachShader(surface->programs.texture, frag_shader);
+    }
+
+    if (fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR) {
+        glLinkProgram(surface->programs.color);
+        glUseProgram(surface->programs.color);
+
+        // Set uniforms.
+        _set_uniform_resolution(surface->programs.color, &surface->_size);
+        _set_uniform_color(surface->programs.color, ft_view_color(view));
+    } else if (fill_type == FT_VIEW_FILL_TYPE_IMAGE) {
+        glLinkProgram(surface->programs.texture);
+        glUseProgram(surface->programs.texture);
+
+        // Set uniforms.
+        _set_uniform_resolution(surface->programs.texture, &surface->_size);
+        _set_uniform_textureIn(surface->programs.texture,
+            ft_view_image(view));
+    }
 
     // Set coordinates.
     float vertices[] = {
@@ -185,6 +263,25 @@ static void _draw_recursive(GLuint program,
         1, 2, 3,
     };
 
+    float tex_coord[] = {
+        0.0f, 1.0f,
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        1.0f, 1.0f,
+    };
+
+    // VAO.
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+
+    // EBO.
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+
+    // VBO.
+    GLuint vbo[2];
+    glGenBuffers(2, vbo);
+
     // Bind and draw.
     glBindVertexArray(vao);
 
@@ -192,7 +289,7 @@ static void _draw_recursive(GLuint program,
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
         GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
     glBufferData(GL_ARRAY_BUFFER,
         sizeof(vertices),
         vertices,
@@ -202,13 +299,22 @@ static void _draw_recursive(GLuint program,
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(0);
 
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    glBufferData(GL_ARRAY_BUFFER,
+        sizeof(tex_coord),
+        tex_coord,
+        GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(1);
+
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 
     // Child views.
     ft_list_t *children = ft_view_children(view);
     for (int i = 0; i < ft_list_length(children); ++i) {
         ft_view_t *child = ft_list_at(children, i);
-        _draw_recursive(program, child, vao, ebo, vbo);
+        _draw_recursive(surface, child);
     }
 }
 
@@ -270,6 +376,10 @@ ft_surface_t* ft_surface_new()
         surface->_egl_context->egl_config,
         surface->_wl_egl_window,
         NULL);
+
+    // Initialize the program objects.
+    surface->programs.color = 0;
+    surface->programs.texture = 0;
 
     // Root view.
     ft_rect_t geo;
@@ -399,42 +509,11 @@ void ft_surface_on_request_update(ft_surface_t *surface)
 {
     _gl_init(surface);
 
-    // Create program.
-    GLuint program = glCreateProgram();
-
-    // Create shaders.
-    GLuint vert_shader = _load_shader(rect_vert_shader, GL_VERTEX_SHADER);
-    GLuint frag_shader = _load_shader(color_frag_shader, GL_FRAGMENT_SHADER);
-
-    // Attach shaders.
-    glAttachShader(program, vert_shader);
-    glAttachShader(program, frag_shader);
-
-    glLinkProgram(program);
-
-    glUseProgram(program);
-
-    // Set uniforms.
-    _set_uniform_resolution(program, &surface->_size);
-    _set_uniform_color(program, ft_view_color(surface->_root_view));
-
     eglMakeCurrent(surface->_egl_context->egl_display,
         surface->_egl_surface, surface->_egl_surface,
         surface->_egl_context->egl_context);
 
-    // VAO.
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-
-    // EBO.
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-
-    // VBO.
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-
-    _draw_recursive(program, surface->_root_view, vao, ebo, vbo);
+    _draw_recursive(surface, surface->_root_view);
 
     ft_bench_t *bench = ft_bench_new("eglSwapBuffers");
     eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);

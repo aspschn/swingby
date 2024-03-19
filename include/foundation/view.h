@@ -6,8 +6,14 @@
 #include <foundation/color.h>
 #include <foundation/event.h>
 
+typedef struct ft_image_t ft_image_t;
 typedef struct ft_list_t ft_list_t;
 typedef struct ft_event_t ft_event_t;
+
+enum ft_view_fill_type {
+    FT_VIEW_FILL_TYPE_SINGLE_COLOR,
+    FT_VIEW_FILL_TYPE_IMAGE,
+};
 
 typedef struct ft_view_t ft_view_t;
 
@@ -22,6 +28,12 @@ void ft_view_set_geometry(ft_view_t *view, const ft_rect_t *geometry);
 const ft_color_t* ft_view_color(ft_view_t *view);
 
 void ft_view_set_color(ft_view_t *view, const ft_color_t *color);
+
+enum ft_view_fill_type ft_view_fill_type(ft_view_t *view);
+
+void ft_view_set_fill_type(ft_view_t *view, enum ft_view_fill_type fill_type);
+
+ft_image_t* ft_view_image(ft_view_t *view);
 
 ft_list_t* ft_view_children(ft_view_t *view);
 

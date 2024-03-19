@@ -4,6 +4,7 @@
 
 #include <foundation/log.h>
 #include <foundation/surface.h>
+#include <foundation/image.h>
 #include <foundation/list.h>
 #include <foundation/event.h>
 
@@ -13,6 +14,8 @@ struct ft_view_t {
     ft_view_t *_parent;
     ft_color_t _color;
     ft_list_t *_children;
+    enum ft_view_fill_type fill_type;
+    ft_image_t *image;
     ft_list_t *event_listeners;
 };
 
@@ -52,6 +55,9 @@ ft_view_t* ft_view_new(ft_view_t *parent, const ft_rect_t *geometry)
 
     view->_children = ft_list_new();
 
+    view->fill_type = FT_VIEW_FILL_TYPE_SINGLE_COLOR;
+    view->image = NULL;
+
     view->event_listeners = ft_list_new();
 
     if (parent != NULL) {
@@ -85,6 +91,52 @@ void ft_view_set_geometry(ft_view_t *view, const ft_rect_t *geometry)
 const ft_color_t* ft_view_color(ft_view_t *view)
 {
     return &view->_color;
+}
+
+enum ft_view_fill_type ft_view_fill_type(ft_view_t *view)
+{
+    return view->fill_type;
+}
+
+void ft_view_set_fill_type(ft_view_t *view, enum ft_view_fill_type fill_type)
+{
+    // From single color to single color. Do nothing.
+    if (view->fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR &&
+        fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR) {
+        return;
+    }
+
+    // From single color to image.
+    if (view->fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR &&
+        fill_type == FT_VIEW_FILL_TYPE_IMAGE) {
+        view->fill_type = FT_VIEW_FILL_TYPE_IMAGE;
+
+        ft_size_i_t size;
+        size.width = view->_geometry.size.width;
+        size.height = view->_geometry.size.height;
+        view->image = ft_image_new(&size, FT_IMAGE_FORMAT_RGBA32);
+
+        return;
+    }
+
+    // From image to image. Do nothing.
+    if (view->fill_type == FT_VIEW_FILL_TYPE_IMAGE &&
+        fill_type == FT_VIEW_FILL_TYPE_IMAGE) {
+        return;
+    }
+
+    // From image to single color.
+    if (view->fill_type == FT_VIEW_FILL_TYPE_IMAGE &&
+        fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR) {
+        view->fill_type = FT_VIEW_FILL_TYPE_SINGLE_COLOR;
+
+        return;
+    }
+}
+
+ft_image_t* ft_view_image(ft_view_t *view)
+{
+    return view->image;
 }
 
 ft_list_t* ft_view_children(ft_view_t *view)

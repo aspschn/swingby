@@ -7,6 +7,7 @@
 #include <foundation/egl-context.h>
 #include <foundation/event-dispatcher.h>
 #include <foundation/event.h>
+#include <foundation/image.h>
 #include <foundation/input.h>
 #include <foundation/log.h>
 #include <foundation/point.h>
