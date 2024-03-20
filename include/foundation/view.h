@@ -42,7 +42,7 @@ ft_view_t* ft_view_child_at(ft_view_t *view, const ft_point_t *position);
 ft_view_t* ft_view_parent(ft_view_t *view);
 
 void ft_view_add_event_listener(ft_view_t *view,
-                                ft_event_type event_type,
+                                enum ft_event_type event_type,
                                 void (*listener)(ft_event_t*));
 
 //!<====================

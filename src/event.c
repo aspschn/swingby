@@ -10,9 +10,9 @@ extern "C" {
 //!< Event
 //!<=============
 
-ft_event_t* ft_event_new(ft_event_target_type target_type,
+ft_event_t* ft_event_new(enum ft_event_target_type target_type,
                          void *target,
-                         ft_event_type type)
+                         enum ft_event_type type)
 {
     ft_event_t *event = malloc(sizeof(ft_event_t));
 
@@ -23,17 +23,17 @@ ft_event_t* ft_event_new(ft_event_target_type target_type,
     return event;
 }
 
-ft_event_target_type ft_event_event_target_type(ft_event_t *event)
+enum ft_event_target_type ft_event_target_type(ft_event_t *event)
 {
     return event->target_type;
 }
 
-void* ft_event_event_target(ft_event_t *event)
+void* ft_event_target(ft_event_t *event)
 {
     return event->target;
 }
 
-ft_event_type ft_event_event_type(ft_event_t *event)
+enum ft_event_type ft_event_type(ft_event_t *event)
 {
     return event->type;
 }
@@ -42,9 +42,9 @@ ft_event_type ft_event_event_type(ft_event_t *event)
 //!< Pointer Event
 //!<================
 
-ft_event_t* ft_pointer_event_new(ft_event_target_type target_type,
+ft_event_t* ft_pointer_event_new(enum ft_event_target_type target_type,
                                  void *target,
-                                 ft_event_type type,
+                                 enum ft_event_type type,
                                  ft_pointer_button button,
                                  const ft_point_t *position)
 {
@@ -61,7 +61,7 @@ ft_event_t* ft_pointer_event_new(ft_event_target_type target_type,
 //!<=====================
 
 ft_event_listener_tuple_t*
-ft_event_listener_tuple_new(ft_event_type type,
+ft_event_listener_tuple_new(enum ft_event_type type,
                             void (*listener)(ft_event_t*))
 {
     ft_event_listener_tuple_t *tuple = malloc(

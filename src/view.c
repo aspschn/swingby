@@ -24,8 +24,8 @@ struct ft_view_t {
 //!<====================
 
 static void _event_listener_filter_for_each(ft_list_t *listeners,
-                                     ft_event_type type,
-                                     ft_event_t *event)
+                                            enum ft_event_type type,
+                                            ft_event_t *event)
 {
     uint64_t length = ft_list_length(listeners);
     for (uint64_t i = 0; i < length; ++i) {
@@ -180,7 +180,7 @@ void ft_view_set_color(ft_view_t *view, const ft_color_t *color)
 }
 
 void ft_view_add_event_listener(ft_view_t *view,
-                                ft_event_type event_type,
+                                enum ft_event_type event_type,
                                 void (*listener)(ft_event_t*))
 {
     ft_event_listener_tuple_t *tuple = ft_event_listener_tuple_new(

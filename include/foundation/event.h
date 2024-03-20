@@ -9,13 +9,13 @@
 extern "C" {
 #endif
 
-typedef enum ft_event_target_type {
+enum ft_event_target_type {
     FT_EVENT_TARGET_TYPE_APPLICATION,
     FT_EVENT_TARGET_TYPE_SURFACE,
     FT_EVENT_TARGET_TYPE_VIEW,
-} ft_event_target_type;
+};
 
-typedef enum ft_event_type {
+enum ft_event_type {
     FT_EVENT_TYPE_POINTER_ENTER,
     FT_EVENT_TYPE_POINTER_LEAVE,
     FT_EVENT_TYPE_POINTER_MOVE,
@@ -25,12 +25,12 @@ typedef enum ft_event_type {
     FT_EVENT_TYPE_REQUEST_UPDATE,
     FT_EVENT_TYPE_MOVE,
     FT_EVENT_TYPE_RESIZE,
-} ft_event_type;
+};
 
 typedef struct ft_event_t ft_event_t;
 
 typedef struct ft_event_listener_tuple_t {
-    ft_event_type type;
+    enum ft_event_type type;
     void (*listener)(ft_event_t*);
 } ft_event_listener_tuple_t;
 
@@ -50,9 +50,9 @@ typedef struct ft_resize_event_t {
 } ft_resize_event_t;
 
 struct ft_event_t {
-    ft_event_target_type target_type;
+    enum ft_event_target_type target_type;
     void *target;
-    ft_event_type type;
+    enum ft_event_type type;
     union {
         ft_pointer_event_t pointer;
         ft_move_event_t move;
@@ -60,15 +60,15 @@ struct ft_event_t {
     };
 };
 
-ft_event_t* ft_event_new(ft_event_target_type target_type,
+ft_event_t* ft_event_new(enum ft_event_target_type target_type,
                          void *target,
-                         ft_event_type type);
+                         enum ft_event_type type);
 
-ft_event_target_type ft_event_event_target_type(ft_event_t *event);
+enum ft_event_target_type ft_event_target_type(ft_event_t *event);
 
-void* ft_event_event_target(ft_event_t *event);
+void* ft_event_target(ft_event_t *event);
 
-ft_event_type ft_event_event_type(ft_event_t *event);
+enum ft_event_type ft_event_type(ft_event_t *event);
 
 void ft_event_free(ft_event_t *event);
 
@@ -76,9 +76,9 @@ void ft_event_free(ft_event_t *event);
 //!< Pointer Event
 //!<=================
 
-ft_event_t* ft_pointer_event_new(ft_event_target_type target_type,
+ft_event_t* ft_pointer_event_new(enum ft_event_target_type target_type,
                                  void *target,
-                                 ft_event_type type,
+                                 enum ft_event_type type,
                                  ft_pointer_button button,
                                  const ft_point_t *position);
 
@@ -89,7 +89,7 @@ ft_pointer_button ft_pointer_event_button(ft_pointer_event_t *event);
 //!<=====================
 
 ft_event_listener_tuple_t*
-ft_event_listener_tuple_new(ft_event_type type,
+ft_event_listener_tuple_new(enum ft_event_type type,
                             void (*listener)(ft_event_t*));
 
 void ft_event_listener_tuple_free(ft_event_listener_tuple_t *tuple);

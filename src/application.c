@@ -534,7 +534,7 @@ static void pointer_button_handler(void *data,
     ft_view_t *view = _find_most_child(ft_surface_root_view(surface), &pos);
 
     // Set the event type.
-    ft_event_type evt_type = FT_EVENT_TYPE_POINTER_PRESS;
+    enum ft_event_type evt_type = FT_EVENT_TYPE_POINTER_PRESS;
     if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
         evt_type = FT_EVENT_TYPE_POINTER_PRESS;
     } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {

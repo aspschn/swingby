@@ -327,8 +327,8 @@ void _add_frame_callback(ft_surface_t *surface)
 }
 
 static void _event_listener_filter_for_each(ft_list_t *listeners,
-                                     ft_event_type type,
-                                     ft_event_t *event)
+                                            enum ft_event_type type,
+                                            ft_event_t *event)
 {
     uint64_t length = ft_list_length(listeners);
     for (uint64_t i = 0; i < length; ++i) {
@@ -485,7 +485,7 @@ void ft_surface_update(ft_surface_t *surface)
 }
 
 void ft_surface_add_event_listener(ft_surface_t *surface,
-                                   ft_event_type event_type,
+                                   enum ft_event_type event_type,
                                    void (*listener)(ft_event_t*))
 {
     ft_event_listener_tuple_t *tuple = ft_event_listener_tuple_new(
