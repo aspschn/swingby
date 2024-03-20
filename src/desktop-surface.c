@@ -1,5 +1,6 @@
 #include <foundation/desktop-surface.h>
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include <wayland-protocols/stable/xdg-shell.h>
@@ -15,6 +16,11 @@ struct ft_desktop_surface_t {
     struct xdg_surface *_xdg_surface;
     struct xdg_toplevel *_xdg_toplevel;
     struct xdg_popup *_xdg_popup;
+    /// \brief Initial resizing configure event gives me the garbage values.
+    ///
+    /// Ignore first resizing event since it contains garbage values.
+    /// The reason why is IDK. However ignore this and it will works anyway.
+    bool toplevel_initial_resizing;
 };
 
 //!<==============
@@ -56,6 +62,8 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     d_surface->_role = role;
     d_surface->_xdg_toplevel = NULL;
     d_surface->_xdg_popup = NULL;
+
+    d_surface->toplevel_initial_resizing = true;
 
     // Create a surface.
     d_surface->_surface = ft_surface_new();
@@ -204,12 +212,17 @@ static void xdg_toplevel_configure_handler(void *data,
         switch (state) {
         case XDG_TOPLEVEL_STATE_RESIZING:
         {
+            if (desktop_surface->toplevel_initial_resizing == false) {
             ft_surface_t *surface = desktop_surface->_surface;
 
             ft_size_t new_size;
             new_size.width = width;
             new_size.height = height;
             ft_surface_set_size(surface, &new_size);
+            } else {
+                // Ignore and set the initial is false.
+                desktop_surface->toplevel_initial_resizing = false;
+            }
 
             break;
         }
