@@ -30,7 +30,8 @@ struct ft_surface_t {
     ft_egl_context_t *_egl_context;
     ft_size_t _size;
     ft_view_t *_root_view;
-    bool updated;
+    bool frame_ready;
+    bool update_pending;
     /// \brief Program objects for OpenGL.
     struct {
         GLuint color;
@@ -326,6 +327,19 @@ void _add_frame_callback(ft_surface_t *surface)
     // ft_log_debug(" = frame_callback now %p\n", surface->frame_callback);
 }
 
+void _draw_frame(ft_surface_t *surface)
+{
+    _gl_init(surface);
+
+    eglMakeCurrent(surface->_egl_context->egl_display,
+        surface->_egl_surface, surface->_egl_surface,
+        surface->_egl_context->egl_context);
+
+    _draw_recursive(surface, surface->_root_view);
+
+    eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
+}
+
 static void _event_listener_filter_for_each(ft_list_t *listeners,
                                             enum ft_event_type type,
                                             ft_event_t *event)
@@ -349,7 +363,8 @@ ft_surface_t* ft_surface_new()
 
     surface->_size.width = 200.0f;
     surface->_size.height = 200.0f;
-    surface->updated = false;
+    surface->frame_ready = false;
+    surface->update_pending = false;
 
     ft_application_t *app = ft_application_instance();
 
@@ -411,6 +426,10 @@ const ft_size_t* ft_surface_size(ft_surface_t *surface)
 
 void ft_surface_set_size(ft_surface_t *surface, const ft_size_t *size)
 {
+    if (size->width <= 0.0f || size->height <= 0.0f) {
+        ft_log_warn("Surface size cannot be zero or negative.\n");
+    }
+
     surface->_size.width = size->width;
     surface->_size.height = size->height;
 
@@ -470,18 +489,17 @@ void ft_surface_detach(ft_surface_t *surface)
 
 void ft_surface_update(ft_surface_t *surface)
 {
-    ft_bench_t *bench = ft_bench_new("ft_surface_update");
-
-    if (surface->updated == false) {
-        surface->updated = true;
-
+    if (surface->frame_ready == true) {
         // Post request update event.
         ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_SURFACE,
             (void*)surface, FT_EVENT_TYPE_REQUEST_UPDATE);
         ft_application_post_event(ft_application_instance(), event);
-    }
 
-    ft_bench_end(bench);
+        surface->frame_ready = false;
+    } else {
+        ft_log_debug("ft_surface_update() - Frame not ready!\n");
+        surface->update_pending = true;
+    }
 }
 
 void ft_surface_add_event_listener(ft_surface_t *surface,
@@ -507,21 +525,12 @@ void ft_surface_on_pointer_leave(ft_surface_t *surface, ft_event_t *event)
 
 void ft_surface_on_request_update(ft_surface_t *surface)
 {
-    _gl_init(surface);
+    ft_log_debug("ft_surface_on_request_update()\n");
 
-    eglMakeCurrent(surface->_egl_context->egl_display,
-        surface->_egl_surface, surface->_egl_surface,
-        surface->_egl_context->egl_context);
+    _draw_frame(surface);
 
-    _draw_recursive(surface, surface->_root_view);
-
-    ft_bench_t *bench = ft_bench_new("eglSwapBuffers");
-    eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
-
-    // Set updated flag to true.
-    surface->updated = true;
-
-    ft_bench_end(bench);
+    // Set frame ready flag to false.
+    surface->frame_ready = false;
 }
 
 void ft_surface_on_resize(ft_surface_t *surface, ft_event_t *event)
@@ -548,9 +557,13 @@ static void callback_done_handler(void *data,
     wl_callback_destroy(wl_callback);
     _add_frame_callback(surface);
 
-    if (surface->updated == false) {
-        ft_surface_update(surface);
-    }
+    surface->frame_ready = true;
+    ft_log_debug(" == FRAME READY ==\n");
 
-    surface->updated = false;
+    if (surface->update_pending) {
+        ft_log_debug(" == THERE ARE PENDING UPDATES ==\n");
+        _draw_frame(surface);
+        surface->update_pending = false;
+        surface->frame_ready = false;
+    }
 }
