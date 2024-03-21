@@ -1,6 +1,8 @@
 #ifndef _FOUNDATION_EVENT_H
 #define _FOUNDATION_EVENT_H
 
+#include <stdbool.h>
+
 #include <foundation/input.h>
 #include <foundation/point.h>
 #include <foundation/size.h>
@@ -53,6 +55,7 @@ struct ft_event_t {
     enum ft_event_target_type target_type;
     void *target;
     enum ft_event_type type;
+    bool propagation;
     union {
         ft_pointer_event_t pointer;
         ft_move_event_t move;

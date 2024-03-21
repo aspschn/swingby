@@ -73,9 +73,12 @@ void _propagate_pointer_event(ft_view_t *view, ft_event_t *event)
     float x = event->pointer.position.x + ft_view_geometry(view)->pos.x;
     float y = event->pointer.position.y + ft_view_geometry(view)->pos.y;
     while (parent != NULL) {
+        if (event->propagation == false) {
+            break;
+        }
+
         event->pointer.position.x = x;
         event->pointer.position.y = y;
-        // TODO: Propagation stop.
 
         if (event->type == FT_EVENT_TYPE_POINTER_MOVE) {
             ft_view_on_pointer_move(parent, event);
@@ -121,7 +124,7 @@ void ft_event_dispatcher_post_event(ft_event_dispatcher_t *event_dispatcher,
 void
 ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
 {
-    ft_bench_t *bench = ft_bench_new("ft_event_dispatcher_process_events");
+    // ft_bench_t *bench = ft_bench_new("ft_event_dispatcher_process_events");
 
     while (event_dispatcher->queue->length != 0) {
         ft_event_t *event = (ft_event_t*)ft_queue_dequeue(
@@ -177,7 +180,7 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
         }
     }
 
-    ft_bench_end(bench);
+    // ft_bench_end(bench);
 }
 
 #ifdef __cplusplus

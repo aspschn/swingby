@@ -8,6 +8,8 @@ void on_click(ft_event_t *event)
         event->pointer.position.x,
         event->pointer.position.y
     );
+    // Prevent propagation.
+    event->propagation = false;
 
     const ft_color_t *color = ft_view_color(event->target);
     ft_color_t new_color = *color;

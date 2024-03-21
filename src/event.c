@@ -19,6 +19,7 @@ ft_event_t* ft_event_new(enum ft_event_target_type target_type,
     event->target_type = target_type;
     event->target = target;
     event->type = type;
+    event->propagation = true;
 
     return event;
 }
