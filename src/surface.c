@@ -69,6 +69,10 @@ void _gl_init(ft_surface_t *surface)
     glClearColor(0.5, 0.5, 0.5, 0.5);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glEnable(GL_BLEND);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+        GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
     // glUseProgram();
 
     // eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
