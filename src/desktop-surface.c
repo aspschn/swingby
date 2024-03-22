@@ -6,6 +6,7 @@
 #include <wayland-protocols/stable/xdg-shell.h>
 
 #include <foundation/log.h>
+#include <foundation/size.h>
 #include <foundation/surface.h>
 #include <foundation/application.h>
 #include <foundation/event.h>
@@ -16,6 +17,7 @@ struct ft_desktop_surface_t {
     struct xdg_surface *_xdg_surface;
     struct xdg_toplevel *_xdg_toplevel;
     struct xdg_popup *_xdg_popup;
+    ft_size_i_t minimum_size;
     /// \brief Initial resizing configure event gives me the garbage values.
     ///
     /// Ignore first resizing event since it contains garbage values.
@@ -62,6 +64,8 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     d_surface->_role = role;
     d_surface->_xdg_toplevel = NULL;
     d_surface->_xdg_popup = NULL;
+    d_surface->minimum_size.width = 100;
+    d_surface->minimum_size.height = 100;
 
     d_surface->toplevel_initial_resizing = true;
 
@@ -100,6 +104,12 @@ void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface)
         desktop_surface->_xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
         xdg_toplevel_add_listener(desktop_surface->_xdg_toplevel,
             &xdg_toplevel_listener, (void*)desktop_surface);
+        // Set minimum size.
+        ft_size_i_t min_size;
+        min_size.width = 100;
+        min_size.height = 100;
+        ft_desktop_surface_toplevel_set_minimum_size(desktop_surface,
+            &min_size);
     } else if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_POPUP) {
         //
     }
@@ -126,6 +136,21 @@ void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface)
     xdg_surface_destroy(desktop_surface->_xdg_surface);
 
     ft_surface_detach(desktop_surface->_surface);
+}
+
+const ft_size_i_t*
+ft_desktop_surface_toplevel_minimum_size(ft_desktop_surface_t *desktop_surface)
+{
+    return &desktop_surface->minimum_size;
+}
+
+void ft_desktop_surface_toplevel_set_minimum_size(
+    ft_desktop_surface_t *desktop_surface, const ft_size_i_t *size)
+{
+    desktop_surface->minimum_size = *size;
+
+    xdg_toplevel_set_min_size(desktop_surface->_xdg_toplevel,
+        size->width, size->height);
 }
 
 void ft_desktop_surface_toplevel_move(ft_desktop_surface_t *desktop_surface)

@@ -1,6 +1,8 @@
 #ifndef _FOUNDATION_DESKTOP_SURFACE_H
 #define _FOUNDATION_DESKTOP_SURFACE_H
 
+typedef struct ft_size_i_t ft_size_i_t;
+typedef struct ft_rect_i_t ft_rect_i_t;
 typedef struct ft_surface_t ft_surface_t;
 
 typedef enum ft_desktop_surface_role {
@@ -31,6 +33,15 @@ ft_desktop_surface_surface(ft_desktop_surface_t *desktop_surface);
 void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface);
 
 void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface);
+
+const ft_size_i_t*
+ft_desktop_surface_toplevel_minimum_size(ft_desktop_surface_t *desktop_surface);
+
+/// \brief Set minimum size of the toplevel desktop surface.
+///
+/// This changes the field and call `_set_min_size` method in XDG toplevel.
+void ft_desktop_surface_toplevel_set_minimum_size(
+    ft_desktop_surface_t *desktop_surface, const ft_size_i_t *size);
 
 void ft_desktop_surface_toplevel_move(ft_desktop_surface_t *desktop_surface);
 
