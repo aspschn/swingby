@@ -39,6 +39,16 @@ enum ft_event_type ft_event_type(ft_event_t *event)
     return event->type;
 }
 
+bool ft_event_propagation(ft_event_t *event)
+{
+    return event->propagation;
+}
+
+void ft_event_set_propagation(ft_event_t *event, bool value)
+{
+    event->propagation = value;
+}
+
 //!<================
 //!< Pointer Event
 //!<================

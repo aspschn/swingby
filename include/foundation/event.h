@@ -73,6 +73,10 @@ void* ft_event_target(ft_event_t *event);
 
 enum ft_event_type ft_event_type(ft_event_t *event);
 
+bool ft_event_propagation(ft_event_t *event);
+
+void ft_event_set_propagation(ft_event_t *event, bool value);
+
 void ft_event_free(ft_event_t *event);
 
 //!<=================
