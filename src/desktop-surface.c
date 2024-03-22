@@ -17,12 +17,14 @@ struct ft_desktop_surface_t {
     struct xdg_surface *_xdg_surface;
     struct xdg_toplevel *_xdg_toplevel;
     struct xdg_popup *_xdg_popup;
-    ft_size_i_t minimum_size;
-    /// \brief Initial resizing configure event gives me the garbage values.
-    ///
-    /// Ignore first resizing event since it contains garbage values.
-    /// The reason why is IDK. However ignore this and it will works anyway.
-    bool toplevel_initial_resizing;
+    struct {
+        ft_size_i_t minimum_size;
+        /// \brief Initial resizing configure event gives me the garbage values.
+        ///
+        /// Ignore first resizing event since it contains garbage values.
+        /// The reason why is IDK. However ignore this and it will works anyway.
+        bool initial_resizing;
+    } toplevel;
 };
 
 //!<==============
@@ -64,10 +66,8 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     d_surface->_role = role;
     d_surface->_xdg_toplevel = NULL;
     d_surface->_xdg_popup = NULL;
-    d_surface->minimum_size.width = 100;
-    d_surface->minimum_size.height = 100;
 
-    d_surface->toplevel_initial_resizing = true;
+    d_surface->toplevel.initial_resizing = true;
 
     // Create a surface.
     d_surface->_surface = ft_surface_new();
@@ -141,13 +141,13 @@ void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface)
 const ft_size_i_t*
 ft_desktop_surface_toplevel_minimum_size(ft_desktop_surface_t *desktop_surface)
 {
-    return &desktop_surface->minimum_size;
+    return &desktop_surface->toplevel.minimum_size;
 }
 
 void ft_desktop_surface_toplevel_set_minimum_size(
     ft_desktop_surface_t *desktop_surface, const ft_size_i_t *size)
 {
-    desktop_surface->minimum_size = *size;
+    desktop_surface->toplevel.minimum_size = *size;
 
     xdg_toplevel_set_min_size(desktop_surface->_xdg_toplevel,
         size->width, size->height);
@@ -237,7 +237,7 @@ static void xdg_toplevel_configure_handler(void *data,
         switch (state) {
         case XDG_TOPLEVEL_STATE_RESIZING:
         {
-            if (desktop_surface->toplevel_initial_resizing == false) {
+            if (desktop_surface->toplevel.initial_resizing == false) {
             ft_surface_t *surface = desktop_surface->_surface;
 
             ft_size_t new_size;
@@ -246,7 +246,7 @@ static void xdg_toplevel_configure_handler(void *data,
             ft_surface_set_size(surface, &new_size);
             } else {
                 // Ignore and set the initial is false.
-                desktop_surface->toplevel_initial_resizing = false;
+                desktop_surface->toplevel.initial_resizing = false;
             }
 
             break;
