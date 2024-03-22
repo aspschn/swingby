@@ -31,6 +31,7 @@ set(FOUNDATION_SOURCES
     src/log.c
     src/bench.c
     src/list.c
+    src/size.c
     src/rect.c
     src/color.c
     src/application.c

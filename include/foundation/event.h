@@ -77,6 +77,12 @@ bool ft_event_propagation(ft_event_t *event);
 
 void ft_event_set_propagation(ft_event_t *event, bool value);
 
+/// \brief Returns `event->resize.old_size`.
+const ft_size_t* ft_event_resize_old_size(ft_event_t *event);
+
+/// \brief Returns `event->resize.size`.
+const ft_size_t* ft_event_resize_size(ft_event_t *event);
+
 void ft_event_free(ft_event_t *event);
 
 //!<=================

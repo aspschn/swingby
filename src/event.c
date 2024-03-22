@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 
+#include <foundation/log.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,6 +49,24 @@ bool ft_event_propagation(ft_event_t *event)
 void ft_event_set_propagation(ft_event_t *event, bool value)
 {
     event->propagation = value;
+}
+
+const ft_size_t* ft_event_resize_old_size(ft_event_t *event)
+{
+    if (event->type != FT_EVENT_TYPE_RESIZE) {
+        ft_log_warn("Trying to access a resize info, but the event type is not FT_EVENT_TYPE_RESIZE\n");
+    }
+
+    return &event->resize.old_size;
+}
+
+const ft_size_t* ft_event_resize_size(ft_event_t *event)
+{
+    if (event->type != FT_EVENT_TYPE_RESIZE) {
+        ft_log_warn("Trying to access a resize info, but the event type is not FT_EVENT_TYPE_RESIZE\n");
+    }
+
+    return &event->resize.size;
 }
 
 //!<================

@@ -18,6 +18,14 @@ typedef struct ft_size_i_t {
     uint64_t height;
 } ft_size_i_t;
 
+float ft_size_width(ft_size_t *size);
+
+float ft_size_height(ft_size_t *size);
+
+uint64_t ft_size_i_width(ft_size_i_t *size);
+
+uint64_t ft_size_i_height(ft_size_i_t *size);
+
 #ifdef __cplusplus
 }
 #endif
