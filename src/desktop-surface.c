@@ -11,6 +11,7 @@
 #include <foundation/rect.h>
 #include <foundation/surface.h>
 #include <foundation/application.h>
+#include <foundation/list.h>
 #include <foundation/event.h>
 
 struct ft_desktop_surface_t {
@@ -28,6 +29,7 @@ struct ft_desktop_surface_t {
         /// The reason why is IDK. However ignore this and it will works anyway.
         bool initial_resizing;
     } toplevel;
+    ft_list_t *event_listeners;
 };
 
 //!<==============
@@ -60,6 +62,23 @@ static struct xdg_toplevel_listener xdg_toplevel_listener = {
     .close = xdg_toplevel_close_handler,
 };
 
+//!<=====================
+//!< Helper Functions
+//!<=====================
+
+static void _event_listener_filter_for_each(ft_list_t *listeners,
+                                            enum ft_event_type type,
+                                            ft_event_t *event)
+{
+    uint64_t length = ft_list_length(listeners);
+    for (uint64_t i = 0; i < length; ++i) {
+        ft_event_listener_tuple_t *tuple = ft_list_at(listeners, i);
+        if (tuple->type == type) {
+            tuple->listener(event);
+        }
+    }
+}
+
 
 ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
 {
@@ -76,6 +95,8 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     d_surface->wm_geometry.size.height = 0;
 
     d_surface->toplevel.initial_resizing = true;
+
+    d_surface->event_listeners = ft_list_new();
 
     // Create a surface.
     d_surface->_surface = ft_surface_new();
@@ -243,6 +264,23 @@ void ft_desktop_surface_toplevel_resize(ft_desktop_surface_t *desktop_surface,
         resize_edge);
 }
 
+void ft_desktop_surface_add_event_listener(
+    ft_desktop_surface_t *desktop_surface,
+    enum ft_event_type event_type,
+    void (*listener)(ft_event_t*))
+{
+    ft_event_listener_tuple_t *tuple = ft_event_listener_tuple_new(
+        event_type, listener);
+    ft_list_push(desktop_surface->event_listeners, (void*)tuple);
+}
+
+void ft_desktop_surface_on_resize(ft_desktop_surface_t *desktop_surface,
+                                  ft_event_t *event)
+{
+    _event_listener_filter_for_each(desktop_surface->event_listeners,
+        FT_EVENT_TYPE_RESIZE, event);
+}
+
 //!<===================
 //!< XDG Surface
 //!<===================
@@ -281,27 +319,16 @@ static void xdg_toplevel_configure_handler(void *data,
                 new_size.width = width;
                 new_size.height = height;
 
-                // WM geometry. If XDG surface is set the window geometry,
-                // this handler report width and height based on the window
-                // geometry size.
-                if (desktop_surface->wm_geometry.pos.x != 0 ||
-                    desktop_surface->wm_geometry.pos.y != 0) {
-                    uint64_t width_diff = 0;
-                    uint64_t height_diff = 0;
+                // Just send a resize event (to the desktop surface).
+                ft_event_t *event = ft_event_new(
+                    FT_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
+                    desktop_surface,
+                    FT_EVENT_TYPE_RESIZE);
+                event->resize.old_size = *ft_surface_size(surface);
+                event->resize.size.width = width;
+                event->resize.size.height = height;
 
-                    // Add x and y.
-                    width_diff = desktop_surface->wm_geometry.pos.x;
-                    height_diff = desktop_surface->wm_geometry.pos.y;
-
-                    // Distance from bottom right.
-
-                    new_size.width += width_diff;
-                    new_size.height += height_diff;
-                }
-
-                // Is this really ideal action that force resize the underlying
-                // surface in this time?
-                ft_surface_set_size(surface, &new_size);
+                ft_application_post_event(ft_application_instance(), event);
             } else {
                 // Ignore and set the initial is false.
                 desktop_surface->toplevel.initial_resizing = false;
