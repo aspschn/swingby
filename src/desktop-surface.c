@@ -19,6 +19,7 @@ struct ft_desktop_surface_t {
     struct xdg_surface *_xdg_surface;
     struct xdg_toplevel *_xdg_toplevel;
     struct xdg_popup *_xdg_popup;
+    ft_rect_i_t wm_geometry;
     struct {
         ft_size_i_t minimum_size;
         /// \brief Initial resizing configure event gives me the garbage values.
@@ -68,6 +69,11 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     d_surface->_role = role;
     d_surface->_xdg_toplevel = NULL;
     d_surface->_xdg_popup = NULL;
+
+    d_surface->wm_geometry.pos.x = 0;
+    d_surface->wm_geometry.pos.y = 0;
+    d_surface->wm_geometry.size.width = 0;
+    d_surface->wm_geometry.size.height = 0;
 
     d_surface->toplevel.initial_resizing = true;
 
@@ -148,6 +154,8 @@ void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface)
 void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
                                         const ft_rect_i_t *geometry)
 {
+    desktop_surface->wm_geometry = *geometry;
+
     xdg_surface_set_window_geometry(desktop_surface->_xdg_surface,
         geometry->pos.x, geometry->pos.y,
         geometry->size.width, geometry->size.height);
@@ -265,13 +273,35 @@ static void xdg_toplevel_configure_handler(void *data,
         switch (state) {
         case XDG_TOPLEVEL_STATE_RESIZING:
         {
+            ft_log_debug("Resize %dx%d\n", width, height);
             if (desktop_surface->toplevel.initial_resizing == false) {
-            ft_surface_t *surface = desktop_surface->_surface;
+                ft_surface_t *surface = desktop_surface->_surface;
 
-            ft_size_t new_size;
-            new_size.width = width;
-            new_size.height = height;
-            ft_surface_set_size(surface, &new_size);
+                ft_size_t new_size;
+                new_size.width = width;
+                new_size.height = height;
+
+                // WM geometry. If XDG surface is set the window geometry,
+                // this handler report width and height based on the window
+                // geometry size.
+                if (desktop_surface->wm_geometry.pos.x != 0 ||
+                    desktop_surface->wm_geometry.pos.y != 0) {
+                    uint64_t width_diff = 0;
+                    uint64_t height_diff = 0;
+
+                    // Add x and y.
+                    width_diff = desktop_surface->wm_geometry.pos.x;
+                    height_diff = desktop_surface->wm_geometry.pos.y;
+
+                    // Distance from bottom right.
+
+                    new_size.width += width_diff;
+                    new_size.height += height_diff;
+                }
+
+                // Is this really ideal action that force resize the underlying
+                // surface in this time?
+                ft_surface_set_size(surface, &new_size);
             } else {
                 // Ignore and set the initial is false.
                 desktop_surface->toplevel.initial_resizing = false;

@@ -98,7 +98,7 @@ ft_rect_t get_body_geometry(struct window *window)
 
 static void on_surface_resize(ft_event_t *event)
 {
-    fprintf(stderr, "on_resize\n");
+    fprintf(stderr, "on_resize: %dx%d\n", (int)event->resize.size.width, (int)event->resize.size.height);
 
     // Update shadow size.
     ft_rect_t shadow_geometry = get_shadow_geometry(window_global);
