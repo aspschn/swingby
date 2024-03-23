@@ -240,6 +240,14 @@ int main(int argc, char *argv[])
 
     ft_desktop_surface_show(window.desktop_surface);
 
+    // Set the actual window size.
+    ft_rect_i_t win_geometry;
+    win_geometry.pos.x = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
+    win_geometry.pos.y = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
+    win_geometry.size.width = WINDOW_DEFAULT_WIDTH + WINDOW_BORDER_THICKNESS;
+    win_geometry.size.height = WINDOW_DEFAULT_HEIGHT + WINDOW_BORDER_THICKNESS;
+    ft_desktop_surface_set_wm_geometry(window.desktop_surface, &win_geometry);
+
     return ft_application_exec(app);
 }
 

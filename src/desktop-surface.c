@@ -7,6 +7,7 @@
 
 #include <foundation/log.h>
 #include <foundation/size.h>
+#include <foundation/rect.h>
 #include <foundation/surface.h>
 #include <foundation/application.h>
 #include <foundation/event.h>
@@ -136,6 +137,14 @@ void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface)
     xdg_surface_destroy(desktop_surface->_xdg_surface);
 
     ft_surface_detach(desktop_surface->_surface);
+}
+
+void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
+                                        const ft_rect_i_t *geometry)
+{
+    xdg_surface_set_window_geometry(desktop_surface->_xdg_surface,
+        geometry->pos.x, geometry->pos.y,
+        geometry->size.width, geometry->size.height);
 }
 
 const ft_size_i_t*

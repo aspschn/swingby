@@ -34,6 +34,17 @@ void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface);
 
 void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface);
 
+/// \brief Tell the geometry is the actual window area to the compositor.
+///
+/// A Wayland client is CSD (client side decoration). It means the window
+/// should draw it's own decorations such as shadow.
+/// The shadow may not clickable.
+///
+/// This method tells to the compositor (window manager) to ignore the events
+/// which is out of the given geometry.
+void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
+                                        const ft_rect_i_t *geometry);
+
 const ft_size_i_t*
 ft_desktop_surface_toplevel_minimum_size(ft_desktop_surface_t *desktop_surface);
 
