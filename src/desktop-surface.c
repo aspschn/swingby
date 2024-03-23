@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
 
 #include <foundation/log.h>
@@ -105,6 +106,11 @@ void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface)
         desktop_surface->_xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
         xdg_toplevel_add_listener(desktop_surface->_xdg_toplevel,
             &xdg_toplevel_listener, (void*)desktop_surface);
+
+        // Must commit and roundtrip.
+        ft_surface_commit(ft_desktop_surface_surface(desktop_surface));
+        wl_display_roundtrip(ft_application_wl_display(app));
+
         // Set minimum size.
         ft_size_i_t min_size;
         min_size.width = 100;
