@@ -1,6 +1,8 @@
 #ifndef _FOUNDATION_DESKTOP_SURFACE_H
 #define _FOUNDATION_DESKTOP_SURFACE_H
 
+#include <foundation/event.h>
+
 typedef struct ft_size_i_t ft_size_i_t;
 typedef struct ft_rect_i_t ft_rect_i_t;
 typedef struct ft_surface_t ft_surface_t;
@@ -58,5 +60,13 @@ void ft_desktop_surface_toplevel_move(ft_desktop_surface_t *desktop_surface);
 
 void ft_desktop_surface_toplevel_resize(ft_desktop_surface_t *desktop_surface,
     ft_desktop_surface_toplevel_resize_edge edge);
+
+void ft_desktop_surface_add_event_listener(
+    ft_desktop_surface_t *desktop_surface,
+    enum ft_event_type event_type,
+    void (*listener)(ft_event_t*));
+
+void ft_desktop_surface_on_resize(ft_desktop_surface_t *desktop_surface,
+                                  ft_event_t *event);
 
 #endif /* _FOUNDATION_DESKTOP_SURFACE_H */

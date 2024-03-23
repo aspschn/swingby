@@ -96,6 +96,19 @@ ft_rect_t get_body_geometry(struct window *window)
 }
 
 
+static void on_desktop_surface_resize(ft_event_t *event)
+{
+    // Resize the surface.
+    ft_surface_t *surface = ft_desktop_surface_surface(
+        window_global->desktop_surface);
+    ft_rect_t new_geo;
+    new_geo.size.width = event->resize.size.width
+        + (WINDOW_SHADOW_THICKNESS * 2);
+    new_geo.size.height = event->resize.size.height
+        + (WINDOW_SHADOW_THICKNESS * 2);
+    ft_surface_set_size(surface, &new_geo.size);
+}
+
 static void on_surface_resize(ft_event_t *event)
 {
     fprintf(stderr, "on_resize: %dx%d\n", (int)event->resize.size.width, (int)event->resize.size.height);
@@ -227,7 +240,13 @@ int main(int argc, char *argv[])
 
     window_global = &window;
 
-    // Resize event handler.
+    // Desktop surface resize event handler.
+    ft_desktop_surface_add_event_listener(
+        window.desktop_surface,
+        FT_EVENT_TYPE_RESIZE,
+        on_desktop_surface_resize);
+
+    // Surface resize event handler.
     ft_surface_add_event_listener(
         ft_desktop_surface_surface(window.desktop_surface),
         FT_EVENT_TYPE_RESIZE,

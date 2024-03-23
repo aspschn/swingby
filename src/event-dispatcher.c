@@ -7,6 +7,7 @@
 #include <foundation/bench.h>
 #include <foundation/event.h>
 #include <foundation/view.h>
+#include <foundation/desktop-surface.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -132,6 +133,14 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
 
         if (event->target_type == FT_EVENT_TARGET_TYPE_APPLICATION) {
             //
+        } else if (event->target_type == FT_EVENT_TARGET_TYPE_DESKTOP_SURFACE) {
+            switch (event->type) {
+            case FT_EVENT_TYPE_RESIZE:
+                ft_desktop_surface_on_resize(event->target, event);
+                break;
+            default:
+                break;
+            }
         } else if (event->target_type == FT_EVENT_TARGET_TYPE_SURFACE) {
             switch (event->type) {
             case FT_EVENT_TYPE_POINTER_ENTER:
