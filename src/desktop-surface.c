@@ -151,6 +151,19 @@ void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
     xdg_surface_set_window_geometry(desktop_surface->_xdg_surface,
         geometry->pos.x, geometry->pos.y,
         geometry->size.width, geometry->size.height);
+
+    // Set input region.
+    ft_application_t *app = ft_application_instance();
+    ft_surface_t *surface = desktop_surface->_surface;
+    struct wl_surface *wl_surface = ft_surface_wl_surface(surface);
+    struct wl_compositor *wl_compositor = ft_application_wl_compositor(app);
+
+    struct wl_region *region = wl_compositor_create_region(wl_compositor);
+    wl_region_add(region,
+                  geometry->pos.x, geometry->pos.y,
+                  geometry->size.width, geometry->size.height);
+    wl_surface_set_input_region(wl_surface, region);
+    wl_region_destroy(region);
 }
 
 const ft_size_i_t*
