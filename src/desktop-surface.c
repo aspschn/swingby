@@ -210,6 +210,14 @@ void ft_desktop_surface_toplevel_set_minimum_size(
         size->width, size->height);
 }
 
+void ft_desktop_surface_toplevel_close(ft_desktop_surface_t *desktop_surface)
+{
+    // TODO: Free memory.
+
+    ft_application_t *app = ft_application_instance();
+    ft_application_unregister_desktop_surface(app, desktop_surface);
+}
+
 void ft_desktop_surface_toplevel_move(ft_desktop_surface_t *desktop_surface)
 {
     ft_application_t *app = ft_application_instance();
@@ -345,5 +353,7 @@ static void xdg_toplevel_configure_handler(void *data,
 static void xdg_toplevel_close_handler(void *data,
                                        struct xdg_toplevel *xdg_toplevel)
 {
-    //
+    ft_desktop_surface_t *desktop_surface = (ft_desktop_surface_t*)data;
+
+    ft_desktop_surface_toplevel_close(desktop_surface);
 }

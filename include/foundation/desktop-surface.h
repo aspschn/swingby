@@ -56,6 +56,8 @@ ft_desktop_surface_toplevel_minimum_size(ft_desktop_surface_t *desktop_surface);
 void ft_desktop_surface_toplevel_set_minimum_size(
     ft_desktop_surface_t *desktop_surface, const ft_size_i_t *size);
 
+void ft_desktop_surface_toplevel_close(ft_desktop_surface_t *desktop_surface);
+
 void ft_desktop_surface_toplevel_move(ft_desktop_surface_t *desktop_surface);
 
 void ft_desktop_surface_toplevel_resize(ft_desktop_surface_t *desktop_surface,

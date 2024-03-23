@@ -134,6 +134,18 @@ static void on_surface_resize(ft_event_t *event)
     ft_view_set_geometry(window_global->body, &body_geometry);
 }
 
+static void on_close_button_press(ft_event_t *event)
+{
+    // Stop event propagation.
+    event->propagation = false;
+}
+
+static void on_close_button_click(ft_event_t *event)
+{
+    fprintf(stderr, "Close button clicked.\n");
+    ft_desktop_surface_toplevel_close(window_global->desktop_surface);
+}
+
 static void on_title_bar_press(ft_event_t *event)
 {
     ft_desktop_surface_toplevel_move(window_global->desktop_surface);
@@ -201,6 +213,12 @@ static void init_window(struct window *window)
     color.g = 0;
     color.b = 0;
     ft_view_set_color(close_button, &color);
+    ft_view_add_event_listener(close_button,
+        FT_EVENT_TYPE_POINTER_PRESS,
+        on_close_button_press);
+    ft_view_add_event_listener(close_button,
+        FT_EVENT_TYPE_POINTER_CLICK,
+        on_close_button_click);
 
     button_geometry.pos.x = button_geometry.pos.x + 24 + 3;
     ft_view_t *minimize_button = ft_view_new(window->title_bar,

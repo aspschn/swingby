@@ -305,6 +305,18 @@ void ft_application_unregister_desktop_surface(ft_application_t *application,
     ft_desktop_surface_t *desktop_surface)
 {
     // TODO: Implementation.
+    ft_list_t *list = application->_desktop_surfaces;
+    uint64_t length = ft_list_length(list);
+    int64_t index = -1;
+    for (uint64_t i = 0; i < length; ++i) {
+        if (ft_list_at(list, i) == desktop_surface) {
+            index = i;
+            break;
+        }
+    }
+    if (index != -1) {
+        ft_list_remove(list, index);
+    }
 }
 
 struct wl_display* ft_application_wl_display(
@@ -332,8 +344,13 @@ struct wl_seat* ft_application_wl_seat(ft_application_t *application)
 int ft_application_exec(ft_application_t *application)
 {
     while (wl_display_dispatch(application->_wl_display) != -1) {
-        // ft_log_debug("wl_display_dispatch()\n");
+        ft_log_debug("wl_display_dispatch() - desktop surfaces: %d\n",
+                     ft_list_length(application->_desktop_surfaces));
         ft_event_dispatcher_process_events(application->_event_dispatcher);
+        // Exit event loop when last desktop surface closed.
+        if (ft_list_length(application->_desktop_surfaces) == 0) {
+            break;
+        }
     }
 
     return 0;
