@@ -59,6 +59,8 @@ void ft_view_on_pointer_press(ft_view_t *view, ft_event_t *event);
 
 void ft_view_on_pointer_click(ft_view_t *view, ft_event_t *event);
 
+void ft_view_on_pointer_double_click(ft_view_t *view, ft_event_t *event);
+
 void ft_view_on_pointer_release(ft_view_t *view, ft_event_t *event);
 
 #endif /* _FOUNDATION_VIEW_H */

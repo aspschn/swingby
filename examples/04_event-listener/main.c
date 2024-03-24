@@ -2,7 +2,7 @@
 
 #include <foundation/foundation.h>
 
-void on_click(ft_event_t *event)
+static void on_click(ft_event_t *event)
 {
     fprintf(stderr, "Click! (%.2f, %.2f)\n",
         event->pointer.position.x,
@@ -15,6 +15,16 @@ void on_click(ft_event_t *event)
     ft_color_t new_color = *color;
     new_color.r += 100;
     new_color.b += 50;
+    ft_view_set_color(event->target, &new_color);
+}
+
+static void on_double_click(ft_event_t *event)
+{
+    fprintf(stderr, "on_double_click\n");
+    const ft_color_t *color = ft_view_color(event->target);
+    ft_color_t new_color = *color;
+    new_color.r += 100;
+    new_color.g += 100;
     ft_view_set_color(event->target, &new_color);
 }
 
@@ -40,10 +50,22 @@ int main(int argc, char *argv[])
     color.g = 255;
     ft_view_set_color(child_view, &color);
 
+    geometry.pos.x = 60.0f;
+    geometry.pos.y = 10.0f;
+    geometry.size.width = 30.0f;
+    geometry.size.height = 30.0f;
+    ft_view_t *double_click_view = ft_view_new(
+        ft_surface_root_view(ft_desktop_surface_surface(surface)), &geometry);
+    ft_view_set_color(double_click_view, &color);
+
     fprintf(stderr, "Click the smallest rectangle and see the change.\n");
+    fprintf(stderr, "Double click the right rectangle and see the change.\n");
 
     ft_view_add_event_listener(child_view,
         FT_EVENT_TYPE_POINTER_CLICK, on_click);
+
+    ft_view_add_event_listener(double_click_view,
+        FT_EVENT_TYPE_POINTER_DOUBLE_CLICK, on_double_click);
 
     ft_desktop_surface_show(surface);
 

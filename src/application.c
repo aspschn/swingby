@@ -242,6 +242,14 @@ bool _is_child_of(ft_view_t *view, ft_view_t *other)
     return false;
 }
 
+static void _reset_double_click(ft_application_t *application)
+{
+    application->double_click.view = NULL;
+    application->double_click.click_count = 0;
+    application->double_click.time = 0;
+    application->double_click.button = FT_POINTER_BUTTON_NONE;
+}
+
 //!<===============
 //!< Application
 //!<===============
@@ -262,9 +270,7 @@ ft_application_t* ft_application_new(int argc, char *argv[])
     app->click.view = NULL;
     app->click.button = FT_POINTER_BUTTON_NONE;
 
-    app->double_click.view = NULL;
-    app->double_click.click_count = 0;
-    app->double_click.time = 0;
+    _reset_double_click(app);
 
     app->_wl_registry = wl_display_get_registry(app->_wl_display);
     wl_registry_add_listener(app->_wl_registry, &app_registry_listener,
@@ -601,12 +607,9 @@ static void pointer_button_handler(void *data,
                 app->double_click.button = _from_linux_button(button);
             }
             // Reset double click info if different view or button.
-            if (app->double_click.view != view ||
+            if (app->double_click.view != view &&
                 app->double_click.button != _from_linux_button(button)) {
-                app->double_click.view = NULL;
-                app->double_click.click_count = 0;
-                app->double_click.time = 0;
-                app->double_click.button = FT_POINTER_BUTTON_NONE;
+                _reset_double_click(app);
             }
             // Store time if click count is 1.
             if (app->double_click.click_count == 1) {
@@ -616,12 +619,14 @@ static void pointer_button_handler(void *data,
                 app->double_click.view == view) {
                 uint32_t diff = time - app->double_click.time;
                 if (diff <= 1000) {
-                    ft_log_debug("DOUBLE CLICK!\n");
+                    ft_log_debug("DOUBLE CLICK! %p\n", view);
+                    ft_event_t *dbl_click_event = ft_event_new(
+                        FT_EVENT_TARGET_TYPE_VIEW,
+                        view,
+                        FT_EVENT_TYPE_POINTER_DOUBLE_CLICK);
+                    ft_application_post_event(app, dbl_click_event);
                 }
-                app->double_click.view = NULL;
-                app->double_click.click_count = 0;
-                app->double_click.time = 0;
-                app->double_click.button = FT_POINTER_BUTTON_NONE;
+                _reset_double_click(app);
             }
         }
     }

@@ -183,6 +183,9 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
                 ft_view_on_pointer_click(event->target, event);
                 _propagate_pointer_event(event->target, event);
                 break;
+            case FT_EVENT_TYPE_POINTER_DOUBLE_CLICK:
+                ft_view_on_pointer_double_click(event->target, event);
+                _propagate_pointer_event(event->target, event);
             default:
                 break;
             }
