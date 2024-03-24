@@ -329,19 +329,23 @@ static void xdg_toplevel_configure_handler(void *data,
         switch (state) {
         case XDG_TOPLEVEL_STATE_MAXIMIZED:
         {
-            desktop_surface->toplevel.state =
-                FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
+            int state = desktop_surface->toplevel.state;
 
-            ft_event_t *event = ft_event_new(
-                FT_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
-                desktop_surface,
-                FT_EVENT_TYPE_STATE_CHANGE);
-            event->state_change.state =
-                FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
-            event->state_change.size.width = width;
-            event->state_change.size.height = height;
+            if (state != FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
+                desktop_surface->toplevel.state =
+                    FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
 
-            ft_application_post_event(ft_application_instance(), event);
+                ft_event_t *event = ft_event_new(
+                    FT_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
+                    desktop_surface,
+                    FT_EVENT_TYPE_STATE_CHANGE);
+                event->state_change.state =
+                    FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
+                event->state_change.size.width = width;
+                event->state_change.size.height = height;
+
+                ft_application_post_event(ft_application_instance(), event);
+            }
 
             break;
         }
