@@ -56,6 +56,12 @@ struct ft_application_t {
         ft_view_t *view;
         ft_pointer_button button;
     } click;
+    struct {
+        ft_view_t *view;
+        uint32_t click_count;
+        uint32_t time;
+        ft_pointer_button button;
+    } double_click;
     /// \brief List of the desktop surfaces.
     ft_list_t *_desktop_surfaces;
     /// \brief Default cursor when view not set cursor.
@@ -256,6 +262,10 @@ ft_application_t* ft_application_new(int argc, char *argv[])
     app->click.view = NULL;
     app->click.button = FT_POINTER_BUTTON_NONE;
 
+    app->double_click.view = NULL;
+    app->double_click.click_count = 0;
+    app->double_click.time = 0;
+
     app->_wl_registry = wl_display_get_registry(app->_wl_display);
     wl_registry_add_listener(app->_wl_registry, &app_registry_listener,
         (void*)app);
@@ -344,8 +354,8 @@ struct wl_seat* ft_application_wl_seat(ft_application_t *application)
 int ft_application_exec(ft_application_t *application)
 {
     while (wl_display_dispatch(application->_wl_display) != -1) {
-        ft_log_debug("wl_display_dispatch() - desktop surfaces: %d\n",
-                     ft_list_length(application->_desktop_surfaces));
+        // ft_log_debug("wl_display_dispatch() - desktop surfaces: %d\n",
+        //              ft_list_length(application->_desktop_surfaces));
         ft_event_dispatcher_process_events(application->_event_dispatcher);
         // Exit event loop when last desktop surface closed.
         if (ft_list_length(application->_desktop_surfaces) == 0) {
@@ -582,6 +592,37 @@ static void pointer_button_handler(void *data,
             app->click.view = NULL;
 
             ft_application_post_event(app, click_event);
+
+            // Double click.
+            app->double_click.click_count += 1;
+
+            if (app->double_click.view == NULL) {
+                app->double_click.view = view;
+                app->double_click.button = _from_linux_button(button);
+            }
+            // Reset double click info if different view or button.
+            if (app->double_click.view != view ||
+                app->double_click.button != _from_linux_button(button)) {
+                app->double_click.view = NULL;
+                app->double_click.click_count = 0;
+                app->double_click.time = 0;
+                app->double_click.button = FT_POINTER_BUTTON_NONE;
+            }
+            // Store time if click count is 1.
+            if (app->double_click.click_count == 1) {
+                app->double_click.time = time;
+            }
+            if (app->double_click.click_count == 2 &&
+                app->double_click.view == view) {
+                uint32_t diff = time - app->double_click.time;
+                if (diff <= 1000) {
+                    ft_log_debug("DOUBLE CLICK!\n");
+                }
+                app->double_click.view = NULL;
+                app->double_click.click_count = 0;
+                app->double_click.time = 0;
+                app->double_click.button = FT_POINTER_BUTTON_NONE;
+            }
         }
     }
 }
