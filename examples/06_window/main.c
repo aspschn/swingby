@@ -147,6 +147,16 @@ static void on_desktop_surface_state_change(ft_event_t *event)
     fprintf(stderr, "State changed. %ldx%ld\n",
             event->state_change.size.width,
             event->state_change.size.height);
+    ft_surface_t *surface = ft_desktop_surface_surface(
+        window_global->desktop_surface);
+
+    int state = event->state_change.state;
+    if (state == FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
+        ft_size_t size;
+        size.width = event->state_change.size.width;
+        size.height = event->state_change.size.height;
+        ft_surface_set_size(surface, &size);
+    }
 }
 
 static void on_surface_resize(ft_event_t *event)
