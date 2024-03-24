@@ -41,8 +41,12 @@ ft_rect_i_t get_window_geometry(struct window *window)
     ft_rect_i_t geometry;
     geometry.pos.x = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
     geometry.pos.y = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
-    geometry.size.width = surface_size->width - (WINDOW_SHADOW_THICKNESS * 2);
-    geometry.size.height = surface_size->height - (WINDOW_SHADOW_THICKNESS * 2);
+    geometry.size.width = surface_size->width
+        - (WINDOW_SHADOW_THICKNESS * 2)
+        + (WINDOW_BORDER_THICKNESS * 2);
+    geometry.size.height = surface_size->height
+        - (WINDOW_SHADOW_THICKNESS * 2)
+        + (WINDOW_BORDER_THICKNESS * 2);
 
     return geometry;
 }
@@ -50,45 +54,47 @@ ft_rect_i_t get_window_geometry(struct window *window)
 ft_rect_t get_shadow_geometry(struct window *window)
 {
     ft_surface_t *surface = ft_desktop_surface_surface(window->desktop_surface);
-    const ft_size_t *window_size = ft_surface_size(surface);
+    const ft_size_t *surface_size = ft_surface_size(surface);
 
     ft_rect_t geometry;
     geometry.pos.x = 0;
     geometry.pos.y = 0;
-    geometry.size.width = window_size->width; // + WINDOW_SHADOW_THICKNESS;
-    geometry.size.height = window_size->height; // + WINDOW_SHADOW_THICKNESS;
+    geometry.size.width = surface_size->width;
+    geometry.size.height = surface_size->height;
 
     return geometry;
 }
 
 ft_rect_t get_resize_geometry(struct window *window)
 {
-    ft_surface_t *surface = ft_desktop_surface_surface(window->desktop_surface);
-    const ft_size_t *window_size = ft_surface_size(surface);
+    const ft_size_t shadow_size = ft_view_geometry(window->shadow)->size;
 
     ft_rect_t geometry;
-    geometry.pos.x = WINDOW_SHADOW_THICKNESS;
-    geometry.pos.y = WINDOW_SHADOW_THICKNESS;
-    geometry.size.width = window_size->width
-        - (WINDOW_SHADOW_THICKNESS * 2);
-    geometry.size.height = window_size->height
-        - (WINDOW_SHADOW_THICKNESS * 2);
+    geometry.pos.x = WINDOW_SHADOW_THICKNESS - WINDOW_RESIZE_THICKNESS;
+    geometry.pos.y = WINDOW_SHADOW_THICKNESS - WINDOW_RESIZE_THICKNESS;
+    geometry.size.width = shadow_size.width
+        - (WINDOW_SHADOW_THICKNESS * 2)
+        + (WINDOW_RESIZE_THICKNESS * 2);
+    geometry.size.height = shadow_size.height
+        - (WINDOW_SHADOW_THICKNESS * 2)
+        + (WINDOW_RESIZE_THICKNESS * 2);
 
     return geometry;
 }
 
 ft_rect_t get_border_geometry(struct window *window)
 {
-    ft_surface_t *surface = ft_desktop_surface_surface(window->desktop_surface);
-    const ft_size_t *window_size = ft_surface_size(surface);
+    const ft_size_t resize_size = ft_view_geometry(window->resize)->size;
 
     ft_rect_t geometry;
-    geometry.pos.x = WINDOW_RESIZE_THICKNESS;
-    geometry.pos.y = WINDOW_RESIZE_THICKNESS;
-    geometry.size.width = window_size->width
-        - (WINDOW_SHADOW_THICKNESS * 2) - (WINDOW_RESIZE_THICKNESS * 2);
-    geometry.size.height = window_size->height
-        - (WINDOW_SHADOW_THICKNESS * 2) - (WINDOW_RESIZE_THICKNESS * 2);
+    geometry.pos.x = WINDOW_RESIZE_THICKNESS - WINDOW_BORDER_THICKNESS;
+    geometry.pos.y = WINDOW_RESIZE_THICKNESS - WINDOW_BORDER_THICKNESS;
+    geometry.size.width = resize_size.width
+        - (WINDOW_RESIZE_THICKNESS * 2)
+        + (WINDOW_BORDER_THICKNESS * 2);
+    geometry.size.height = resize_size.height
+        - (WINDOW_RESIZE_THICKNESS * 2)
+        + (WINDOW_BORDER_THICKNESS * 2);
 
     return geometry;
 }
@@ -222,9 +228,9 @@ static void init_window(struct window *window)
     // Set border.
     ft_rect_t border_geometry = get_border_geometry(window);
     window->border = ft_view_new(window->resize, &border_geometry);
-    color.r = 100;
-    color.g = 100;
-    color.b = 100;
+    color.r = 0; // 100;
+    color.g = 0; // 100;
+    color.b = 0; // 100;
     color.a = 255;
     ft_view_set_color(window->border, &color);
 
@@ -318,11 +324,7 @@ int main(int argc, char *argv[])
     ft_desktop_surface_show(window.desktop_surface);
 
     // Set the actual window size.
-    ft_rect_i_t win_geometry;
-    win_geometry.pos.x = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
-    win_geometry.pos.y = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
-    win_geometry.size.width = WINDOW_DEFAULT_WIDTH + WINDOW_BORDER_THICKNESS;
-    win_geometry.size.height = WINDOW_DEFAULT_HEIGHT + WINDOW_BORDER_THICKNESS;
+    ft_rect_i_t win_geometry = get_window_geometry(&window);
     ft_desktop_surface_set_wm_geometry(window.desktop_surface, &win_geometry);
 
     return ft_application_exec(app);
