@@ -22,6 +22,31 @@ struct window {
 
 struct window *window_global = NULL;
 
+// `window_size` is from desktop surface resize event.
+ft_size_t get_surface_size(ft_size_t *window_size)
+{
+    ft_size_t size;
+    size.width = window_size->width + (WINDOW_SHADOW_THICKNESS * 2);
+    size.height = window_size->height + (WINDOW_SHADOW_THICKNESS * 2);
+
+    return size;
+}
+
+// Desktop surface wm_geometry.
+ft_rect_i_t get_window_geometry(struct window *window)
+{
+    ft_surface_t *surface = ft_desktop_surface_surface(window->desktop_surface);
+    const ft_size_t *surface_size = ft_surface_size(surface);
+
+    ft_rect_i_t geometry;
+    geometry.pos.x = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
+    geometry.pos.y = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
+    geometry.size.width = surface_size->width - (WINDOW_SHADOW_THICKNESS * 2);
+    geometry.size.height = surface_size->height - (WINDOW_SHADOW_THICKNESS * 2);
+
+    return geometry;
+}
+
 ft_rect_t get_shadow_geometry(struct window *window)
 {
     ft_surface_t *surface = ft_desktop_surface_surface(window->desktop_surface);
@@ -102,11 +127,13 @@ static void on_desktop_surface_resize(ft_event_t *event)
     ft_surface_t *surface = ft_desktop_surface_surface(
         window_global->desktop_surface);
     ft_rect_t new_geo;
-    new_geo.size.width = event->resize.size.width
-        + (WINDOW_SHADOW_THICKNESS * 2);
-    new_geo.size.height = event->resize.size.height
-        + (WINDOW_SHADOW_THICKNESS * 2);
+    new_geo.size = get_surface_size(&event->resize.size);
+
     ft_surface_set_size(surface, &new_geo.size);
+
+    ft_rect_i_t wm_geo;
+    wm_geo = get_window_geometry(window_global);
+    ft_desktop_surface_set_wm_geometry(window_global->desktop_surface, &wm_geo);
 }
 
 static void on_desktop_surface_state_change(ft_event_t *event)
