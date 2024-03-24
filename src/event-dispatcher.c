@@ -138,6 +138,10 @@ ft_event_dispatcher_process_events(ft_event_dispatcher_t *event_dispatcher)
             case FT_EVENT_TYPE_RESIZE:
                 ft_desktop_surface_on_resize(event->target, event);
                 break;
+            case FT_EVENT_TYPE_TOPLEVEL_STATE_CHANGE:
+                ft_desktop_surface_on_toplevel_state_change(event->target,
+                    event);
+                break;
             default:
                 break;
             }

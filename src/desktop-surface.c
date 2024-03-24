@@ -23,6 +23,7 @@ struct ft_desktop_surface_t {
     ft_rect_i_t wm_geometry;
     struct {
         ft_size_i_t minimum_size;
+        enum ft_desktop_surface_toplevel_state state;
         /// \brief Initial resizing configure event gives me the garbage values.
         ///
         /// Ignore first resizing event since it contains garbage values.
@@ -94,6 +95,7 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     d_surface->wm_geometry.size.width = 0;
     d_surface->wm_geometry.size.height = 0;
 
+    d_surface->toplevel.state = FT_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
     d_surface->toplevel.initial_resizing = true;
 
     d_surface->event_listeners = ft_list_new();
@@ -289,6 +291,15 @@ void ft_desktop_surface_on_resize(ft_desktop_surface_t *desktop_surface,
         FT_EVENT_TYPE_RESIZE, event);
 }
 
+void ft_desktop_surface_on_toplevel_state_change(
+    ft_desktop_surface_t *desktop_surface,
+    ft_event_t *event)
+{
+    _event_listener_filter_for_each(desktop_surface->event_listeners,
+        FT_EVENT_TYPE_TOPLEVEL_STATE_CHANGE,
+        event);
+}
+
 //!<===================
 //!< XDG Surface
 //!<===================
@@ -317,6 +328,24 @@ static void xdg_toplevel_configure_handler(void *data,
     wl_array_for_each(it, states) {
         enum xdg_toplevel_state state = *(enum xdg_toplevel_state*)it;
         switch (state) {
+        case XDG_TOPLEVEL_STATE_MAXIMIZED:
+        {
+            desktop_surface->toplevel.state =
+                FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
+
+            ft_event_t *event = ft_event_new(
+                FT_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
+                desktop_surface,
+                FT_EVENT_TYPE_TOPLEVEL_STATE_CHANGE);
+            event->toplevel_state_change.state =
+                FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
+            event->toplevel_state_change.size.width = width;
+            event->toplevel_state_change.size.height = height;
+
+            ft_application_post_event(ft_application_instance(), event);
+
+            break;
+        }
         case XDG_TOPLEVEL_STATE_RESIZING:
         {
             ft_log_debug("Resize %dx%d\n", width, height);

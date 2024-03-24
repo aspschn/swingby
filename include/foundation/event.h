@@ -29,6 +29,7 @@ enum ft_event_type {
     FT_EVENT_TYPE_REQUEST_UPDATE,
     FT_EVENT_TYPE_MOVE,
     FT_EVENT_TYPE_RESIZE,
+    FT_EVENT_TYPE_TOPLEVEL_STATE_CHANGE,
 };
 
 typedef struct ft_event_t ft_event_t;
@@ -53,6 +54,12 @@ typedef struct ft_resize_event_t {
     ft_size_t size;
 } ft_resize_event_t;
 
+typedef struct ft_toplevel_state_change_event_t {
+    /// Must a valid value in `enum ft_desktop_surface_toplevel_state`.
+    int state;
+    ft_size_i_t size;
+} ft_toplevel_state_change_event_t;
+
 struct ft_event_t {
     enum ft_event_target_type target_type;
     void *target;
@@ -62,6 +69,7 @@ struct ft_event_t {
         ft_pointer_event_t pointer;
         ft_move_event_t move;
         ft_resize_event_t resize;
+        ft_toplevel_state_change_event_t toplevel_state_change;
     };
 };
 
