@@ -628,6 +628,9 @@ static void pointer_button_handler(void *data,
                 }
                 _reset_double_click(app);
             }
+            if (app->double_click.click_count > 2) {
+                _reset_double_click(app);
+            }
         }
     }
 }
