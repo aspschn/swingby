@@ -84,8 +84,7 @@ void ft_desktop_surface_add_event_listener(
 void ft_desktop_surface_on_resize(ft_desktop_surface_t *desktop_surface,
                                   ft_event_t *event);
 
-void ft_desktop_surface_on_toplevel_state_change(
-    ft_desktop_surface_t *desktop_surface,
-    ft_event_t *event);
+void ft_desktop_surface_on_state_change(ft_desktop_surface_t *desktop_surface,
+                                        ft_event_t *event);
 
 #endif /* _FOUNDATION_DESKTOP_SURFACE_H */

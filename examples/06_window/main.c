@@ -109,11 +109,11 @@ static void on_desktop_surface_resize(ft_event_t *event)
     ft_surface_set_size(surface, &new_geo.size);
 }
 
-static void on_desktop_surface_toplevel_state_change(ft_event_t *event)
+static void on_desktop_surface_state_change(ft_event_t *event)
 {
     fprintf(stderr, "State changed. %ldx%ld\n",
-            event->toplevel_state_change.size.width,
-            event->toplevel_state_change.size.height);
+            event->state_change.size.width,
+            event->state_change.size.height);
 }
 
 static void on_surface_resize(ft_event_t *event)
@@ -274,8 +274,8 @@ int main(int argc, char *argv[])
     // Desktop surface state change event handler.
     ft_desktop_surface_add_event_listener(
         window.desktop_surface,
-        FT_EVENT_TYPE_TOPLEVEL_STATE_CHANGE,
-        on_desktop_surface_toplevel_state_change);
+        FT_EVENT_TYPE_STATE_CHANGE,
+        on_desktop_surface_state_change);
 
     // Surface resize event handler.
     ft_surface_add_event_listener(

@@ -291,12 +291,11 @@ void ft_desktop_surface_on_resize(ft_desktop_surface_t *desktop_surface,
         FT_EVENT_TYPE_RESIZE, event);
 }
 
-void ft_desktop_surface_on_toplevel_state_change(
-    ft_desktop_surface_t *desktop_surface,
-    ft_event_t *event)
+void ft_desktop_surface_on_state_change(ft_desktop_surface_t *desktop_surface,
+                                        ft_event_t *event)
 {
     _event_listener_filter_for_each(desktop_surface->event_listeners,
-        FT_EVENT_TYPE_TOPLEVEL_STATE_CHANGE,
+        FT_EVENT_TYPE_STATE_CHANGE,
         event);
 }
 
@@ -336,11 +335,11 @@ static void xdg_toplevel_configure_handler(void *data,
             ft_event_t *event = ft_event_new(
                 FT_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
                 desktop_surface,
-                FT_EVENT_TYPE_TOPLEVEL_STATE_CHANGE);
-            event->toplevel_state_change.state =
+                FT_EVENT_TYPE_STATE_CHANGE);
+            event->state_change.state =
                 FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
-            event->toplevel_state_change.size.width = width;
-            event->toplevel_state_change.size.height = height;
+            event->state_change.size.width = width;
+            event->state_change.size.height = height;
 
             ft_application_post_event(ft_application_instance(), event);
 
