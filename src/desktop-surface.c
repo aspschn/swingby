@@ -23,7 +23,7 @@ struct ft_desktop_surface_t {
     ft_rect_i_t wm_geometry;
     struct {
         ft_size_i_t minimum_size;
-        enum ft_desktop_surface_toplevel_state state;
+        ft_desktop_surface_toplevel_state_flags states;
         /// \brief Initial resizing configure event gives me the garbage values.
         ///
         /// Ignore first resizing event since it contains garbage values.
@@ -67,6 +67,20 @@ static struct xdg_toplevel_listener xdg_toplevel_listener = {
 //!< Helper Functions
 //!<=====================
 
+static ft_event_t* _state_change_event_new(
+    ft_desktop_surface_t *desktop_surface,
+    int32_t width,
+    int32_t height)
+{
+    ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
+        desktop_surface,
+        FT_EVENT_TYPE_STATE_CHANGE);
+    event->state_change.size.width = width;
+    event->state_change.size.height = height;
+
+    return event;
+}
+
 static void _event_listener_filter_for_each(ft_list_t *listeners,
                                             enum ft_event_type type,
                                             ft_event_t *event)
@@ -95,7 +109,7 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     d_surface->wm_geometry.size.width = 0;
     d_surface->wm_geometry.size.height = 0;
 
-    d_surface->toplevel.state = FT_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
+    d_surface->toplevel.states = FT_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
     d_surface->toplevel.initial_resizing = true;
 
     d_surface->event_listeners = ft_list_new();
@@ -172,6 +186,12 @@ void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface)
     xdg_surface_destroy(desktop_surface->_xdg_surface);
 
     ft_surface_detach(desktop_surface->_surface);
+}
+
+ft_desktop_surface_toplevel_state_flags
+ft_desktop_surface_toplevel_states(ft_desktop_surface_t *desktop_surface)
+{
+    return desktop_surface->toplevel.states;
 }
 
 void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
@@ -323,16 +343,25 @@ static void xdg_toplevel_configure_handler(void *data,
     ft_desktop_surface_t *desktop_surface = (ft_desktop_surface_t*)data;
     // ft_application_t *app = ft_application_instance();
 
+    // XDG configure event does not contain restore states.
+    // Manually store the states as boolean flags and compare these at the
+    // end of iteration.
+    bool maximized = false;
+    bool fullscreen = false;
+
     void *it;
     wl_array_for_each(it, states) {
         enum xdg_toplevel_state state = *(enum xdg_toplevel_state*)it;
+        ft_log_debug("wl_array_for_each() - state: %d, %dx%d\n", state, width, height);
         switch (state) {
         case XDG_TOPLEVEL_STATE_MAXIMIZED:
         {
-            int state = desktop_surface->toplevel.state;
+            maximized = true;
 
-            if (state != FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
-                desktop_surface->toplevel.state =
+            int state = desktop_surface->toplevel.states;
+
+            if (state | FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
+                desktop_surface->toplevel.states |=
                     FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
 
                 ft_event_t *event = ft_event_new(
@@ -378,6 +407,24 @@ static void xdg_toplevel_configure_handler(void *data,
         }
         default:
             break;
+        }
+    }
+
+    // Compare states.
+    {
+        ft_desktop_surface_toplevel_state_flags states;
+        states = desktop_surface->toplevel.states;
+
+        if (states | FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
+            maximized != true) {
+            // Restored from maximized.
+            desktop_surface->toplevel.states &=
+                ~FT_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
+
+            ft_event_t *event = _state_change_event_new(desktop_surface,
+                width, height);
+
+            ft_application_post_event(ft_application_instance(), event);
         }
     }
 }

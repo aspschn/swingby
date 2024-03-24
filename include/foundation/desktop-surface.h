@@ -28,14 +28,16 @@ enum ft_desktop_surface_toplevel_state {
     FT_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL            = 0,
     FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED         = 1,
     FT_DESKTOP_SURFACE_TOPLEVEL_STATE_FULLSCREEN        = 2,
-    FT_DESKTOP_SURFACE_TOPLEVEL_STATE_RESIZING          = 3,
-    FT_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED         = 4,
+    //
     FT_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_LEFT        = 5,
     FT_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_RIGHT       = 6,
     FT_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_TOP         = 7,
     FT_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_BOTTOM      = 8,
     FT_DESKTOP_SURFACE_TOPLEVEL_STATE_SUSPENDED         = 9,
 };
+
+typedef enum ft_desktop_surface_toplevel_state
+    ft_desktop_surface_toplevel_state_flags;
 
 typedef struct ft_desktop_surface_t ft_desktop_surface_t;
 
@@ -48,6 +50,9 @@ ft_desktop_surface_surface(ft_desktop_surface_t *desktop_surface);
 void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface);
 
 void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface);
+
+ft_desktop_surface_toplevel_state_flags
+ft_desktop_surface_toplevel_states(ft_desktop_surface_t *desktop_surface);
 
 /// \brief Tell the geometry is the actual window area to the compositor.
 ///
