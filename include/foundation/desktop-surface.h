@@ -8,8 +8,8 @@ typedef struct ft_rect_i_t ft_rect_i_t;
 typedef struct ft_surface_t ft_surface_t;
 
 typedef enum ft_desktop_surface_role {
-    FT_DESKTOP_SURFACE_ROLE_TOPLEVEL,
-    FT_DESKTOP_SURFACE_ROLE_POPUP,
+    FT_DESKTOP_SURFACE_ROLE_TOPLEVEL    = 0,
+    FT_DESKTOP_SURFACE_ROLE_POPUP       = 1,
 } ft_desktop_surface_role;
 
 typedef enum ft_desktop_surface_toplevel_resize_edge {
