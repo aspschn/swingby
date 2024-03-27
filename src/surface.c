@@ -506,6 +506,20 @@ void ft_surface_update(ft_surface_t *surface)
     }
 }
 
+void ft_surface_set_input_geometry(ft_surface_t *surface, ft_rect_t *geometry)
+{
+    ft_application_t *app = ft_application_instance();
+    struct wl_surface *wl_surface = ft_surface_wl_surface(surface);
+    struct wl_compositor *wl_compositor = ft_application_wl_compositor(app);
+
+    struct wl_region *region = wl_compositor_create_region(wl_compositor);
+    wl_region_add(region,
+        geometry->pos.x, geometry->pos.y,
+        geometry->size.width, geometry->size.height);
+    wl_surface_set_input_region(wl_surface, region);
+    wl_region_destroy(region);
+}
+
 void ft_surface_add_event_listener(ft_surface_t *surface,
                                    enum ft_event_type event_type,
                                    void (*listener)(ft_event_t*))
