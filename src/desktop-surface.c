@@ -20,9 +20,9 @@ struct ft_desktop_surface_t {
     struct xdg_surface *_xdg_surface;
     struct xdg_toplevel *_xdg_toplevel;
     struct xdg_popup *_xdg_popup;
-    ft_rect_i_t wm_geometry;
+    ft_rect_t wm_geometry;
     struct {
-        ft_size_i_t minimum_size;
+        ft_size_t minimum_size;
         ft_desktop_surface_toplevel_state_flags states;
         /// \brief Initial resizing configure event gives me the garbage values.
         ///
@@ -155,7 +155,7 @@ void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface)
         wl_display_roundtrip(ft_application_wl_display(app));
 
         // Set minimum size.
-        ft_size_i_t min_size;
+        ft_size_t min_size;
         min_size.width = 100;
         min_size.height = 100;
         ft_desktop_surface_toplevel_set_minimum_size(desktop_surface,
@@ -195,7 +195,7 @@ ft_desktop_surface_toplevel_states(ft_desktop_surface_t *desktop_surface)
 }
 
 void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
-                                        const ft_rect_i_t *geometry)
+                                        const ft_rect_t *geometry)
 {
     desktop_surface->wm_geometry = *geometry;
 
@@ -217,14 +217,14 @@ void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
     wl_region_destroy(region);
 }
 
-const ft_size_i_t*
+const ft_size_t*
 ft_desktop_surface_toplevel_minimum_size(ft_desktop_surface_t *desktop_surface)
 {
     return &desktop_surface->toplevel.minimum_size;
 }
 
 void ft_desktop_surface_toplevel_set_minimum_size(
-    ft_desktop_surface_t *desktop_surface, const ft_size_i_t *size)
+    ft_desktop_surface_t *desktop_surface, const ft_size_t *size)
 {
     desktop_surface->toplevel.minimum_size = *size;
 

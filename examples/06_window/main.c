@@ -33,12 +33,12 @@ ft_size_t get_surface_size(ft_size_t *window_size)
 }
 
 // Desktop surface wm_geometry.
-ft_rect_i_t get_window_geometry(struct window *window)
+ft_rect_t get_window_geometry(struct window *window)
 {
     ft_surface_t *surface = ft_desktop_surface_surface(window->desktop_surface);
     const ft_size_t *surface_size = ft_surface_size(surface);
 
-    ft_rect_i_t geometry;
+    ft_rect_t geometry;
     geometry.pos.x = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
     geometry.pos.y = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
     geometry.size.width = surface_size->width
@@ -137,14 +137,14 @@ static void on_desktop_surface_resize(ft_event_t *event)
 
     ft_surface_set_size(surface, &new_geo.size);
 
-    ft_rect_i_t wm_geo;
+    ft_rect_t wm_geo;
     wm_geo = get_window_geometry(window_global);
     ft_desktop_surface_set_wm_geometry(window_global->desktop_surface, &wm_geo);
 }
 
 static void on_desktop_surface_state_change(ft_event_t *event)
 {
-    fprintf(stderr, "State changed. %ldx%ld\n",
+    fprintf(stderr, "State changed. %.2fx%.2f\n",
             event->state_change.size.width,
             event->state_change.size.height);
     ft_surface_t *surface = ft_desktop_surface_surface(
@@ -334,7 +334,7 @@ int main(int argc, char *argv[])
     ft_desktop_surface_show(window.desktop_surface);
 
     // Set the actual window size.
-    ft_rect_i_t win_geometry = get_window_geometry(&window);
+    ft_rect_t win_geometry = get_window_geometry(&window);
     ft_desktop_surface_set_wm_geometry(window.desktop_surface, &win_geometry);
 
     return ft_application_exec(app);

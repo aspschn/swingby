@@ -58,7 +58,7 @@ typedef struct ft_resize_event_t {
 typedef struct ft_state_change_event_t {
     /// Must a valid value in `enum ft_desktop_surface_toplevel_state`.
     int state;
-    ft_size_i_t size;
+    ft_size_t size;
 } ft_state_change_event_t;
 
 struct ft_event_t {

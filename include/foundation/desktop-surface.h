@@ -5,6 +5,8 @@
 
 typedef struct ft_size_i_t ft_size_i_t;
 typedef struct ft_rect_i_t ft_rect_i_t;
+typedef struct ft_size_t ft_size_t;
+typedef struct ft_rect_t ft_rect_t;
 typedef struct ft_surface_t ft_surface_t;
 
 typedef enum ft_desktop_surface_role {
@@ -63,16 +65,16 @@ ft_desktop_surface_toplevel_states(ft_desktop_surface_t *desktop_surface);
 /// This method tells to the compositor (window manager) to ignore the events
 /// which is out of the given geometry.
 void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
-                                        const ft_rect_i_t *geometry);
+                                        const ft_rect_t *geometry);
 
-const ft_size_i_t*
+const ft_size_t*
 ft_desktop_surface_toplevel_minimum_size(ft_desktop_surface_t *desktop_surface);
 
 /// \brief Set minimum size of the toplevel desktop surface.
 ///
 /// This changes the field and call `_set_min_size` method in XDG toplevel.
 void ft_desktop_surface_toplevel_set_minimum_size(
-    ft_desktop_surface_t *desktop_surface, const ft_size_i_t *size);
+    ft_desktop_surface_t *desktop_surface, const ft_size_t *size);
 
 void ft_desktop_surface_toplevel_close(ft_desktop_surface_t *desktop_surface);
 
