@@ -27,6 +27,8 @@ enum ft_event_type {
     FT_EVENT_TYPE_POINTER_CLICK             = 15,
     FT_EVENT_TYPE_POINTER_DOUBLE_CLICK      = 16,
     FT_EVENT_TYPE_REQUEST_UPDATE            = 70,
+    FT_EVENT_TYPE_SHOW                      = 80,
+    FT_EVENT_TYPE_HIDE                      = 81,
     FT_EVENT_TYPE_MOVE                      = 100,
     FT_EVENT_TYPE_RESIZE                    = 101,
     FT_EVENT_TYPE_STATE_CHANGE              = 110,
