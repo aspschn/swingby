@@ -441,11 +441,11 @@ static void pointer_enter_handler(void *data,
         hot_spot.x = 0;
         hot_spot.y = 0;
         app->cursor = ft_cursor_new(FT_CURSOR_SHAPE_ARROW, &hot_spot);
-
-        ft_surface_t *cursor_surface = ft_cursor_surface(app->cursor);
-        wl_pointer_set_cursor(wl_pointer,
-            serial, ft_surface_wl_surface(cursor_surface), 0, 0);
     }
+
+    ft_surface_t *cursor_surface = ft_cursor_surface(app->cursor);
+    wl_pointer_set_cursor(wl_pointer,
+        serial, ft_surface_wl_surface(cursor_surface), 0, 0);
 
     float x = wl_fixed_to_double(sx);
     float y = wl_fixed_to_double(sy);
