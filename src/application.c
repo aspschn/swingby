@@ -105,6 +105,52 @@ static const struct xdg_wm_base_listener app_xdg_wm_base_listener = {
 };
 
 //!<===========
+//!< Output
+//!<===========
+
+static void output_geometry_handler(void *data,
+                                       struct wl_output *wl_output,
+                                       int32_t x,
+                                       int32_t y,
+                                       int32_t physical_width,
+                                       int32_t physical_height,
+                                       int32_t subpixel,
+                                       const char *make,
+                                       const char *model,
+                                       int32_t transform);
+
+static void output_mode_handler(void *data,
+                                struct wl_output *wl_output,
+                                uint32_t flags,
+                                int32_t width,
+                                int32_t height,
+                                int32_t refresh);
+
+static void output_done_handler(void *data,
+                                struct wl_output *wl_output);
+
+static void output_scale_handler(void *data,
+                                 struct wl_output *wl_output,
+                                 int32_t factor);
+
+static void output_name_handler(void *data,
+                                struct wl_output *wl_output,
+                                const char *name);
+
+static void output_description_handler(void *data,
+                                       struct wl_output *wl_output,
+                                       const char *description);
+
+static const struct wl_output_listener output_listener = {
+    .geometry = output_geometry_handler,
+    .mode = output_mode_handler,
+    .done = output_done_handler,
+    .scale = output_scale_handler,
+    .name = output_name_handler,
+    .description = output_description_handler,
+};
+
+//!<===========
 //!< Pointer
 //!<===========
 
@@ -426,6 +472,10 @@ static void app_global_handler(void *data,
         app->_wl_seat = wl_registry_bind(wl_registry,
             name, &wl_seat_interface, 4);
         wl_seat_add_listener(app->_wl_seat, &seat_listener, (void*)app);
+    } else if (strcmp(interface, "wl_output") == 0) {
+        struct wl_output *wl_output = wl_registry_bind(wl_registry,
+            name, &wl_output_interface, 4);
+        wl_output_add_listener(wl_output, &output_listener, (void*)app);
     }
 }
 
@@ -445,6 +495,61 @@ static void xdg_wm_base_ping_handler(void *data,
                                      uint32_t serial)
 {
     xdg_wm_base_pong(xdg_wm_base, serial);
+}
+
+//!<===========
+//!< Output
+//!<===========
+
+static void output_geometry_handler(void *data,
+                                    struct wl_output *wl_output,
+                                    int32_t x,
+                                    int32_t y,
+                                    int32_t physical_width,
+                                    int32_t physical_height,
+                                    int32_t subpixel,
+                                    const char *make,
+                                    const char *model,
+                                    int32_t transform)
+{
+    ft_log_debug("output_geometry_handler() - %p\n", wl_output);
+}
+
+static void output_mode_handler(void *data,
+                                struct wl_output *wl_output,
+                                uint32_t flags,
+                                int32_t width,
+                                int32_t height,
+                                int32_t refresh)
+{
+    ft_log_debug("output_mode_handler() - %p\n", wl_output);
+}
+
+static void output_done_handler(void *data,
+                                struct wl_output *wl_output)
+{
+    ft_log_debug("output_done_handler() - %p\n", wl_output);
+}
+
+static void output_scale_handler(void *data,
+                                 struct wl_output *wl_output,
+                                 int32_t factor)
+{
+    ft_log_debug("output_scale_handler() - %p\n", wl_output);
+}
+
+static void output_name_handler(void *data,
+                                struct wl_output *wl_output,
+                                const char *name)
+{
+    ft_log_debug("output_name_handler() - %p\n", wl_output);
+}
+
+static void output_description_handler(void *data,
+                                       struct wl_output *wl_output,
+                                       const char *description)
+{
+    ft_log_debug("outout_description_handler() - %p\n", wl_output);
 }
 
 //!<============

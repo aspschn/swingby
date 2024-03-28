@@ -18,6 +18,7 @@ set(FOUNDATION_SOURCES
     include/foundation/rect.h
     include/foundation/color.h
     include/foundation/application.h
+    include/foundation/output.h
     include/foundation/surface.h
     include/foundation/desktop-surface.h
     include/foundation/view.h
@@ -35,6 +36,7 @@ set(FOUNDATION_SOURCES
     src/rect.c
     src/color.c
     src/application.c
+    src/output.c
     src/surface.c
     src/desktop-surface.c
     src/view.c
