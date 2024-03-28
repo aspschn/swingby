@@ -30,7 +30,15 @@ ft_list_t* ft_list_new()
 void ft_list_push(ft_list_t *list, void *data)
 {
     if (list->capacity == list->length) {
-        // TODO: Increase capacity.
+        // Increase capacity.
+        void **old_data = list->data;
+        list->capacity = list->capacity * 2;
+        void **new_data = malloc(sizeof(void**) * list->capacity);
+        for (int i = 0; i < list->length; ++i) {
+            new_data[i] = old_data[i];
+        }
+        free(old_data);
+        list->data = new_data;
     }
 
     list->data[list->length] = data;
