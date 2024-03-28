@@ -222,6 +222,37 @@ ft_pointer_button _from_linux_button(uint32_t button)
     }
 }
 
+static void _post_pointer_enter_event(ft_view_t *view,
+                                      float x,
+                                      float y)
+{
+    ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
+        view,
+        FT_EVENT_TYPE_POINTER_ENTER);
+
+    event->pointer.button = FT_POINTER_BUTTON_NONE;
+    event->pointer.position.x = x;
+    event->pointer.position.y = y;
+
+    ft_application_post_event(ft_application_instance(), event);
+}
+
+static void _post_pointer_leave_event(ft_view_t *view,
+                                      float x,
+                                      float y)
+{
+    ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
+        view,
+        FT_EVENT_TYPE_POINTER_LEAVE);
+
+    event->pointer.button = FT_POINTER_BUTTON_NONE;
+    // TODO: How to get pointer leave position?
+    event->pointer.position.x = x;
+    event->pointer.position.y = y;
+
+    ft_application_post_event(ft_application_instance(), event);
+}
+
 /// \brief What is this function's purpose?
 bool _is_child_of(ft_view_t *view, ft_view_t *other)
 {
@@ -474,15 +505,8 @@ static void pointer_enter_handler(void *data,
 
     app->_pointer_view = view;
 
-    ft_event_t *view_event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
-        (void*)view,
-        FT_EVENT_TYPE_POINTER_ENTER);
-    view_event->pointer.button = FT_POINTER_BUTTON_NONE;
-    view_event->pointer.position.x = position.x;
-    view_event->pointer.position.y = position.y;
-
     // Post the event (view).
-    ft_application_post_event(app, view_event);
+    _post_pointer_enter_event(view, position.x, position.y);
 }
 
 static void pointer_leave_handler(void *data,
@@ -531,17 +555,14 @@ static void pointer_motion_handler(void *data,
 
     // Check difference.
     if (view != app->_pointer_view) {
-        ft_event_t *enter_event = ft_event_new(FT_EVENT_TARGET_TYPE_VIEW,
-            (void*)view,
-            FT_EVENT_TYPE_POINTER_ENTER);
-        enter_event->pointer.button = FT_POINTER_BUTTON_NONE;
-        enter_event->pointer.position.x = pos.x;
-        enter_event->pointer.position.y = pos.y;
+        // Post the leave event for the previous view.
+        // TODO: Leave position.
+        _post_pointer_leave_event(app->_pointer_view, 0.0f, 0.0f);
 
         app->_pointer_view = view;
 
         // Post the event.
-        ft_application_post_event(app, enter_event);
+        _post_pointer_enter_event(view, pos.x, pos.y);
     }
 }
 
