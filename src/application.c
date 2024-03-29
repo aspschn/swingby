@@ -473,6 +473,7 @@ static void app_global_handler(void *data,
             name, &wl_seat_interface, 4);
         wl_seat_add_listener(app->_wl_seat, &seat_listener, (void*)app);
     } else if (strcmp(interface, "wl_output") == 0) {
+        ft_log_debug("wl_output - name: %d\n", name);
         struct wl_output *wl_output = wl_registry_bind(wl_registry,
             name, &wl_output_interface, 4);
         wl_output_add_listener(wl_output, &output_listener, (void*)app);
@@ -483,7 +484,7 @@ static void app_global_remove_handler(void *data,
                                       struct wl_registry *wl_registry,
                                       uint32_t name)
 {
-    //
+    ft_log_debug("global_remove_handler() - name: %d\n", name);
 }
 
 //!<===========
