@@ -19,7 +19,7 @@ void ft_log(ft_log_level level, const char *format, va_list args)
         fprintf(stderr, "\033[1;33m[WARN]\033[0m ");
         vfprintf(stderr, format, args);
     } else if (level == FT_LOG_LEVEL_ERROR) {
-        fprintf(stderr, "\033[1;33m[ERROR]\033[0m ");
+        fprintf(stderr, "\033[1;31m[ERROR]\033[0m ");
         vfprintf(stderr, format, args);
     }
 }
