@@ -76,10 +76,15 @@ ft_desktop_surface_toplevel_minimum_size(ft_desktop_surface_t *desktop_surface);
 void ft_desktop_surface_toplevel_set_minimum_size(
     ft_desktop_surface_t *desktop_surface, const ft_size_t *size);
 
+/// \brief Close if the desktop surface has a toplevel role.
+///
+/// Close the last toplevel desktop surface may quit the application.
 void ft_desktop_surface_toplevel_close(ft_desktop_surface_t *desktop_surface);
 
+/// \brief Start move the toplevel desktop surface.
 void ft_desktop_surface_toplevel_move(ft_desktop_surface_t *desktop_surface);
 
+/// \brief Start resize the toplevel desktop surface with the given edge.
 void ft_desktop_surface_toplevel_resize(ft_desktop_surface_t *desktop_surface,
     ft_desktop_surface_toplevel_resize_edge edge);
 
