@@ -60,10 +60,11 @@ ft_desktop_surface_toplevel_states(ft_desktop_surface_t *desktop_surface);
 ///
 /// A Wayland client is CSD (client side decoration). It means the window
 /// should draw it's own decorations such as shadow.
-/// The shadow may not clickable.
+/// The shadow may not treated as a part of the window.
 ///
-/// This method tells to the compositor (window manager) to ignore the events
-/// which is out of the given geometry.
+/// The outside of this geometry may not appear your task switcher.
+/// Some compositors offer the window magnet feature. This method give the
+/// hint to the compositor how to magnet the windows each other.
 void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
                                         const ft_rect_t *geometry);
 
