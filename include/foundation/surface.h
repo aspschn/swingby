@@ -20,6 +20,10 @@ void ft_surface_set_wl_surface(ft_surface_t *surface,
 
 const ft_size_t* ft_surface_size(ft_surface_t *surface);
 
+/// \brief Set the surface size.
+///
+/// Surface size is always integer values. Values below the decimal point
+/// may cause undefined behavior.
 void ft_surface_set_size(ft_surface_t *surface, const ft_size_t *size);
 
 ft_view_t* ft_surface_root_view(ft_surface_t *surface);
@@ -32,6 +36,11 @@ void ft_surface_detach(ft_surface_t *surface);
 
 void ft_surface_update(ft_surface_t *surface);
 
+/// \brief Set the valid input geometry of the surface.
+///
+/// Pointer events outside of the input geoemetry will be ignored.
+/// This is useful to draw the window's shadow. The shadow still a part of
+/// the surface in CSD but click the shadow should not activate the window.
 void ft_surface_set_input_geometry(ft_surface_t *surface, ft_rect_t *geometry);
 
 void ft_surface_add_event_listener(ft_surface_t *surface,
