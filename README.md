@@ -22,6 +22,53 @@ The event system makes easier to make the event driven GUI programs.
 It based on OpenGL 4.6 (the latest version of) for rendering performance.
 
 
+## Build
+
+Foundation is a Wayland based library. Therefore your system must suppport Wayland
+before building the project.
+
+We are using the latest version of OpenGL for rendering. The version 4.6 was
+released in 2017.
+
+Here is the details of the requirements.
+
+1. Wayland and protocols. `wayland-scanner` command also required.
+2. OpenGL and EGL. Wayland using EGL. ¹
+3. CMake.
+
+- ¹. EGL is similar to GLX in X11, or GLFW however it provides very small features.
+It is unusual to use EGL in desktop development except Wayland client.
+It seems this mainly used by Android with GLES programming. We are looking for
+expert of this library.
+
+### Build Steps
+
+There are two scripts in the project's root. One is `gen-shaders.py`, it simply
+converts shader source code to the C string literals. The generated code will
+be committed so you don't need to use this script.
+
+The other one is `gen-protocols.sh`. This script generate the Wayland interface
+code which are not included in the core of Wayland protocol.
+I'm not sure that these must be committed or not. Therefore you must generate
+the C code with this script.
+
+Bulid is simple.
+
+```sh
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+```
+
+You can test Foundation with the examples.
+
+```sh
+$ make example
+```
+The examples are in the `examples/` directory with begin of two digit numbers.
+
+
 ## Terms
 
 ### Application
