@@ -11,5 +11,5 @@ target_include_directories(example_surface
 )
 
 target_link_libraries(example_surface
-    foundation
+    swingby
 )

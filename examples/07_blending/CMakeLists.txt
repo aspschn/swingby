@@ -14,5 +14,5 @@ target_include_directories(example_${EXAMPLE_NAME}
 )
 
 target_link_libraries(example_${EXAMPLE_NAME}
-    foundation
+    swingby
 )

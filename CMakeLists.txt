@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(foundation
+project(swingby
     VERSION 0.1.0
     LANGUAGES C
 )
@@ -9,7 +9,7 @@ set(WAYLAND_PROTOCOLS_SOURCES
     include/wayland-protocols/stable/xdg-shell.c
 )
 
-set(FOUNDATION_SOURCES
+set(SWINGBY_SOURCES
     include/foundation/log.h
     include/foundation/bench.h
     include/foundation/list.h
@@ -48,11 +48,11 @@ set(FOUNDATION_SOURCES
     ${WAYLAND_PROTOCOLS_SOURCES}
 )
 
-add_library(foundation SHARED
-    ${FOUNDATION_SOURCES}
+add_library(swingby SHARED
+    ${SWINGBY_SOURCES}
 )
 
-target_include_directories(foundation
+target_include_directories(swingby
     PRIVATE ./include
 )
 
@@ -62,7 +62,7 @@ if(FOUNDATION_DEBUG)
     add_definitions(-DFOUNDATION_DEBUG)
 endif()
 
-target_link_options(foundation
+target_link_options(swingby
     PRIVATE -lwayland-client
     PRIVATE -lwayland-egl
     PRIVATE -lEGL

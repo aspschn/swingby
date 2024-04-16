@@ -11,5 +11,5 @@ target_include_directories(example_desktop-surface
 )
 
 target_link_libraries(example_desktop-surface
-    foundation
+    swingby
 )
