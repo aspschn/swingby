@@ -1,20 +1,20 @@
-#include <foundation/egl-context.h>
+#include <swingby/egl-context.h>
 
 #include <stdlib.h>
 
-#include <foundation/application.h>
+#include <swingby/application.h>
 
-ft_egl_context_t* ft_egl_context_new()
+sb_egl_context_t* sb_egl_context_new()
 {
-    ft_egl_context_t *context;
+    sb_egl_context_t *context;
 
-    context = malloc(sizeof(ft_egl_context_t));
+    context = malloc(sizeof(sb_egl_context_t));
 
-    ft_application_t *app = ft_application_instance();
+    sb_application_t *app = sb_application_instance();
 
     // Get EGL display.
     context->egl_display = eglGetDisplay(
-        (EGLNativeDisplayType)ft_application_wl_display(app));
+        (EGLNativeDisplayType)sb_application_wl_display(app));
 
     // Config and context attributes.
     EGLint config_attribs[] = {
@@ -73,7 +73,7 @@ ft_egl_context_t* ft_egl_context_new()
     return context;
 }
 
-void ft_egl_context_free(ft_egl_context_t *context)
+void sb_egl_context_free(sb_egl_context_t *context)
 {
     eglDestroyContext(context->egl_display, context->egl_context);
 }

@@ -7,15 +7,15 @@
 extern "C" {
 #endif
 
-typedef struct ft_point_t {
+typedef struct sb_point_t {
     float x;
     float y;
-} ft_point_t;
+} sb_point_t;
 
-typedef struct ft_point_i_t {
+typedef struct sb_point_i_t {
     uint64_t x;
     uint64_t y;
-} ft_point_i_t;
+} sb_point_i_t;
 
 #ifdef __cplusplus
 }

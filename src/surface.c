@@ -1,4 +1,4 @@
-#include <foundation/surface.h>
+#include <swingby/surface.h>
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -13,23 +13,23 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
-#include <foundation/log.h>
-#include <foundation/bench.h>
-#include <foundation/application.h>
-#include <foundation/egl-context.h>
-#include <foundation/view.h>
-#include <foundation/image.h>
-#include <foundation/list.h>
-#include <foundation/event.h>
+#include <swingby/log.h>
+#include <swingby/bench.h>
+#include <swingby/application.h>
+#include <swingby/egl-context.h>
+#include <swingby/view.h>
+#include <swingby/image.h>
+#include <swingby/list.h>
+#include <swingby/event.h>
 #include "shaders.h"
 
-struct ft_surface_t {
+struct sb_surface_t {
     struct wl_surface *_wl_surface;
     struct wl_egl_window *_wl_egl_window;
     EGLSurface _egl_surface;
-    ft_egl_context_t *_egl_context;
-    ft_size_t _size;
-    ft_view_t *_root_view;
+    sb_egl_context_t *_egl_context;
+    sb_size_t _size;
+    sb_view_t *_root_view;
     bool frame_ready;
     bool update_pending;
     /// \brief Program objects for OpenGL.
@@ -38,7 +38,7 @@ struct ft_surface_t {
         GLuint texture;
     } programs;
     struct wl_callback *frame_callback;
-    ft_list_t *event_listeners;
+    sb_list_t *event_listeners;
 };
 
 //!<===============
@@ -57,7 +57,7 @@ static const struct wl_callback_listener callback_listener = {
 //!< Helper Functions
 //!<======================
 
-void _gl_init(ft_surface_t *surface)
+void _gl_init(sb_surface_t *surface)
 {
     eglMakeCurrent(surface->_egl_context->egl_display,
         surface->_egl_surface,
@@ -119,7 +119,7 @@ static GLuint _load_shader(const char *shader_source, GLuint type)
 /// This function calculate that points in a display coordinate. Then the
 /// vertex shader converts each point to the OpenGL coordinate (from -1.0 to
 /// 1.0).
-static void _calc_points(const ft_rect_t *rect, float *points)
+static void _calc_points(const sb_rect_t *rect, float *points)
 {
     float x = rect->pos.x;
     float y = rect->pos.y;
@@ -146,7 +146,7 @@ static void _calc_points(const ft_rect_t *rect, float *points)
 /// coordinate.
 ///
 /// The `resolution` should be same as surface's width and height.
-static void _set_uniform_resolution(GLuint program, const ft_size_t *resolution)
+static void _set_uniform_resolution(GLuint program, const sb_size_t *resolution)
 {
     GLuint location = glGetUniformLocation(program, "resolution");
     float resolution_u[2] = { resolution->width, resolution->height };
@@ -154,7 +154,7 @@ static void _set_uniform_resolution(GLuint program, const ft_size_t *resolution)
 }
 
 /// \brief Set the uniform variable `color`.
-static void _set_uniform_color(GLuint program, const ft_color_t *color)
+static void _set_uniform_color(GLuint program, const sb_color_t *color)
 {
     GLuint location = glGetUniformLocation(program, "color");
     float color_u[4] = {
@@ -166,10 +166,10 @@ static void _set_uniform_color(GLuint program, const ft_color_t *color)
     glUniform4fv(location, 1, color_u);
 }
 
-static void _set_uniform_textureIn(GLuint program, ft_image_t *image)
+static void _set_uniform_textureIn(GLuint program, sb_image_t *image)
 {
-    ft_log_debug("_set_uniform_textureIn() - %ldx%ld\n",
-                 ft_image_size(image)->width, ft_image_size(image)->height);
+    sb_log_debug("_set_uniform_textureIn() - %ldx%ld\n",
+                 sb_image_size(image)->width, sb_image_size(image)->height);
 
     GLuint texture;
     glGenTextures(1, &texture);
@@ -183,24 +183,24 @@ static void _set_uniform_textureIn(GLuint program, ft_image_t *image)
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        ft_image_size(image)->width,
-        ft_image_size(image)->height,
+        sb_image_size(image)->width,
+        sb_image_size(image)->height,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
-        ft_image_data(image)
+        sb_image_data(image)
     );
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture);
 }
 
-static void _draw_recursive(ft_surface_t *surface,
-                            ft_view_t *view)
+static void _draw_recursive(sb_surface_t *surface,
+                            sb_view_t *view)
 {
-    enum ft_view_fill_type fill_type = ft_view_fill_type(view);
+    enum sb_view_fill_type fill_type = sb_view_fill_type(view);
 
     // Create program if not created.
-    if (fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR &&
+    if (fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR &&
         surface->programs.color == 0) {
         // Create program object.
         surface->programs.color = glCreateProgram();
@@ -214,7 +214,7 @@ static void _draw_recursive(ft_surface_t *surface,
         glAttachShader(surface->programs.color, vert_shader);
         glAttachShader(surface->programs.color, frag_shader);
     }
-    if (fill_type == FT_VIEW_FILL_TYPE_IMAGE &&
+    if (fill_type == SB_VIEW_FILL_TYPE_IMAGE &&
         surface->programs.texture == 0) {
         // Create program object.
         surface->programs.texture = glCreateProgram();
@@ -229,21 +229,21 @@ static void _draw_recursive(ft_surface_t *surface,
         glAttachShader(surface->programs.texture, frag_shader);
     }
 
-    if (fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR) {
+    if (fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
         glLinkProgram(surface->programs.color);
         glUseProgram(surface->programs.color);
 
         // Set uniforms.
         _set_uniform_resolution(surface->programs.color, &surface->_size);
-        _set_uniform_color(surface->programs.color, ft_view_color(view));
-    } else if (fill_type == FT_VIEW_FILL_TYPE_IMAGE) {
+        _set_uniform_color(surface->programs.color, sb_view_color(view));
+    } else if (fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
         glLinkProgram(surface->programs.texture);
         glUseProgram(surface->programs.texture);
 
         // Set uniforms.
         _set_uniform_resolution(surface->programs.texture, &surface->_size);
         _set_uniform_textureIn(surface->programs.texture,
-            ft_view_image(view));
+            sb_view_image(view));
     }
 
     // Set coordinates.
@@ -253,13 +253,13 @@ static void _draw_recursive(ft_surface_t *surface,
         0.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.0f,
     };
-    ft_rect_t absolute_geometry;
-    absolute_geometry = *ft_view_geometry(view);
+    sb_rect_t absolute_geometry;
+    absolute_geometry = *sb_view_geometry(view);
 
-    ft_view_t *parent = ft_view_parent(view);
-    for (ft_view_t *it = parent; it != NULL; it = ft_view_parent(it)) {
-        absolute_geometry.pos.x += ft_view_geometry(it)->pos.x;
-        absolute_geometry.pos.y += ft_view_geometry(it)->pos.y;
+    sb_view_t *parent = sb_view_parent(view);
+    for (sb_view_t *it = parent; it != NULL; it = sb_view_parent(it)) {
+        absolute_geometry.pos.x += sb_view_geometry(it)->pos.x;
+        absolute_geometry.pos.y += sb_view_geometry(it)->pos.y;
     }
     _calc_points(&absolute_geometry, vertices);
 
@@ -316,22 +316,22 @@ static void _draw_recursive(ft_surface_t *surface,
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 
     // Child views.
-    ft_list_t *children = ft_view_children(view);
-    for (int i = 0; i < ft_list_length(children); ++i) {
-        ft_view_t *child = ft_list_at(children, i);
+    sb_list_t *children = sb_view_children(view);
+    for (int i = 0; i < sb_list_length(children); ++i) {
+        sb_view_t *child = sb_list_at(children, i);
         _draw_recursive(surface, child);
     }
 }
 
-void _add_frame_callback(ft_surface_t *surface)
+void _add_frame_callback(sb_surface_t *surface)
 {
     surface->frame_callback = wl_surface_frame(surface->_wl_surface);
     wl_callback_add_listener(surface->frame_callback, &callback_listener,
         (void*)surface);
-    // ft_log_debug(" = frame_callback now %p\n", surface->frame_callback);
+    // sb_log_debug(" = frame_callback now %p\n", surface->frame_callback);
 }
 
-void _draw_frame(ft_surface_t *surface)
+void _draw_frame(sb_surface_t *surface)
 {
     _gl_init(surface);
 
@@ -344,13 +344,13 @@ void _draw_frame(ft_surface_t *surface)
     eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
 }
 
-static void _event_listener_filter_for_each(ft_list_t *listeners,
-                                            enum ft_event_type type,
-                                            ft_event_t *event)
+static void _event_listener_filter_for_each(sb_list_t *listeners,
+                                            enum sb_event_type type,
+                                            sb_event_t *event)
 {
-    uint64_t length = ft_list_length(listeners);
+    uint64_t length = sb_list_length(listeners);
     for (uint64_t i = 0; i < length; ++i) {
-        ft_event_listener_tuple_t *tuple = ft_list_at(listeners, i);
+        sb_event_listener_tuple_t *tuple = sb_list_at(listeners, i);
         if (tuple->type == type) {
             tuple->listener(event);
         }
@@ -361,20 +361,20 @@ static void _event_listener_filter_for_each(ft_list_t *listeners,
 //!< Surface
 //!<===============
 
-ft_surface_t* ft_surface_new()
+sb_surface_t* sb_surface_new()
 {
-    ft_surface_t *surface = malloc(sizeof(ft_surface_t));
+    sb_surface_t *surface = malloc(sizeof(sb_surface_t));
 
     surface->_size.width = 200.0f;
     surface->_size.height = 200.0f;
     surface->frame_ready = false;
     surface->update_pending = false;
 
-    ft_application_t *app = ft_application_instance();
+    sb_application_t *app = sb_application_instance();
 
     // Create wl_surface.
     surface->_wl_surface = wl_compositor_create_surface(
-        ft_application_wl_compositor(app));
+        sb_application_wl_compositor(app));
 
     // Frame callback.
     surface->frame_callback = wl_surface_frame(surface->_wl_surface);
@@ -382,7 +382,7 @@ ft_surface_t* ft_surface_new()
         (void*)surface);
 
     // Initialize EGL context.
-    surface->_egl_context = ft_egl_context_new();
+    surface->_egl_context = sb_egl_context_new();
 
     // Create wl_egl_window.
     surface->_wl_egl_window = wl_egl_window_create(surface->_wl_surface,
@@ -401,116 +401,116 @@ ft_surface_t* ft_surface_new()
     surface->programs.texture = 0;
 
     // Root view.
-    ft_rect_t geo;
+    sb_rect_t geo;
     geo.pos.x = 0.0f;
     geo.pos.y = 0.0f;
     geo.size.width = surface->_size.width;
     geo.size.height = surface->_size.height;
-    surface->_root_view = ft_view_new(NULL, &geo);
-    ft_view_set_surface(surface->_root_view, surface);
+    surface->_root_view = sb_view_new(NULL, &geo);
+    sb_view_set_surface(surface->_root_view, surface);
 
     // Event listeners.
-    surface->event_listeners = ft_list_new();
+    surface->event_listeners = sb_list_new();
 
-    ft_log_debug("ft_surface_new() - surface: %p\n", surface);
-    ft_log_debug("ft_surface_new() - root_view: %p\n", surface->_root_view);
+    sb_log_debug("sb_surface_new() - surface: %p\n", surface);
+    sb_log_debug("sb_surface_new() - root_view: %p\n", surface->_root_view);
     return surface;
 }
 
-void ft_surface_set_wl_surface(ft_surface_t *surface,
+void sb_surface_set_wl_surface(sb_surface_t *surface,
                                struct wl_surface *wl_surface)
 {
     surface->_wl_surface = wl_surface;
 }
 
-const ft_size_t* ft_surface_size(ft_surface_t *surface)
+const sb_size_t* sb_surface_size(sb_surface_t *surface)
 {
     return &surface->_size;
 }
 
-void ft_surface_set_size(ft_surface_t *surface, const ft_size_t *size)
+void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
 {
     if (size->width <= 0.0f || size->height <= 0.0f) {
-        ft_log_warn("Surface size cannot be zero or negative.\n");
+        sb_log_warn("Surface size cannot be zero or negative.\n");
     }
 
     surface->_size.width = size->width;
     surface->_size.height = size->height;
 
     // Set the root view's size.
-    ft_rect_t new_geo;
+    sb_rect_t new_geo;
     new_geo.pos.x = 0;
     new_geo.pos.y = 0;
     new_geo.size.width = size->width;
     new_geo.size.height = size->height;
-    ft_view_set_geometry(surface->_root_view, &new_geo);
+    sb_view_set_geometry(surface->_root_view, &new_geo);
 
     // Create event.
-    ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_SURFACE,
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
         (void*)surface,
-        FT_EVENT_TYPE_RESIZE);
-    event->resize.old_size = *ft_surface_size(surface);
+        SB_EVENT_TYPE_RESIZE);
+    event->resize.old_size = *sb_surface_size(surface);
     event->resize.size.width = size->width;
     event->resize.size.height = size->height;
 
     // Post the event.
-    ft_application_post_event(ft_application_instance(), event);
+    sb_application_post_event(sb_application_instance(), event);
 
-    ft_surface_update(surface);
+    sb_surface_update(surface);
 
     wl_egl_window_resize(surface->_wl_egl_window, size->width, size->height,
         0, 0);
 }
 
-ft_view_t* ft_surface_root_view(ft_surface_t *surface)
+sb_view_t* sb_surface_root_view(sb_surface_t *surface)
 {
     return surface->_root_view;
 }
 
-void ft_surface_commit(ft_surface_t *surface)
+void sb_surface_commit(sb_surface_t *surface)
 {
     wl_surface_commit(surface->_wl_surface);
 }
 
-void ft_surface_attach(ft_surface_t *surface)
+void sb_surface_attach(sb_surface_t *surface)
 {
     _gl_init(surface);
     eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
 }
 
-void ft_surface_detach(ft_surface_t *surface)
+void sb_surface_detach(sb_surface_t *surface)
 {
     // eglDestroySurface(surface->_egl_context->egl_display,
     //     surface->_egl_surface);
 
     // wl_egl_window_destroy(surface->_wl_egl_window);
 
-    // ft_egl_context_free(surface->_egl_context);
+    // sb_egl_context_free(surface->_egl_context);
 
     wl_surface_attach(surface->_wl_surface, NULL, 0, 0);
     wl_surface_commit(surface->_wl_surface);
 }
 
-void ft_surface_update(ft_surface_t *surface)
+void sb_surface_update(sb_surface_t *surface)
 {
     if (surface->frame_ready == true) {
         // Post request update event.
-        ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_SURFACE,
-            (void*)surface, FT_EVENT_TYPE_REQUEST_UPDATE);
-        ft_application_post_event(ft_application_instance(), event);
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
+            (void*)surface, SB_EVENT_TYPE_REQUEST_UPDATE);
+        sb_application_post_event(sb_application_instance(), event);
 
         surface->frame_ready = false;
     } else {
-        ft_log_debug("ft_surface_update() - Frame not ready!\n");
+        sb_log_debug("sb_surface_update() - Frame not ready!\n");
         surface->update_pending = true;
     }
 }
 
-void ft_surface_set_input_geometry(ft_surface_t *surface, ft_rect_t *geometry)
+void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry)
 {
-    ft_application_t *app = ft_application_instance();
-    struct wl_surface *wl_surface = ft_surface_wl_surface(surface);
-    struct wl_compositor *wl_compositor = ft_application_wl_compositor(app);
+    sb_application_t *app = sb_application_instance();
+    struct wl_surface *wl_surface = sb_surface_wl_surface(surface);
+    struct wl_compositor *wl_compositor = sb_application_wl_compositor(app);
 
     struct wl_region *region = wl_compositor_create_region(wl_compositor);
     wl_region_add(region,
@@ -520,30 +520,30 @@ void ft_surface_set_input_geometry(ft_surface_t *surface, ft_rect_t *geometry)
     wl_region_destroy(region);
 }
 
-void ft_surface_add_event_listener(ft_surface_t *surface,
-                                   enum ft_event_type event_type,
-                                   void (*listener)(ft_event_t*))
+void sb_surface_add_event_listener(sb_surface_t *surface,
+                                   enum sb_event_type event_type,
+                                   void (*listener)(sb_event_t*))
 {
-    ft_event_listener_tuple_t *tuple = ft_event_listener_tuple_new(
+    sb_event_listener_tuple_t *tuple = sb_event_listener_tuple_new(
         event_type, listener);
-    ft_list_push(surface->event_listeners, (void*)tuple);
+    sb_list_push(surface->event_listeners, (void*)tuple);
 }
 
-void ft_surface_on_pointer_enter(ft_surface_t *surface, ft_event_t *event)
+void sb_surface_on_pointer_enter(sb_surface_t *surface, sb_event_t *event)
 {
     _event_listener_filter_for_each(surface->event_listeners,
-        FT_EVENT_TYPE_POINTER_ENTER, event);
+        SB_EVENT_TYPE_POINTER_ENTER, event);
 }
 
-void ft_surface_on_pointer_leave(ft_surface_t *surface, ft_event_t *event)
+void sb_surface_on_pointer_leave(sb_surface_t *surface, sb_event_t *event)
 {
     _event_listener_filter_for_each(surface->event_listeners,
-        FT_EVENT_TYPE_POINTER_LEAVE, event);
+        SB_EVENT_TYPE_POINTER_LEAVE, event);
 }
 
-void ft_surface_on_request_update(ft_surface_t *surface)
+void sb_surface_on_request_update(sb_surface_t *surface)
 {
-    ft_log_debug("ft_surface_on_request_update()\n");
+    sb_log_debug("sb_surface_on_request_update()\n");
 
     _draw_frame(surface);
 
@@ -551,13 +551,13 @@ void ft_surface_on_request_update(ft_surface_t *surface)
     surface->frame_ready = false;
 }
 
-void ft_surface_on_resize(ft_surface_t *surface, ft_event_t *event)
+void sb_surface_on_resize(sb_surface_t *surface, sb_event_t *event)
 {
     _event_listener_filter_for_each(surface->event_listeners,
-        FT_EVENT_TYPE_RESIZE, event);
+        SB_EVENT_TYPE_RESIZE, event);
 }
 
-struct wl_surface* ft_surface_wl_surface(ft_surface_t *surface)
+struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface)
 {
     return surface->_wl_surface;
 }
@@ -570,16 +570,16 @@ static void callback_done_handler(void *data,
                                   struct wl_callback *wl_callback,
                                   uint32_t time)
 {
-    ft_surface_t *surface = (ft_surface_t*)data;
+    sb_surface_t *surface = (sb_surface_t*)data;
 
     wl_callback_destroy(wl_callback);
     _add_frame_callback(surface);
 
     surface->frame_ready = true;
-    ft_log_debug(" == FRAME READY ==\n");
+    sb_log_debug(" == FRAME READY ==\n");
 
     if (surface->update_pending) {
-        ft_log_debug(" == THERE ARE PENDING UPDATES ==\n");
+        sb_log_debug(" == THERE ARE PENDING UPDATES ==\n");
         _draw_frame(surface);
         surface->update_pending = false;
         surface->frame_ready = false;

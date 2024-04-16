@@ -11,5 +11,5 @@ target_include_directories(example_event-listener
 )
 
 target_link_libraries(example_event-listener
-    foundation
+    swingby
 )

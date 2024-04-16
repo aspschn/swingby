@@ -1,25 +1,25 @@
-#include <foundation/size.h>
+#include <swingby/size.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-float ft_size_width(ft_size_t *size)
+float sb_size_width(sb_size_t *size)
 {
     return size->width;
 }
 
-float ft_size_height(ft_size_t *size)
+float sb_size_height(sb_size_t *size)
 {
     return size->height;
 }
 
-uint64_t ft_size_i_width(ft_size_i_t *size)
+uint64_t sb_size_i_width(sb_size_i_t *size)
 {
     return size->width;
 }
 
-uint64_t ft_size_i_height(ft_size_i_t *size)
+uint64_t sb_size_i_height(sb_size_i_t *size)
 {
     return size->height;
 }

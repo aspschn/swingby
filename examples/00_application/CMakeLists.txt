@@ -11,5 +11,5 @@ target_include_directories(example_application
 )
 
 target_link_libraries(example_application
-    foundation
+    swingby
 )

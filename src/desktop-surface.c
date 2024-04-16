@@ -1,4 +1,4 @@
-#include <foundation/desktop-surface.h>
+#include <swingby/desktop-surface.h>
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -6,31 +6,31 @@
 #include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
 
-#include <foundation/log.h>
-#include <foundation/size.h>
-#include <foundation/rect.h>
-#include <foundation/surface.h>
-#include <foundation/application.h>
-#include <foundation/list.h>
-#include <foundation/event.h>
+#include <swingby/log.h>
+#include <swingby/size.h>
+#include <swingby/rect.h>
+#include <swingby/surface.h>
+#include <swingby/application.h>
+#include <swingby/list.h>
+#include <swingby/event.h>
 
-struct ft_desktop_surface_t {
-    ft_surface_t *_surface;
-    ft_desktop_surface_role _role;
+struct sb_desktop_surface_t {
+    sb_surface_t *_surface;
+    sb_desktop_surface_role _role;
     struct xdg_surface *_xdg_surface;
     struct xdg_toplevel *_xdg_toplevel;
     struct xdg_popup *_xdg_popup;
-    ft_rect_t wm_geometry;
+    sb_rect_t wm_geometry;
     struct {
-        ft_size_t minimum_size;
-        ft_desktop_surface_toplevel_state_flags states;
+        sb_size_t minimum_size;
+        sb_desktop_surface_toplevel_state_flags states;
         /// \brief Initial resizing configure event gives me the garbage values.
         ///
         /// Ignore first resizing event since it contains garbage values.
         /// The reason why is IDK. However ignore this and it will works anyway.
         bool initial_resizing;
     } toplevel;
-    ft_list_t *event_listeners;
+    sb_list_t *event_listeners;
 };
 
 //!<==============
@@ -67,27 +67,27 @@ static struct xdg_toplevel_listener xdg_toplevel_listener = {
 //!< Helper Functions
 //!<=====================
 
-static ft_event_t* _state_change_event_new(
-    ft_desktop_surface_t *desktop_surface,
+static sb_event_t* _state_change_event_new(
+    sb_desktop_surface_t *desktop_surface,
     int32_t width,
     int32_t height)
 {
-    ft_event_t *event = ft_event_new(FT_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
         desktop_surface,
-        FT_EVENT_TYPE_STATE_CHANGE);
+        SB_EVENT_TYPE_STATE_CHANGE);
     event->state_change.size.width = width;
     event->state_change.size.height = height;
 
     return event;
 }
 
-static void _event_listener_filter_for_each(ft_list_t *listeners,
-                                            enum ft_event_type type,
-                                            ft_event_t *event)
+static void _event_listener_filter_for_each(sb_list_t *listeners,
+                                            enum sb_event_type type,
+                                            sb_event_t *event)
 {
-    uint64_t length = ft_list_length(listeners);
+    uint64_t length = sb_list_length(listeners);
     for (uint64_t i = 0; i < length; ++i) {
-        ft_event_listener_tuple_t *tuple = ft_list_at(listeners, i);
+        sb_event_listener_tuple_t *tuple = sb_list_at(listeners, i);
         if (tuple->type == type) {
             tuple->listener(event);
         }
@@ -95,9 +95,9 @@ static void _event_listener_filter_for_each(ft_list_t *listeners,
 }
 
 
-ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
+sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
 {
-    ft_desktop_surface_t *d_surface = malloc(sizeof(ft_desktop_surface_t));
+    sb_desktop_surface_t *d_surface = malloc(sizeof(sb_desktop_surface_t));
 
     // Initialize the members.
     d_surface->_role = role;
@@ -109,32 +109,32 @@ ft_desktop_surface_t* ft_desktop_surface_new(ft_desktop_surface_role role)
     d_surface->wm_geometry.size.width = 0;
     d_surface->wm_geometry.size.height = 0;
 
-    d_surface->toplevel.states = FT_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
+    d_surface->toplevel.states = SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
     d_surface->toplevel.initial_resizing = true;
 
-    d_surface->event_listeners = ft_list_new();
+    d_surface->event_listeners = sb_list_new();
 
     // Create a surface.
-    d_surface->_surface = ft_surface_new();
+    d_surface->_surface = sb_surface_new();
 
-    ft_application_register_desktop_surface(ft_application_instance(),
+    sb_application_register_desktop_surface(sb_application_instance(),
         d_surface);
 
     return d_surface;
 }
 
-ft_surface_t*
-ft_desktop_surface_surface(ft_desktop_surface_t *desktop_surface)
+sb_surface_t*
+sb_desktop_surface_surface(sb_desktop_surface_t *desktop_surface)
 {
     return desktop_surface->_surface;
 }
 
-void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface)
+void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
 {
     // Wayland objects.
-    ft_application_t *app = ft_application_instance();
-    struct xdg_wm_base *xdg_wm_base = ft_application_xdg_wm_base(app);
-    struct wl_surface *wl_surface = ft_surface_wl_surface(
+    sb_application_t *app = sb_application_instance();
+    struct xdg_wm_base *xdg_wm_base = sb_application_xdg_wm_base(app);
+    struct wl_surface *wl_surface = sb_surface_wl_surface(
         desktop_surface->_surface);
 
     // Create XDG surface.
@@ -145,57 +145,57 @@ void ft_desktop_surface_show(ft_desktop_surface_t *desktop_surface)
         &xdg_surface_listener, NULL);
 
     // Create toplevel or popup.
-    if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
+    if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
         desktop_surface->_xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
         xdg_toplevel_add_listener(desktop_surface->_xdg_toplevel,
             &xdg_toplevel_listener, (void*)desktop_surface);
 
         // Must commit and roundtrip.
-        ft_surface_commit(ft_desktop_surface_surface(desktop_surface));
-        wl_display_roundtrip(ft_application_wl_display(app));
+        sb_surface_commit(sb_desktop_surface_surface(desktop_surface));
+        wl_display_roundtrip(sb_application_wl_display(app));
 
         // Set minimum size.
-        ft_size_t min_size;
+        sb_size_t min_size;
         min_size.width = 100;
         min_size.height = 100;
-        ft_desktop_surface_toplevel_set_minimum_size(desktop_surface,
+        sb_desktop_surface_toplevel_set_minimum_size(desktop_surface,
             &min_size);
-    } else if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_POPUP) {
+    } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
         //
     }
 
     // Commit.
     wl_surface_commit(wl_surface);
 
-    ft_surface_attach(desktop_surface->_surface);
+    sb_surface_attach(desktop_surface->_surface);
 
-    ft_surface_update(desktop_surface->_surface);
+    sb_surface_update(desktop_surface->_surface);
 
     // TEST
-    // ft_surface_on_request_update(desktop_surface->_surface);
+    // sb_surface_on_request_update(desktop_surface->_surface);
 }
 
-void ft_desktop_surface_hide(ft_desktop_surface_t *desktop_surface)
+void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface)
 {
-    if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
+    if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
         xdg_toplevel_destroy(desktop_surface->_xdg_toplevel);
-    } else if (desktop_surface->_role == FT_DESKTOP_SURFACE_ROLE_POPUP) {
+    } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
         //
     }
 
     xdg_surface_destroy(desktop_surface->_xdg_surface);
 
-    ft_surface_detach(desktop_surface->_surface);
+    sb_surface_detach(desktop_surface->_surface);
 }
 
-ft_desktop_surface_toplevel_state_flags
-ft_desktop_surface_toplevel_states(ft_desktop_surface_t *desktop_surface)
+sb_desktop_surface_toplevel_state_flags
+sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface)
 {
     return desktop_surface->toplevel.states;
 }
 
-void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
-                                        const ft_rect_t *geometry)
+void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
+                                        const sb_rect_t *geometry)
 {
     desktop_surface->wm_geometry = *geometry;
 
@@ -204,14 +204,14 @@ void ft_desktop_surface_set_wm_geometry(ft_desktop_surface_t *desktop_surface,
         geometry->size.width, geometry->size.height);
 }
 
-const ft_size_t*
-ft_desktop_surface_toplevel_minimum_size(ft_desktop_surface_t *desktop_surface)
+const sb_size_t*
+sb_desktop_surface_toplevel_minimum_size(sb_desktop_surface_t *desktop_surface)
 {
     return &desktop_surface->toplevel.minimum_size;
 }
 
-void ft_desktop_surface_toplevel_set_minimum_size(
-    ft_desktop_surface_t *desktop_surface, const ft_size_t *size)
+void sb_desktop_surface_toplevel_set_minimum_size(
+    sb_desktop_surface_t *desktop_surface, const sb_size_t *size)
 {
     desktop_surface->toplevel.minimum_size = *size;
 
@@ -219,55 +219,55 @@ void ft_desktop_surface_toplevel_set_minimum_size(
         size->width, size->height);
 }
 
-void ft_desktop_surface_toplevel_close(ft_desktop_surface_t *desktop_surface)
+void sb_desktop_surface_toplevel_close(sb_desktop_surface_t *desktop_surface)
 {
     // TODO: Free memory.
 
-    ft_application_t *app = ft_application_instance();
-    ft_application_unregister_desktop_surface(app, desktop_surface);
+    sb_application_t *app = sb_application_instance();
+    sb_application_unregister_desktop_surface(app, desktop_surface);
 }
 
-void ft_desktop_surface_toplevel_move(ft_desktop_surface_t *desktop_surface)
+void sb_desktop_surface_toplevel_move(sb_desktop_surface_t *desktop_surface)
 {
-    ft_application_t *app = ft_application_instance();
+    sb_application_t *app = sb_application_instance();
 
     xdg_toplevel_move(desktop_surface->_xdg_toplevel,
-        ft_application_wl_seat(app),
-        ft_application_pointer_button_serial(app));
+        sb_application_wl_seat(app),
+        sb_application_pointer_button_serial(app));
 }
 
-void ft_desktop_surface_toplevel_resize(ft_desktop_surface_t *desktop_surface,
-    ft_desktop_surface_toplevel_resize_edge edge)
+void sb_desktop_surface_toplevel_resize(sb_desktop_surface_t *desktop_surface,
+    sb_desktop_surface_toplevel_resize_edge edge)
 {
-    ft_application_t *app = ft_application_instance();
+    sb_application_t *app = sb_application_instance();
 
     enum xdg_toplevel_resize_edge resize_edge = 0;
     switch (edge) {
-    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_NONE:
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_NONE:
         resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_NONE;
         break;
-    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP:
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP:
         resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_TOP;
         break;
-    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM:
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM:
         resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM;
         break;
-    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_LEFT:
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_LEFT:
         resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_LEFT;
         break;
-    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_LEFT:
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_LEFT:
         resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
         break;
-    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT:
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT:
         resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT;
         break;
-    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_RIGHT:
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_RIGHT:
         resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_RIGHT;
         break;
-    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT:
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT:
         resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
         break;
-    case FT_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT:
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT:
         resize_edge = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT;
         break;
     default:
@@ -276,33 +276,33 @@ void ft_desktop_surface_toplevel_resize(ft_desktop_surface_t *desktop_surface,
     }
 
     xdg_toplevel_resize(desktop_surface->_xdg_toplevel,
-        ft_application_wl_seat(app),
-        ft_application_pointer_button_serial(app),
+        sb_application_wl_seat(app),
+        sb_application_pointer_button_serial(app),
         resize_edge);
 }
 
-void ft_desktop_surface_add_event_listener(
-    ft_desktop_surface_t *desktop_surface,
-    enum ft_event_type event_type,
-    void (*listener)(ft_event_t*))
+void sb_desktop_surface_add_event_listener(
+    sb_desktop_surface_t *desktop_surface,
+    enum sb_event_type event_type,
+    void (*listener)(sb_event_t*))
 {
-    ft_event_listener_tuple_t *tuple = ft_event_listener_tuple_new(
+    sb_event_listener_tuple_t *tuple = sb_event_listener_tuple_new(
         event_type, listener);
-    ft_list_push(desktop_surface->event_listeners, (void*)tuple);
+    sb_list_push(desktop_surface->event_listeners, (void*)tuple);
 }
 
-void ft_desktop_surface_on_resize(ft_desktop_surface_t *desktop_surface,
-                                  ft_event_t *event)
+void sb_desktop_surface_on_resize(sb_desktop_surface_t *desktop_surface,
+                                  sb_event_t *event)
 {
     _event_listener_filter_for_each(desktop_surface->event_listeners,
-        FT_EVENT_TYPE_RESIZE, event);
+        SB_EVENT_TYPE_RESIZE, event);
 }
 
-void ft_desktop_surface_on_state_change(ft_desktop_surface_t *desktop_surface,
-                                        ft_event_t *event)
+void sb_desktop_surface_on_state_change(sb_desktop_surface_t *desktop_surface,
+                                        sb_event_t *event)
 {
     _event_listener_filter_for_each(desktop_surface->event_listeners,
-        FT_EVENT_TYPE_STATE_CHANGE,
+        SB_EVENT_TYPE_STATE_CHANGE,
         event);
 }
 
@@ -327,8 +327,8 @@ static void xdg_toplevel_configure_handler(void *data,
                                            int32_t height,
                                            struct wl_array *states)
 {
-    ft_desktop_surface_t *desktop_surface = (ft_desktop_surface_t*)data;
-    // ft_application_t *app = ft_application_instance();
+    sb_desktop_surface_t *desktop_surface = (sb_desktop_surface_t*)data;
+    // sb_application_t *app = sb_application_instance();
 
     // XDG configure event does not contain restore states.
     // Manually store the states as boolean flags and compare these at the
@@ -339,7 +339,7 @@ static void xdg_toplevel_configure_handler(void *data,
     void *it;
     wl_array_for_each(it, states) {
         enum xdg_toplevel_state state = *(enum xdg_toplevel_state*)it;
-        ft_log_debug("wl_array_for_each() - state: %d, %dx%d\n", state, width, height);
+        sb_log_debug("wl_array_for_each() - state: %d, %dx%d\n", state, width, height);
         switch (state) {
         case XDG_TOPLEVEL_STATE_MAXIMIZED:
         {
@@ -347,44 +347,44 @@ static void xdg_toplevel_configure_handler(void *data,
 
             int state = desktop_surface->toplevel.states;
 
-            if (state | FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
+            if (state | SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
                 desktop_surface->toplevel.states |=
-                    FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
+                    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
 
-                ft_event_t *event = ft_event_new(
-                    FT_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
+                sb_event_t *event = sb_event_new(
+                    SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
                     desktop_surface,
-                    FT_EVENT_TYPE_STATE_CHANGE);
+                    SB_EVENT_TYPE_STATE_CHANGE);
                 event->state_change.state =
-                    FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
+                    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
                 event->state_change.size.width = width;
                 event->state_change.size.height = height;
 
-                ft_application_post_event(ft_application_instance(), event);
+                sb_application_post_event(sb_application_instance(), event);
             }
 
             break;
         }
         case XDG_TOPLEVEL_STATE_RESIZING:
         {
-            ft_log_debug("Resize %dx%d\n", width, height);
+            sb_log_debug("Resize %dx%d\n", width, height);
             if (desktop_surface->toplevel.initial_resizing == false) {
-                ft_surface_t *surface = desktop_surface->_surface;
+                sb_surface_t *surface = desktop_surface->_surface;
 
-                ft_size_t new_size;
+                sb_size_t new_size;
                 new_size.width = width;
                 new_size.height = height;
 
                 // Just send a resize event (to the desktop surface).
-                ft_event_t *event = ft_event_new(
-                    FT_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
+                sb_event_t *event = sb_event_new(
+                    SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
                     desktop_surface,
-                    FT_EVENT_TYPE_RESIZE);
-                event->resize.old_size = *ft_surface_size(surface);
+                    SB_EVENT_TYPE_RESIZE);
+                event->resize.old_size = *sb_surface_size(surface);
                 event->resize.size.width = width;
                 event->resize.size.height = height;
 
-                ft_application_post_event(ft_application_instance(), event);
+                sb_application_post_event(sb_application_instance(), event);
             } else {
                 // Ignore and set the initial is false.
                 desktop_surface->toplevel.initial_resizing = false;
@@ -399,19 +399,19 @@ static void xdg_toplevel_configure_handler(void *data,
 
     // Compare states.
     {
-        ft_desktop_surface_toplevel_state_flags states;
+        sb_desktop_surface_toplevel_state_flags states;
         states = desktop_surface->toplevel.states;
 
-        if (states | FT_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
+        if (states | SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
             maximized != true) {
             // Restored from maximized.
             desktop_surface->toplevel.states &=
-                ~FT_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
+                ~SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
 
-            ft_event_t *event = _state_change_event_new(desktop_surface,
+            sb_event_t *event = _state_change_event_new(desktop_surface,
                 width, height);
 
-            ft_application_post_event(ft_application_instance(), event);
+            sb_application_post_event(sb_application_instance(), event);
         }
     }
 }
@@ -419,7 +419,7 @@ static void xdg_toplevel_configure_handler(void *data,
 static void xdg_toplevel_close_handler(void *data,
                                        struct xdg_toplevel *xdg_toplevel)
 {
-    ft_desktop_surface_t *desktop_surface = (ft_desktop_surface_t*)data;
+    sb_desktop_surface_t *desktop_surface = (sb_desktop_surface_t*)data;
 
-    ft_desktop_surface_toplevel_close(desktop_surface);
+    sb_desktop_surface_toplevel_close(desktop_surface);
 }

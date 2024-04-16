@@ -1,10 +1,10 @@
-#include <foundation/rect.h>
+#include <swingby/rect.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool ft_rect_contains_point(ft_rect_t *rect, const ft_point_t *point)
+bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point)
 {
     // Check top-left.
     if (point->x < rect->pos.x || point->y < rect->pos.y) {

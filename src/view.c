@@ -1,35 +1,35 @@
-#include <foundation/view.h>
+#include <swingby/view.h>
 
 #include <stdlib.h>
 
-#include <foundation/log.h>
-#include <foundation/surface.h>
-#include <foundation/image.h>
-#include <foundation/list.h>
-#include <foundation/event.h>
+#include <swingby/log.h>
+#include <swingby/surface.h>
+#include <swingby/image.h>
+#include <swingby/list.h>
+#include <swingby/event.h>
 
-struct ft_view_t {
-    ft_surface_t *_surface;
-    ft_rect_t _geometry;
-    ft_view_t *_parent;
-    ft_color_t _color;
-    ft_list_t *_children;
-    enum ft_view_fill_type fill_type;
-    ft_image_t *image;
-    ft_list_t *event_listeners;
+struct sb_view_t {
+    sb_surface_t *_surface;
+    sb_rect_t _geometry;
+    sb_view_t *_parent;
+    sb_color_t _color;
+    sb_list_t *_children;
+    enum sb_view_fill_type fill_type;
+    sb_image_t *image;
+    sb_list_t *event_listeners;
 };
 
 //!<====================
 //!< Helper Functions
 //!<====================
 
-static void _event_listener_filter_for_each(ft_list_t *listeners,
-                                            enum ft_event_type type,
-                                            ft_event_t *event)
+static void _event_listener_filter_for_each(sb_list_t *listeners,
+                                            enum sb_event_type type,
+                                            sb_event_t *event)
 {
-    uint64_t length = ft_list_length(listeners);
+    uint64_t length = sb_list_length(listeners);
     for (uint64_t i = 0; i < length; ++i) {
-        ft_event_listener_tuple_t *tuple = ft_list_at(listeners, i);
+        sb_event_listener_tuple_t *tuple = sb_list_at(listeners, i);
         if (tuple->type == type) {
             tuple->listener(event);
         }
@@ -40,9 +40,9 @@ static void _event_listener_filter_for_each(ft_list_t *listeners,
 //!< View
 //!<===========
 
-ft_view_t* ft_view_new(ft_view_t *parent, const ft_rect_t *geometry)
+sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 {
-    ft_view_t *view = malloc(sizeof(ft_view_t));
+    sb_view_t *view = malloc(sizeof(sb_view_t));
 
     view->_surface = NULL;
     view->_parent = parent;
@@ -53,16 +53,16 @@ ft_view_t* ft_view_new(ft_view_t *parent, const ft_rect_t *geometry)
     view->_color.b = 255;
     view->_color.a = 255;
 
-    view->_children = ft_list_new();
+    view->_children = sb_list_new();
 
-    view->fill_type = FT_VIEW_FILL_TYPE_SINGLE_COLOR;
+    view->fill_type = SB_VIEW_FILL_TYPE_SINGLE_COLOR;
     view->image = NULL;
 
-    view->event_listeners = ft_list_new();
+    view->event_listeners = sb_list_new();
 
     if (parent != NULL) {
         // Append the new view to the child list of the parent view.
-        ft_list_push(parent->_children, (void*)view);
+        sb_list_push(parent->_children, (void*)view);
         // Inherit parent's surface.
         view->_surface = parent->_surface;
     }
@@ -70,94 +70,94 @@ ft_view_t* ft_view_new(ft_view_t *parent, const ft_rect_t *geometry)
     return view;
 }
 
-void ft_view_set_surface(ft_view_t *view, ft_surface_t *surface)
+void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface)
 {
     view->_surface = surface;
 }
 
-const ft_rect_t* ft_view_geometry(ft_view_t *view)
+const sb_rect_t* sb_view_geometry(sb_view_t *view)
 {
     return &view->_geometry;
 }
 
-void ft_view_set_geometry(ft_view_t *view, const ft_rect_t *geometry)
+void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
 {
     // TODO: Equality check.
     view->_geometry = *geometry;
 
-    ft_surface_update(view->_surface);
+    sb_surface_update(view->_surface);
 }
 
-const ft_color_t* ft_view_color(ft_view_t *view)
+const sb_color_t* sb_view_color(sb_view_t *view)
 {
     return &view->_color;
 }
 
-enum ft_view_fill_type ft_view_fill_type(ft_view_t *view)
+enum sb_view_fill_type sb_view_fill_type(sb_view_t *view)
 {
     return view->fill_type;
 }
 
-void ft_view_set_fill_type(ft_view_t *view, enum ft_view_fill_type fill_type)
+void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type)
 {
     // From single color to single color. Do nothing.
-    if (view->fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR &&
-        fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR) {
+    if (view->fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR &&
+        fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
         return;
     }
 
     // From single color to image.
-    if (view->fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR &&
-        fill_type == FT_VIEW_FILL_TYPE_IMAGE) {
-        view->fill_type = FT_VIEW_FILL_TYPE_IMAGE;
+    if (view->fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR &&
+        fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
+        view->fill_type = SB_VIEW_FILL_TYPE_IMAGE;
 
-        ft_size_i_t size;
+        sb_size_i_t size;
         size.width = view->_geometry.size.width;
         size.height = view->_geometry.size.height;
-        view->image = ft_image_new(&size, FT_IMAGE_FORMAT_RGBA32);
+        view->image = sb_image_new(&size, SB_IMAGE_FORMAT_RGBA32);
 
         return;
     }
 
     // From image to image. Do nothing.
-    if (view->fill_type == FT_VIEW_FILL_TYPE_IMAGE &&
-        fill_type == FT_VIEW_FILL_TYPE_IMAGE) {
+    if (view->fill_type == SB_VIEW_FILL_TYPE_IMAGE &&
+        fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
         return;
     }
 
     // From image to single color.
-    if (view->fill_type == FT_VIEW_FILL_TYPE_IMAGE &&
-        fill_type == FT_VIEW_FILL_TYPE_SINGLE_COLOR) {
-        view->fill_type = FT_VIEW_FILL_TYPE_SINGLE_COLOR;
+    if (view->fill_type == SB_VIEW_FILL_TYPE_IMAGE &&
+        fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
+        view->fill_type = SB_VIEW_FILL_TYPE_SINGLE_COLOR;
 
         return;
     }
 }
 
-ft_image_t* ft_view_image(ft_view_t *view)
+sb_image_t* sb_view_image(sb_view_t *view)
 {
     return view->image;
 }
 
-ft_list_t* ft_view_children(ft_view_t *view)
+sb_list_t* sb_view_children(sb_view_t *view)
 {
     return view->_children;
 }
 
-ft_view_t* ft_view_child_at(ft_view_t *view, const ft_point_t *position)
+sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position)
 {
-    ft_rect_t local_geo;
+    sb_rect_t local_geo;
     local_geo.pos.x = 0;
     local_geo.pos.y = 0;
-    local_geo.size = ft_view_geometry(view)->size;
+    local_geo.size = sb_view_geometry(view)->size;
 
-    if (ft_rect_contains_point(&local_geo, position) == false) {
+    if (sb_rect_contains_point(&local_geo, position) == false) {
         return NULL;
     }
 
-    for (int i = ft_list_length(view->_children); i > 0; --i) {
-        ft_view_t *child = ft_list_at(view->_children, i - 1);
-        if (ft_rect_contains_point((ft_rect_t*)ft_view_geometry(child),
+    for (int i = sb_list_length(view->_children); i > 0; --i) {
+        sb_view_t *child = sb_list_at(view->_children, i - 1);
+        if (sb_rect_contains_point((sb_rect_t*)sb_view_geometry(child),
             position)) {
             return child;
         }
@@ -166,73 +166,73 @@ ft_view_t* ft_view_child_at(ft_view_t *view, const ft_point_t *position)
     return NULL;
 }
 
-ft_view_t* ft_view_parent(ft_view_t *view)
+sb_view_t* sb_view_parent(sb_view_t *view)
 {
     return view->_parent;
 }
 
-void ft_view_set_color(ft_view_t *view, const ft_color_t *color)
+void sb_view_set_color(sb_view_t *view, const sb_color_t *color)
 {
     // TODO: Equality check.
     view->_color = *color;
 
-    ft_surface_update(view->_surface);
+    sb_surface_update(view->_surface);
 }
 
-void ft_view_add_event_listener(ft_view_t *view,
-                                enum ft_event_type event_type,
-                                void (*listener)(ft_event_t*))
+void sb_view_add_event_listener(sb_view_t *view,
+                                enum sb_event_type event_type,
+                                void (*listener)(sb_event_t*))
 {
-    ft_event_listener_tuple_t *tuple = ft_event_listener_tuple_new(
+    sb_event_listener_tuple_t *tuple = sb_event_listener_tuple_new(
         event_type, listener);
-    ft_list_push(view->event_listeners, (void*)tuple);
+    sb_list_push(view->event_listeners, (void*)tuple);
 }
 
-void ft_view_on_pointer_enter(ft_view_t *view, ft_event_t *event)
+void sb_view_on_pointer_enter(sb_view_t *view, sb_event_t *event)
 {
     _event_listener_filter_for_each(view->event_listeners,
-        FT_EVENT_TYPE_POINTER_ENTER, event);
+        SB_EVENT_TYPE_POINTER_ENTER, event);
 }
 
-void ft_view_on_pointer_leave(ft_view_t *view, ft_event_t *event)
+void sb_view_on_pointer_leave(sb_view_t *view, sb_event_t *event)
 {
     _event_listener_filter_for_each(view->event_listeners,
-        FT_EVENT_TYPE_POINTER_LEAVE, event);
+        SB_EVENT_TYPE_POINTER_LEAVE, event);
 }
 
-void ft_view_on_pointer_move(ft_view_t *view, ft_event_t *event)
+void sb_view_on_pointer_move(sb_view_t *view, sb_event_t *event)
 {
-    // ft_log_debug("ft_view_on_pointer_move() - (%f, %f)\n", event->pointer.position.x, event->pointer.position.y);
+    // sb_log_debug("sb_view_on_pointer_move() - (%f, %f)\n", event->pointer.position.x, event->pointer.position.y);
 
     _event_listener_filter_for_each(view->event_listeners,
-        FT_EVENT_TYPE_POINTER_MOVE, event);
+        SB_EVENT_TYPE_POINTER_MOVE, event);
 }
 
-void ft_view_on_pointer_press(ft_view_t *view, ft_event_t *event)
+void sb_view_on_pointer_press(sb_view_t *view, sb_event_t *event)
 {
-    ft_log_debug("ft_view_on_pointer_press() - (%.2f, %.2f)\n", event->pointer.position.x, event->pointer.position.y);
+    sb_log_debug("sb_view_on_pointer_press() - (%.2f, %.2f)\n", event->pointer.position.x, event->pointer.position.y);
 
     _event_listener_filter_for_each(view->event_listeners,
-        FT_EVENT_TYPE_POINTER_PRESS, event);
+        SB_EVENT_TYPE_POINTER_PRESS, event);
 }
 
-void ft_view_on_pointer_release(ft_view_t *view, ft_event_t *event)
+void sb_view_on_pointer_release(sb_view_t *view, sb_event_t *event)
 {
     _event_listener_filter_for_each(view->event_listeners,
-        FT_EVENT_TYPE_POINTER_RELEASE, event);
+        SB_EVENT_TYPE_POINTER_RELEASE, event);
 }
 
-void ft_view_on_pointer_click(ft_view_t *view, ft_event_t *event)
+void sb_view_on_pointer_click(sb_view_t *view, sb_event_t *event)
 {
-    ft_log_debug("ft_view_on_pointer_click()\n");
+    sb_log_debug("sb_view_on_pointer_click()\n");
 
     _event_listener_filter_for_each(view->event_listeners,
-        FT_EVENT_TYPE_POINTER_CLICK, event);
+        SB_EVENT_TYPE_POINTER_CLICK, event);
 }
 
-void ft_view_on_pointer_double_click(ft_view_t *view, ft_event_t *event)
+void sb_view_on_pointer_double_click(sb_view_t *view, sb_event_t *event)
 {
     _event_listener_filter_for_each(view->event_listeners,
-        FT_EVENT_TYPE_POINTER_DOUBLE_CLICK, event);
+        SB_EVENT_TYPE_POINTER_DOUBLE_CLICK, event);
 }
 

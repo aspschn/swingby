@@ -1,4 +1,4 @@
-#include <foundation/bench.h>
+#include <swingby/bench.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -9,15 +9,15 @@
 extern "C" {
 #endif
 
-struct ft_bench_t {
+struct sb_bench_t {
     const char *message;
     struct timeval start;
     struct timeval end;
 };
 
-ft_bench_t* ft_bench_new_F(const char *message)
+sb_bench_t* sb_bench_new_F(const char *message)
 {
-    ft_bench_t *bench = malloc(sizeof(ft_bench_t));
+    sb_bench_t *bench = malloc(sizeof(sb_bench_t));
 
     bench->message = message;
     gettimeofday(&bench->start, NULL);
@@ -25,7 +25,7 @@ ft_bench_t* ft_bench_new_F(const char *message)
     return bench;
 }
 
-void ft_bench_end_F(ft_bench_t *bench)
+void sb_bench_end_F(sb_bench_t *bench)
 {
     gettimeofday(&bench->end, NULL);
 

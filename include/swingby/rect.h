@@ -1,0 +1,29 @@
+#ifndef _FOUNDATION_RECT_H
+#define _FOUNDATION_RECT_H
+
+#include <stdbool.h>
+
+#include <swingby/point.h>
+#include <swingby/size.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct sb_rect_t {
+    sb_point_t pos;
+    sb_size_t size;
+} sb_rect_t;
+
+typedef struct sb_rect_i_t {
+    sb_point_i_t pos;
+    sb_size_i_t size;
+} sb_rect_i_t;
+
+bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _FOUNDATION_RECT_H */
