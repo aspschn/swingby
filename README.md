@@ -1,4 +1,4 @@
-# Foundation
+# Swingby
 
 A thin wrapper library for building Wayland client GUI programs.
 
@@ -14,7 +14,7 @@ So, I decided to make a less abstracted library works as a middle-ware.
 
 ## Features
 
-Foundation not provide a window directly. But you can build your own window (that
+Swingby not provide a window directly. But you can build your own window (that
 client-side decorated).
 
 The event system makes easier to make the event driven GUI programs.
@@ -24,7 +24,7 @@ It based on OpenGL 4.6 (the latest version of) for rendering performance.
 
 ## Build
 
-Foundation is a Wayland based library. Therefore your system must suppport Wayland
+Swingby is a Wayland based library. Therefore your system must suppport Wayland
 before building the project.
 
 We are using the latest version of OpenGL for rendering. The version 4.6 was
@@ -61,7 +61,7 @@ $ cmake ..
 $ make
 ```
 
-You can test Foundation with the examples.
+You can test Swingby with the examples.
 
 ```sh
 $ make example
@@ -92,7 +92,7 @@ The views are the elements that rendered in a surface. A view has it's parent (e
 the root-view), and contain the children. A view can listen a pointer (mouse) enter,
 leave, move, click event and etc.
 
-Perhaps this could be called a widget. In Foundation however not privide real controls.
+Perhaps this could be called a widget. In Swingby however not privide real controls.
 But you can make your own buttons, inputs and others with the views.
 
 
@@ -107,5 +107,5 @@ Please don't hesitate to open any issues, as they drive development forward.
 
 ## License
 
-Foundation is developing under MIT License. For the detail, see the LICENSE file.
+Swingby is developing under MIT License. For the detail, see the LICENSE file.
 
