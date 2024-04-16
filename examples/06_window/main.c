@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <foundation/foundation.h>
+#include <swingby/swingby.h>
 
 ft_view_t *image_view = NULL;
 

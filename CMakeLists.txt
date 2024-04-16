@@ -10,25 +10,25 @@ set(WAYLAND_PROTOCOLS_SOURCES
 )
 
 set(SWINGBY_SOURCES
-    include/foundation/log.h
-    include/foundation/bench.h
-    include/foundation/list.h
-    include/foundation/point.h
-    include/foundation/size.h
-    include/foundation/rect.h
-    include/foundation/color.h
-    include/foundation/application.h
-    include/foundation/output.h
-    include/foundation/surface.h
-    include/foundation/desktop-surface.h
-    include/foundation/view.h
-    include/foundation/image.h
-    include/foundation/egl-context.h
-    include/foundation/input.h
-    include/foundation/cursor.h
-    include/foundation/event.h
-    include/foundation/event-dispatcher.h
-    include/foundation/foundation.h
+    include/swingby/log.h
+    include/swingby/bench.h
+    include/swingby/list.h
+    include/swingby/point.h
+    include/swingby/size.h
+    include/swingby/rect.h
+    include/swingby/color.h
+    include/swingby/application.h
+    include/swingby/output.h
+    include/swingby/surface.h
+    include/swingby/desktop-surface.h
+    include/swingby/view.h
+    include/swingby/image.h
+    include/swingby/egl-context.h
+    include/swingby/input.h
+    include/swingby/cursor.h
+    include/swingby/event.h
+    include/swingby/event-dispatcher.h
+    include/swingby/swingby.h
     src/log.c
     src/bench.c
     src/list.c

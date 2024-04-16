@@ -1,12 +1,12 @@
-#include <foundation/cursor.h>
+#include <swingby/cursor.h>
 
 #include <stdlib.h>
 
-#include <foundation/log.h>
-#include <foundation/surface.h>
-#include <foundation/size.h>
-#include <foundation/color.h>
-#include <foundation/view.h>
+#include <swingby/log.h>
+#include <swingby/surface.h>
+#include <swingby/size.h>
+#include <swingby/color.h>
+#include <swingby/view.h>
 
 #ifdef __cplusplus
 extern "C" {

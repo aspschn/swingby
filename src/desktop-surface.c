@@ -1,4 +1,4 @@
-#include <foundation/desktop-surface.h>
+#include <swingby/desktop-surface.h>
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -6,13 +6,13 @@
 #include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
 
-#include <foundation/log.h>
-#include <foundation/size.h>
-#include <foundation/rect.h>
-#include <foundation/surface.h>
-#include <foundation/application.h>
-#include <foundation/list.h>
-#include <foundation/event.h>
+#include <swingby/log.h>
+#include <swingby/size.h>
+#include <swingby/rect.h>
+#include <swingby/surface.h>
+#include <swingby/application.h>
+#include <swingby/list.h>
+#include <swingby/event.h>
 
 struct ft_desktop_surface_t {
     ft_surface_t *_surface;

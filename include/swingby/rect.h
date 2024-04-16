@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 
-#include <foundation/point.h>
-#include <foundation/size.h>
+#include <swingby/point.h>
+#include <swingby/size.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,10 +1,10 @@
 #ifndef _FOUNDATION_VIEW_H
 #define _FOUNDATION_VIEW_H
 
-#include <foundation/rect.h>
-#include <foundation/surface.h>
-#include <foundation/color.h>
-#include <foundation/event.h>
+#include <swingby/rect.h>
+#include <swingby/surface.h>
+#include <swingby/color.h>
+#include <swingby/event.h>
 
 typedef struct ft_image_t ft_image_t;
 typedef struct ft_list_t ft_list_t;

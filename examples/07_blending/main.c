@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <foundation/foundation.h>
+#include <swingby/swingby.h>
 
 int main(int argc, char *argv[])
 {

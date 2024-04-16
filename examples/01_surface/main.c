@@ -1,5 +1,5 @@
-#include <foundation/application.h>
-#include <foundation/surface.h>
+#include <swingby/application.h>
+#include <swingby/surface.h>
 
 int main(int argc, char *argv[])
 {

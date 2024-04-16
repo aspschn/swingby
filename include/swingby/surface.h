@@ -3,8 +3,8 @@
 
 #include <wayland-client.h>
 
-#include <foundation/size.h>
-#include <foundation/event.h>
+#include <swingby/size.h>
+#include <swingby/event.h>
 
 typedef struct ft_rect_t ft_rect_t;
 typedef struct ft_view_t ft_view_t;

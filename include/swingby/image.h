@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <foundation/size.h>
+#include <swingby/size.h>
 
 #ifdef __cplusplus
 extern "C" {

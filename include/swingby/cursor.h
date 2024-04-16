@@ -1,7 +1,7 @@
 #ifndef _FOUNDATION_CURSOR_H
 #define _FOUNDATION_CURSOR_H
 
-#include <foundation/point.h>
+#include <swingby/point.h>
 
 #ifdef __cplusplus
 extern "C" {

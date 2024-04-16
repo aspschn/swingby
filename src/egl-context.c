@@ -1,8 +1,8 @@
-#include <foundation/egl-context.h>
+#include <swingby/egl-context.h>
 
 #include <stdlib.h>
 
-#include <foundation/application.h>
+#include <swingby/application.h>
 
 ft_egl_context_t* ft_egl_context_new()
 {

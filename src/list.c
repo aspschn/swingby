@@ -1,9 +1,9 @@
-#include <foundation/list.h>
+#include <swingby/list.h>
 
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <foundation/log.h>
+#include <swingby/log.h>
 
 #ifdef __cplusplus
 extern "C" {

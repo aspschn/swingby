@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <foundation/foundation.h>
+#include <swingby/swingby.h>
 
 static void on_click(ft_event_t *event)
 {

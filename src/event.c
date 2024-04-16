@@ -1,8 +1,8 @@
-#include <foundation/event.h>
+#include <swingby/event.h>
 
 #include <stdlib.h>
 
-#include <foundation/log.h>
+#include <swingby/log.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,12 +1,12 @@
-#include <foundation/view.h>
+#include <swingby/view.h>
 
 #include <stdlib.h>
 
-#include <foundation/log.h>
-#include <foundation/surface.h>
-#include <foundation/image.h>
-#include <foundation/list.h>
-#include <foundation/event.h>
+#include <swingby/log.h>
+#include <swingby/surface.h>
+#include <swingby/image.h>
+#include <swingby/list.h>
+#include <swingby/event.h>
 
 struct ft_view_t {
     ft_surface_t *_surface;

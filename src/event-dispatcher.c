@@ -1,13 +1,13 @@
-#include <foundation/event-dispatcher.h>
+#include <swingby/event-dispatcher.h>
 
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <foundation/log.h>
-#include <foundation/bench.h>
-#include <foundation/event.h>
-#include <foundation/view.h>
-#include <foundation/desktop-surface.h>
+#include <swingby/log.h>
+#include <swingby/bench.h>
+#include <swingby/event.h>
+#include <swingby/view.h>
+#include <swingby/desktop-surface.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,4 +1,4 @@
-#include <foundation/application.h>
+#include <swingby/application.h>
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -10,15 +10,15 @@
 #include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
 
-#include <foundation/log.h>
-#include <foundation/surface.h>
-#include <foundation/desktop-surface.h>
-#include <foundation/view.h>
-#include <foundation/list.h>
-#include <foundation/input.h>
-#include <foundation/cursor.h>
-#include <foundation/event.h>
-#include <foundation/event-dispatcher.h>
+#include <swingby/log.h>
+#include <swingby/surface.h>
+#include <swingby/desktop-surface.h>
+#include <swingby/view.h>
+#include <swingby/list.h>
+#include <swingby/input.h>
+#include <swingby/cursor.h>
+#include <swingby/event.h>
+#include <swingby/event-dispatcher.h>
 
 struct ft_application_t {
     /// `struct wl_display`.

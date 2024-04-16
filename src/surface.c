@@ -1,4 +1,4 @@
-#include <foundation/surface.h>
+#include <swingby/surface.h>
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -13,14 +13,14 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
-#include <foundation/log.h>
-#include <foundation/bench.h>
-#include <foundation/application.h>
-#include <foundation/egl-context.h>
-#include <foundation/view.h>
-#include <foundation/image.h>
-#include <foundation/list.h>
-#include <foundation/event.h>
+#include <swingby/log.h>
+#include <swingby/bench.h>
+#include <swingby/application.h>
+#include <swingby/egl-context.h>
+#include <swingby/view.h>
+#include <swingby/image.h>
+#include <swingby/list.h>
+#include <swingby/event.h>
 #include "shaders.h"
 
 struct ft_surface_t {

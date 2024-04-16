@@ -1,4 +1,4 @@
-#include <foundation/color.h>
+#include <swingby/color.h>
 
 #ifdef __cplusplus
 extern "C" {
