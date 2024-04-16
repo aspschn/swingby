@@ -9,13 +9,13 @@ extern "C" {
 
 struct wl_output;
 
-typedef struct ft_output_t ft_output_t;
+typedef struct sb_output_t sb_output_t;
 
-ft_output_t* ft_output_new(struct wl_output *wl_output, uint32_t name);
+sb_output_t* sb_output_new(struct wl_output *wl_output, uint32_t name);
 
-struct wl_output* ft_output_wl_output(ft_output_t *output);
+struct wl_output* sb_output_wl_output(sb_output_t *output);
 
-uint32_t ft_output_name(ft_output_t *output);
+uint32_t sb_output_name(sb_output_t *output);
 
 #ifdef __cplusplus
 }

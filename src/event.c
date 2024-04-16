@@ -12,11 +12,11 @@ extern "C" {
 //!< Event
 //!<=============
 
-ft_event_t* ft_event_new(enum ft_event_target_type target_type,
+sb_event_t* sb_event_new(enum sb_event_target_type target_type,
                          void *target,
-                         enum ft_event_type type)
+                         enum sb_event_type type)
 {
-    ft_event_t *event = malloc(sizeof(ft_event_t));
+    sb_event_t *event = malloc(sizeof(sb_event_t));
 
     event->target_type = target_type;
     event->target = target;
@@ -26,44 +26,44 @@ ft_event_t* ft_event_new(enum ft_event_target_type target_type,
     return event;
 }
 
-enum ft_event_target_type ft_event_target_type(ft_event_t *event)
+enum sb_event_target_type sb_event_target_type(sb_event_t *event)
 {
     return event->target_type;
 }
 
-void* ft_event_target(ft_event_t *event)
+void* sb_event_target(sb_event_t *event)
 {
     return event->target;
 }
 
-enum ft_event_type ft_event_type(ft_event_t *event)
+enum sb_event_type sb_event_type(sb_event_t *event)
 {
     return event->type;
 }
 
-bool ft_event_propagation(ft_event_t *event)
+bool sb_event_propagation(sb_event_t *event)
 {
     return event->propagation;
 }
 
-void ft_event_set_propagation(ft_event_t *event, bool value)
+void sb_event_set_propagation(sb_event_t *event, bool value)
 {
     event->propagation = value;
 }
 
-const ft_size_t* ft_event_resize_old_size(ft_event_t *event)
+const sb_size_t* sb_event_resize_old_size(sb_event_t *event)
 {
-    if (event->type != FT_EVENT_TYPE_RESIZE) {
-        ft_log_warn("Trying to access a resize info, but the event type is not FT_EVENT_TYPE_RESIZE\n");
+    if (event->type != SB_EVENT_TYPE_RESIZE) {
+        sb_log_warn("Trying to access a resize info, but the event type is not SB_EVENT_TYPE_RESIZE\n");
     }
 
     return &event->resize.old_size;
 }
 
-const ft_size_t* ft_event_resize_size(ft_event_t *event)
+const sb_size_t* sb_event_resize_size(sb_event_t *event)
 {
-    if (event->type != FT_EVENT_TYPE_RESIZE) {
-        ft_log_warn("Trying to access a resize info, but the event type is not FT_EVENT_TYPE_RESIZE\n");
+    if (event->type != SB_EVENT_TYPE_RESIZE) {
+        sb_log_warn("Trying to access a resize info, but the event type is not SB_EVENT_TYPE_RESIZE\n");
     }
 
     return &event->resize.size;
@@ -73,13 +73,13 @@ const ft_size_t* ft_event_resize_size(ft_event_t *event)
 //!< Pointer Event
 //!<================
 
-ft_event_t* ft_pointer_event_new(enum ft_event_target_type target_type,
+sb_event_t* sb_pointer_event_new(enum sb_event_target_type target_type,
                                  void *target,
-                                 enum ft_event_type type,
-                                 ft_pointer_button button,
-                                 const ft_point_t *position)
+                                 enum sb_event_type type,
+                                 sb_pointer_button button,
+                                 const sb_point_t *position)
 {
-    ft_event_t *event = ft_event_new(target_type, target, type);
+    sb_event_t *event = sb_event_new(target_type, target, type);
 
     event->pointer.button = button;
     event->pointer.position = *position;
@@ -91,12 +91,12 @@ ft_event_t* ft_pointer_event_new(enum ft_event_target_type target_type,
 //!< Event Listener
 //!<=====================
 
-ft_event_listener_tuple_t*
-ft_event_listener_tuple_new(enum ft_event_type type,
-                            void (*listener)(ft_event_t*))
+sb_event_listener_tuple_t*
+sb_event_listener_tuple_new(enum sb_event_type type,
+                            void (*listener)(sb_event_t*))
 {
-    ft_event_listener_tuple_t *tuple = malloc(
-        sizeof(ft_event_listener_tuple_t));
+    sb_event_listener_tuple_t *tuple = malloc(
+        sizeof(sb_event_listener_tuple_t));
 
     tuple->type = type;
     tuple->listener = listener;
@@ -104,7 +104,7 @@ ft_event_listener_tuple_new(enum ft_event_type type,
     return tuple;
 }
 
-void ft_event_listener_tuple_free(ft_event_listener_tuple_t *tuple)
+void sb_event_listener_tuple_free(sb_event_listener_tuple_t *tuple)
 {
     free(tuple);
 }

@@ -7,12 +7,12 @@
 extern "C" {
 #endif
 
-typedef struct ft_color_t {
+typedef struct sb_color_t {
     uint8_t r;
     uint8_t g;
     uint8_t b;
     uint8_t a;
-} ft_color_t;
+} sb_color_t;
 
 #ifdef __cplusplus
 }

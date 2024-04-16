@@ -10,17 +10,17 @@
 extern "C" {
 #endif
 
-typedef struct ft_rect_t {
-    ft_point_t pos;
-    ft_size_t size;
-} ft_rect_t;
+typedef struct sb_rect_t {
+    sb_point_t pos;
+    sb_size_t size;
+} sb_rect_t;
 
-typedef struct ft_rect_i_t {
-    ft_point_i_t pos;
-    ft_size_i_t size;
-} ft_rect_i_t;
+typedef struct sb_rect_i_t {
+    sb_point_i_t pos;
+    sb_size_i_t size;
+} sb_rect_i_t;
 
-bool ft_rect_contains_point(ft_rect_t *rect, const ft_point_t *point);
+bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point);
 
 #ifdef __cplusplus
 }

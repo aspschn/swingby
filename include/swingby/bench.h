@@ -5,18 +5,18 @@
 extern "C" {
 #endif
 
-typedef struct ft_bench_t ft_bench_t;
+typedef struct sb_bench_t sb_bench_t;
 
-ft_bench_t* ft_bench_new_F(const char *message);
+sb_bench_t* sb_bench_new_F(const char *message);
 
-void ft_bench_end_F(ft_bench_t *bench);
+void sb_bench_end_F(sb_bench_t *bench);
 
 #ifdef FOUNDATION_DEBUG
-#define ft_bench_new(message) ft_bench_new_F(message)
-#define ft_bench_end(bench) ft_bench_end_F(bench)
+#define sb_bench_new(message) sb_bench_new_F(message)
+#define sb_bench_end(bench) sb_bench_end_F(bench)
 #else
-#define ft_bench_new() NULL
-#define ft_bench_end(bench)
+#define sb_bench_new() NULL
+#define sb_bench_end(bench)
 #endif
 
 #ifdef __cplusplus

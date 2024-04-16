@@ -12,42 +12,42 @@
 extern "C" {
 #endif
 
-struct ft_cursor_t {
-    ft_surface_t *surface;
-    ft_cursor_shape shape;
-    ft_point_t hot_spot;
+struct sb_cursor_t {
+    sb_surface_t *surface;
+    sb_cursor_shape shape;
+    sb_point_t hot_spot;
 };
 
-ft_cursor_t* ft_cursor_new(ft_cursor_shape shape, const ft_point_t *hot_spot)
+sb_cursor_t* sb_cursor_new(sb_cursor_shape shape, const sb_point_t *hot_spot)
 {
-    ft_log_debug("ft_cursor_new()\n");
-    ft_cursor_t *cursor = malloc(sizeof(ft_cursor_t));
+    sb_log_debug("sb_cursor_new()\n");
+    sb_cursor_t *cursor = malloc(sizeof(sb_cursor_t));
 
-    cursor->surface = ft_surface_new();
+    cursor->surface = sb_surface_new();
     cursor->shape = shape;
     cursor->hot_spot = *hot_spot;
 
     // Set size.
-    ft_size_t size;
+    sb_size_t size;
     size.width = 24.0f;
     size.height = 24.0f;
-    ft_surface_set_size(cursor->surface, &size);
+    sb_surface_set_size(cursor->surface, &size);
 
     // Set color for TEST.
-    ft_color_t color;
+    sb_color_t color;
     color.r = 255;
     color.g = 0;
     color.b = 0;
     color.a = 255;
-    ft_view_set_color(ft_surface_root_view(cursor->surface), &color);
+    sb_view_set_color(sb_surface_root_view(cursor->surface), &color);
 
-    ft_surface_attach(cursor->surface);
-    ft_surface_commit(cursor->surface);
+    sb_surface_attach(cursor->surface);
+    sb_surface_commit(cursor->surface);
 
     return cursor;
 }
 
-ft_surface_t* ft_cursor_surface(ft_cursor_t *cursor)
+sb_surface_t* sb_cursor_surface(sb_cursor_t *cursor)
 {
     return cursor->surface;
 }

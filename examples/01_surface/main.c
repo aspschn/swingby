@@ -3,12 +3,12 @@
 
 int main(int argc, char *argv[])
 {
-    ft_application_t *app = ft_application_new(argc, argv);
+    sb_application_t *app = sb_application_new(argc, argv);
 
-    ft_surface_t *surface = ft_surface_new();
+    sb_surface_t *surface = sb_surface_new();
 
-    ft_surface_commit(surface);
+    sb_surface_commit(surface);
 
-    return ft_application_exec(app);
+    return sb_application_exec(app);
 }
 

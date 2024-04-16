@@ -6,61 +6,61 @@
 #include <swingby/color.h>
 #include <swingby/event.h>
 
-typedef struct ft_image_t ft_image_t;
-typedef struct ft_list_t ft_list_t;
-typedef struct ft_event_t ft_event_t;
+typedef struct sb_image_t sb_image_t;
+typedef struct sb_list_t sb_list_t;
+typedef struct sb_event_t sb_event_t;
 
-enum ft_view_fill_type {
-    FT_VIEW_FILL_TYPE_SINGLE_COLOR,
-    FT_VIEW_FILL_TYPE_IMAGE,
+enum sb_view_fill_type {
+    SB_VIEW_FILL_TYPE_SINGLE_COLOR,
+    SB_VIEW_FILL_TYPE_IMAGE,
 };
 
-typedef struct ft_view_t ft_view_t;
+typedef struct sb_view_t sb_view_t;
 
-ft_view_t* ft_view_new(ft_view_t *parent, const ft_rect_t *geometry);
+sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry);
 
-void ft_view_set_surface(ft_view_t *view, ft_surface_t *surface);
+void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface);
 
-const ft_rect_t* ft_view_geometry(ft_view_t *view);
+const sb_rect_t* sb_view_geometry(sb_view_t *view);
 
-void ft_view_set_geometry(ft_view_t *view, const ft_rect_t *geometry);
+void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry);
 
-const ft_color_t* ft_view_color(ft_view_t *view);
+const sb_color_t* sb_view_color(sb_view_t *view);
 
-void ft_view_set_color(ft_view_t *view, const ft_color_t *color);
+void sb_view_set_color(sb_view_t *view, const sb_color_t *color);
 
-enum ft_view_fill_type ft_view_fill_type(ft_view_t *view);
+enum sb_view_fill_type sb_view_fill_type(sb_view_t *view);
 
-void ft_view_set_fill_type(ft_view_t *view, enum ft_view_fill_type fill_type);
+void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type);
 
-ft_image_t* ft_view_image(ft_view_t *view);
+sb_image_t* sb_view_image(sb_view_t *view);
 
-ft_list_t* ft_view_children(ft_view_t *view);
+sb_list_t* sb_view_children(sb_view_t *view);
 
-ft_view_t* ft_view_child_at(ft_view_t *view, const ft_point_t *position);
+sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position);
 
-ft_view_t* ft_view_parent(ft_view_t *view);
+sb_view_t* sb_view_parent(sb_view_t *view);
 
-void ft_view_add_event_listener(ft_view_t *view,
-                                enum ft_event_type event_type,
-                                void (*listener)(ft_event_t*));
+void sb_view_add_event_listener(sb_view_t *view,
+                                enum sb_event_type event_type,
+                                void (*listener)(sb_event_t*));
 
 //!<====================
 //!< Event Handlers
 //!<====================
 
-void ft_view_on_pointer_enter(ft_view_t *view, ft_event_t *event);
+void sb_view_on_pointer_enter(sb_view_t *view, sb_event_t *event);
 
-void ft_view_on_pointer_leave(ft_view_t *view, ft_event_t *event);
+void sb_view_on_pointer_leave(sb_view_t *view, sb_event_t *event);
 
-void ft_view_on_pointer_move(ft_view_t *view, ft_event_t *event);
+void sb_view_on_pointer_move(sb_view_t *view, sb_event_t *event);
 
-void ft_view_on_pointer_press(ft_view_t *view, ft_event_t *event);
+void sb_view_on_pointer_press(sb_view_t *view, sb_event_t *event);
 
-void ft_view_on_pointer_click(ft_view_t *view, ft_event_t *event);
+void sb_view_on_pointer_click(sb_view_t *view, sb_event_t *event);
 
-void ft_view_on_pointer_double_click(ft_view_t *view, ft_event_t *event);
+void sb_view_on_pointer_double_click(sb_view_t *view, sb_event_t *event);
 
-void ft_view_on_pointer_release(ft_view_t *view, ft_event_t *event);
+void sb_view_on_pointer_release(sb_view_t *view, sb_event_t *event);
 
 #endif /* _FOUNDATION_VIEW_H */
