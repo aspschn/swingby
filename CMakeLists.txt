@@ -9,7 +9,7 @@ set(WAYLAND_PROTOCOLS_SOURCES
     include/wayland-protocols/stable/xdg-shell.c
 )
 
-set(SWINGBY_SOURCES
+set(SWINGBY_HEADERS
     include/swingby/log.h
     include/swingby/bench.h
     include/swingby/list.h
@@ -29,6 +29,10 @@ set(SWINGBY_SOURCES
     include/swingby/event.h
     include/swingby/event-dispatcher.h
     include/swingby/swingby.h
+)
+
+set(SWINGBY_SOURCES
+    ${SWINGBY_HEADERS}
     src/log.c
     src/bench.c
     src/list.c
@@ -67,6 +71,26 @@ target_link_options(swingby
     PRIVATE -lwayland-egl
     PRIVATE -lEGL
     PRIVATE -lGL
+)
+
+# Version info.
+set_target_properties(swingby PROPERTIES
+    VERSION ${CMAKE_PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+)
+
+# Install
+include(GNUInstallDirs)
+
+set_target_properties(swingby PROPERTIES
+    PUBLIC_HEADER
+    "${SWINGBY_HEADERS}"
+)
+
+install(TARGETS swingby
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/swingby
 )
 
 set(FOUNDATION_EXAMPLES_BINARY_DIR ${CMAKE_BINARY_DIR}/examples)
