@@ -85,6 +85,9 @@ void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
     // TODO: Equality check.
     view->_geometry = *geometry;
 
+    if (view->_surface == NULL) {
+        sb_log_warn("sb_view_set_geometry() - surface is NULL\n");
+    }
     sb_surface_update(view->_surface);
 }
 
@@ -176,6 +179,9 @@ void sb_view_set_color(sb_view_t *view, const sb_color_t *color)
     // TODO: Equality check.
     view->_color = *color;
 
+    if (view->_surface == NULL) {
+        sb_log_warn("sb_view_set_color() - surface is NULL.\n");
+    }
     sb_surface_update(view->_surface);
 }
 

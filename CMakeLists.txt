@@ -93,7 +93,15 @@ install(TARGETS swingby
     DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/swingby
 )
 
+# Examples
 set(FOUNDATION_EXAMPLES_BINARY_DIR ${CMAKE_BINARY_DIR}/examples)
 
 file(MAKE_DIRECTORY ${FOUNDATION_EXAMPLES_BINARY_DIR})
 add_subdirectory(examples)
+
+# Tests
+set(SWINGBY_TESTS_BINARY_DIR ${CMAKE_BINARY_DIR}/tests)
+
+file(MAKE_DIRECTORY ${SWINGBY_TESTS_BINARY_DIR})
+add_subdirectory(tests)
+
