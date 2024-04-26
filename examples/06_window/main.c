@@ -117,8 +117,8 @@ sb_rect_t get_body_geometry(struct window *window)
     const sb_size_t border_size = sb_view_geometry(window->border)->size;
 
     sb_rect_t geometry;
-    geometry.pos.x = WINDOW_BORDER_THICKNESS;
-    geometry.pos.y = WINDOW_BORDER_THICKNESS + WINDOW_TITLE_BAR_HEIGHT;
+    geometry.pos.x = WINDOW_SHADOW_THICKNESS;
+    geometry.pos.y = WINDOW_SHADOW_THICKNESS + WINDOW_TITLE_BAR_HEIGHT;
     geometry.size.width = border_size.width - (WINDOW_BORDER_THICKNESS * 2);
     geometry.size.height = border_size.height - (WINDOW_BORDER_THICKNESS * 2)
         - WINDOW_TITLE_BAR_HEIGHT;
@@ -288,7 +288,7 @@ static void init_window(struct window *window)
 
     // Set body.
     sb_rect_t body_geometry = get_body_geometry(window);
-    window->body = sb_view_new(window->border, &body_geometry);
+    window->body = sb_view_new(sb_surface_root_view(surface), &body_geometry);
     color.r = 255;
     color.g = 255;
     color.b = 255;
