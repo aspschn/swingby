@@ -21,8 +21,8 @@ sb_list_t* sb_list_new()
 
     list->capacity = 16;
     list->length = 0;
-    list->data = malloc(sizeof(void*));
-    *list->data = malloc(sizeof(void**) * list->capacity);
+    // list->data = malloc(sizeof(void*));
+    list->data = malloc(sizeof(void**) * list->capacity);
 
     return list;
 }
