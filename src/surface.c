@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sys/time.h>
 
@@ -21,13 +22,19 @@
 #include <swingby/image.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
+
+#include "./skia/context.h"
+
 #include "shaders.h"
+
+#define SWINGBY_BACKEND_DEFAULT "raster"
 
 struct sb_surface_t {
     struct wl_surface *_wl_surface;
     struct wl_egl_window *_wl_egl_window;
     EGLSurface _egl_surface;
     sb_egl_context_t *_egl_context;
+    sb_skia_context_t *skia_context;
     sb_size_t _size;
     sb_view_t *_root_view;
     bool frame_ready;
@@ -395,6 +402,20 @@ sb_surface_t* sb_surface_new()
         surface->_egl_context->egl_config,
         surface->_wl_egl_window,
         NULL);
+
+    // Detect Swingby rendering backend.
+    const char *backend = getenv("SWINGBY_BACKEND");
+    if (backend == NULL) {
+        backend = SWINGBY_BACKEND_DEFAULT;
+    }
+
+    if (strcmp(backend, "opengl") == 0) {
+        surface->skia_context = sb_skia_context_new(SB_SKIA_BACKEND_GL);
+    } else if (strcmp(backend, "raster") == 0) {
+        surface->skia_context = sb_skia_context_new(SB_SKIA_BACKEND_RASTER);
+    } else {
+        sb_log_warn("sb_surface_new() - Invalid backend.\n");
+    }
 
     // Initialize the program objects.
     surface->programs.color = 0;

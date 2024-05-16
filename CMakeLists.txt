@@ -56,8 +56,10 @@ set(SWINGBY_SOURCES
     src/skia/context.h
     src/skia/context.cpp
     src/skia/draw.h
-    src/backend/gl.h
-    src/backend/gl.cpp
+    src/skia/backend/gl.h
+    src/skia/backend/gl.cpp
+    src/skia/backend/raster.h
+    src/skia/backend/raster.cpp
     ${WAYLAND_PROTOCOLS_SOURCES}
 )
 
@@ -78,16 +80,12 @@ if(FOUNDATION_DEBUG)
     add_definitions(-DFOUNDATION_DEBUG)
 endif()
 
-set(SWINGBY_SKIA_STATIC_DIR ${CMAKE_SOURCE_DIR}/skia/out/Static)
-
 target_link_options(swingby
     PRIVATE -lwayland-client
     PRIVATE -lwayland-egl
     PRIVATE -lEGL
     PRIVATE -lGL
     # Skia
-    PRIVATE -L${SWINGBY_SKIA_STATIC_DIR}
-    PRIVATE -lskia
     PRIVATE -lfreetype
     PRIVATE -lz
     PRIVATE -lpng16
@@ -95,6 +93,12 @@ target_link_options(swingby
     PRIVATE -lwebp
     PRIVATE -lwebpmux
     PRIVATE -lwebpdemux
+)
+
+set(SWINGBY_SKIA_STATIC_DIR ${CMAKE_SOURCE_DIR}/skia/out/Static)
+
+target_link_libraries(swingby
+    PRIVATE ${SWINGBY_SKIA_STATIC_DIR}/libskia.a
 )
 
 # Version info.

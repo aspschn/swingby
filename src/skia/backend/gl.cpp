@@ -11,9 +11,10 @@
 #include "skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 // GrGLTextureInfo, GrBackendTextures::GetGLTextureInfo
 #include "skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
+#include "skia/include/core/SkColorSpace.h"
 #include "skia/include/core/SkSurface.h"
 
-#include "../skia/gl-context.h"
+#include "../gl-context.h"
 
 #ifdef __cplusplus
 extern "C" {

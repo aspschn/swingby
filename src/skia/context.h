@@ -29,6 +29,12 @@ void sb_skia_context_set_buffer_size(sb_skia_context_t *context,
                                      uint32_t width,
                                      uint32_t height);
 
+void sb_skia_context_begin(sb_skia_context_t *context,
+                           uint32_t width,
+                           uint32_t height);
+
+void sb_skia_context_end(sb_skia_context_t *context);
+
 #ifdef __cplusplus
 }
 #endif

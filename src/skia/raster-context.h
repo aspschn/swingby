@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "skia/include/core/SkCanvas.h"
@@ -12,7 +13,7 @@ extern "C" {
 #endif
 
 typedef struct sb_skia_raster_context_t {
-    sk_sp<SkCanvas> canvas;
+    std::unique_ptr<SkCanvas> canvas;
     std::vector<uint32_t> buffer;
 } sb_skia_raster_context_t;
 
