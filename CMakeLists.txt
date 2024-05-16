@@ -55,7 +55,7 @@ set(SWINGBY_SOURCES
     src/skia/raster-context.cpp
     src/skia/context.h
     src/skia/context.cpp
-    src/skia-draw.h
+    src/skia/draw.h
     src/backend/gl.h
     src/backend/gl.cpp
     ${WAYLAND_PROTOCOLS_SOURCES}

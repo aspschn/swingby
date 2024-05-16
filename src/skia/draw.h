@@ -1,10 +1,10 @@
 #ifndef _SWINGBY_SKIA_DRAW_H
 #define _SWINGBY_SKIA_DRAW_H
 
-#include "skia-context.h"
-
 #include <swingby/rect.h>
 #include <swingby/color.h>
+
+#include "./context.h"
 
 #ifdef __cplusplus
 extern "C" {
