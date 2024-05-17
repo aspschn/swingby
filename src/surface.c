@@ -242,8 +242,16 @@ static void _draw_recursive(sb_surface_t *surface,
     // Child views.
     sb_list_t *children = sb_view_children(view);
     for (int i = 0; i < sb_list_length(children); ++i) {
+        if (sb_view_parent(view) != NULL) {
+            sb_skia_save_pos(surface->skia_context, &sb_view_geometry(view)->pos);
+        }
+
         sb_view_t *child = sb_list_at(children, i);
         _draw_recursive(surface, child);
+
+        if (sb_view_parent(view) != NULL) {
+            sb_skia_restore_pos(surface->skia_context);
+        }
     }
 }
 

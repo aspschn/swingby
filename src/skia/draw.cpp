@@ -39,6 +39,21 @@ void sb_skia_draw_rect(sb_skia_context_t *context,
     canvas->drawRect(sk_rect, paint);
 }
 
+void sb_skia_save_pos(sb_skia_context_t *context, const sb_point_t *pos)
+{
+    SkCanvas *canvas = _get_canvas(context);
+
+    canvas->save();
+    canvas->translate(pos->x, pos->y);
+}
+
+void sb_skia_restore_pos(sb_skia_context_t *context)
+{
+    SkCanvas *canvas = _get_canvas(context);
+
+    canvas->restore();
+}
+
 #ifdef __cplusplus
 }
 #endif
