@@ -365,6 +365,10 @@ void _draw_frame(sb_surface_t *surface)
 
     // Swap buffers.
     eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
+
+    // Delete program.
+    glDeleteProgram(surface->gl.program);
+    surface->gl.program = 0;
 }
 
 static void _event_listener_filter_for_each(sb_list_t *listeners,
