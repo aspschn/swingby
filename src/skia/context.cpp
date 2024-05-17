@@ -39,6 +39,11 @@ sb_skia_context_t* sb_skia_context_new(enum sb_skia_backend backend)
     return context;
 }
 
+enum sb_skia_backend sb_skia_context_backend(sb_skia_context_t *context)
+{
+    return context->backend;
+}
+
 void* sb_skia_context_gl_context(sb_skia_context_t *context)
 {
     return context->gl_context;

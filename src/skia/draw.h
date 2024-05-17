@@ -14,6 +14,11 @@ void sb_skia_draw_rect(sb_skia_context_t *context,
                        const sb_rect_t *rect,
                        const sb_color_t *color);
 
+void sb_skia_save_pos(sb_skia_context_t *context,
+                      const sb_point_t *pos);
+
+void sb_skia_restore_pos(sb_skia_context_t *context);
+
 #ifdef __cplusplus
 }
 #endif

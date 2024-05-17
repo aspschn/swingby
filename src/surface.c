@@ -24,6 +24,7 @@
 #include <swingby/event.h>
 
 #include "./skia/context.h"
+#include "./skia/draw.h"
 
 #include "shaders.h"
 
@@ -44,6 +45,11 @@ struct sb_surface_t {
         GLuint color;
         GLuint texture;
     } programs;
+    struct {
+        GLuint vert_shader;
+        GLuint frag_shader;
+        GLuint program;
+    } gl;
     struct wl_callback *frame_callback;
     sb_list_t *event_listeners;
 };
@@ -201,74 +207,101 @@ static void _set_uniform_textureIn(GLuint program, sb_image_t *image)
     glBindTexture(GL_TEXTURE_2D, texture);
 }
 
+static void _set_texture(sb_surface_t *surface)
+{
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+        GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        surface->_size.width,
+        surface->_size.height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        sb_skia_context_buffer(surface->skia_context)
+    );
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture);
+}
+
 static void _draw_recursive(sb_surface_t *surface,
                             sb_view_t *view)
 {
     enum sb_view_fill_type fill_type = sb_view_fill_type(view);
 
-    // Create program if not created.
-    if (fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR &&
-        surface->programs.color == 0) {
-        // Create program object.
-        surface->programs.color = glCreateProgram();
+    sb_skia_draw_rect(surface->skia_context, sb_view_geometry(view), sb_view_color(view));
 
-        // Create shaders.
-        GLuint vert_shader = _load_shader(rect_vert_shader, GL_VERTEX_SHADER);
-        GLuint frag_shader = _load_shader(color_frag_shader,
+    // Child views.
+    sb_list_t *children = sb_view_children(view);
+    for (int i = 0; i < sb_list_length(children); ++i) {
+        sb_view_t *child = sb_list_at(children, i);
+        _draw_recursive(surface, child);
+    }
+}
+
+void _add_frame_callback(sb_surface_t *surface)
+{
+    surface->frame_callback = wl_surface_frame(surface->_wl_surface);
+    wl_callback_add_listener(surface->frame_callback, &callback_listener,
+        (void*)surface);
+    // sb_log_debug(" = frame_callback now %p\n", surface->frame_callback);
+}
+
+void _draw_frame(sb_surface_t *surface)
+{
+    _gl_init(surface);
+
+    eglMakeCurrent(surface->_egl_context->egl_display,
+        surface->_egl_surface, surface->_egl_surface,
+        surface->_egl_context->egl_context);
+
+    // Compile shaders and attach to the program.
+    if (surface->gl.vert_shader == 0) {
+        surface->gl.vert_shader = _load_shader(canvas_vert_shader,
+            GL_VERTEX_SHADER);
+    }
+    if (surface->gl.frag_shader == 0) {
+        surface->gl.frag_shader = _load_shader(canvas_frag_shader,
             GL_FRAGMENT_SHADER);
-
-        // Attach shaders.
-        glAttachShader(surface->programs.color, vert_shader);
-        glAttachShader(surface->programs.color, frag_shader);
     }
-    if (fill_type == SB_VIEW_FILL_TYPE_IMAGE &&
-        surface->programs.texture == 0) {
-        // Create program object.
-        surface->programs.texture = glCreateProgram();
+    surface->gl.program = glCreateProgram();
+    glAttachShader(surface->gl.program, surface->gl.vert_shader);
+    glAttachShader(surface->gl.program, surface->gl.frag_shader);
 
-        // Create shaders.
-        GLuint vert_shader = _load_shader(rect_vert_shader, GL_VERTEX_SHADER);
-        GLuint frag_shader = _load_shader(texture_frag_shader,
-            GL_FRAGMENT_SHADER);
+    // Link and use the program.
+    glLinkProgram(surface->gl.program);
+    glUseProgram(surface->gl.program);
 
-        // Attach shaders.
-        glAttachShader(surface->programs.texture, vert_shader);
-        glAttachShader(surface->programs.texture, frag_shader);
-    }
+    // Skia context begin.
+    sb_skia_context_set_buffer_size(surface->skia_context,
+        surface->_size.width, surface->_size.height);
+    sb_skia_context_begin(surface->skia_context,
+        surface->_size.width, surface->_size.height);
 
-    if (fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
-        glLinkProgram(surface->programs.color);
-        glUseProgram(surface->programs.color);
+    _draw_recursive(surface, surface->_root_view);
 
-        // Set uniforms.
-        _set_uniform_resolution(surface->programs.color, &surface->_size);
-        _set_uniform_color(surface->programs.color, sb_view_color(view));
-    } else if (fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
-        glLinkProgram(surface->programs.texture);
-        glUseProgram(surface->programs.texture);
+    // Skia context end.
+    sb_skia_context_end(surface->skia_context);
 
-        // Set uniforms.
-        _set_uniform_resolution(surface->programs.texture, &surface->_size);
-        _set_uniform_textureIn(surface->programs.texture,
-            sb_view_image(view));
-    }
+    // GL draw.
+    // Set texture.
+    _set_texture(surface);
 
     // Set coordinates.
     float vertices[] = {
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,
+         1.0f,  1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
     };
-    sb_rect_t absolute_geometry;
-    absolute_geometry = *sb_view_geometry(view);
-
-    sb_view_t *parent = sb_view_parent(view);
-    for (sb_view_t *it = parent; it != NULL; it = sb_view_parent(it)) {
-        absolute_geometry.pos.x += sb_view_geometry(it)->pos.x;
-        absolute_geometry.pos.y += sb_view_geometry(it)->pos.y;
-    }
-    _calc_points(&absolute_geometry, vertices);
 
     GLuint indices[] = {
         0, 1, 3,
@@ -276,10 +309,10 @@ static void _draw_recursive(sb_surface_t *surface,
     };
 
     float tex_coord[] = {
-        0.0f, 1.0f,
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        1.0f, 1.0f,
+        -1.0f,  0.0f,
+        -1.0f, -1.0f,
+         0.0f, -1.0f,
+         0.0f,  0.0f,
     };
 
     // VAO.
@@ -322,32 +355,7 @@ static void _draw_recursive(sb_surface_t *surface,
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 
-    // Child views.
-    sb_list_t *children = sb_view_children(view);
-    for (int i = 0; i < sb_list_length(children); ++i) {
-        sb_view_t *child = sb_list_at(children, i);
-        _draw_recursive(surface, child);
-    }
-}
-
-void _add_frame_callback(sb_surface_t *surface)
-{
-    surface->frame_callback = wl_surface_frame(surface->_wl_surface);
-    wl_callback_add_listener(surface->frame_callback, &callback_listener,
-        (void*)surface);
-    // sb_log_debug(" = frame_callback now %p\n", surface->frame_callback);
-}
-
-void _draw_frame(sb_surface_t *surface)
-{
-    _gl_init(surface);
-
-    eglMakeCurrent(surface->_egl_context->egl_display,
-        surface->_egl_surface, surface->_egl_surface,
-        surface->_egl_context->egl_context);
-
-    _draw_recursive(surface, surface->_root_view);
-
+    // Swap buffers.
     eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
 }
 
@@ -420,6 +428,10 @@ sb_surface_t* sb_surface_new()
     // Initialize the program objects.
     surface->programs.color = 0;
     surface->programs.texture = 0;
+
+    surface->gl.vert_shader = 0;
+    surface->gl.frag_shader = 0;
+    surface->gl.program = 0;
 
     // Root view.
     sb_rect_t geo;
