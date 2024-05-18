@@ -25,6 +25,14 @@ static SkCanvas* _get_canvas(sb_skia_context_t *context)
     return canvas;
 }
 
+void sb_skia_clear(sb_skia_context_t *context,
+                   const sb_color_t *color)
+{
+    SkCanvas *canvas = _get_canvas(context);
+
+    canvas->clear(SkColorSetARGB(color->a, color->r, color->g, color->b));
+}
+
 void sb_skia_draw_rect(sb_skia_context_t *context,
                        const sb_rect_t *rect,
                        const sb_color_t *color)

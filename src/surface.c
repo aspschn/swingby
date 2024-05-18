@@ -296,6 +296,10 @@ void _draw_frame(sb_surface_t *surface)
     sb_skia_context_begin(surface->skia_context,
         surface->_size.width, surface->_size.height);
 
+    // Clear color.
+    sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
+    sb_skia_clear(surface->skia_context, &clear_color);
+
     _draw_recursive(surface, surface->_root_view);
 
     // Skia context end.
