@@ -207,7 +207,7 @@ static void _set_uniform_textureIn(GLuint program, sb_image_t *image)
     glBindTexture(GL_TEXTURE_2D, texture);
 }
 
-static void _set_texture(sb_surface_t *surface)
+static GLuint _set_texture(sb_surface_t *surface)
 {
     GLuint texture;
     glGenTextures(1, &texture);
@@ -230,6 +230,8 @@ static void _set_texture(sb_surface_t *surface)
     );
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture);
+
+    return texture;
 }
 
 static void _draw_recursive(sb_surface_t *surface,
@@ -301,7 +303,7 @@ void _draw_frame(sb_surface_t *surface)
 
     // GL draw.
     // Set texture.
-    _set_texture(surface);
+    GLuint texture = _set_texture(surface);
 
     // Set coordinates.
     float vertices[] = {
@@ -365,6 +367,9 @@ void _draw_frame(sb_surface_t *surface)
 
     // Swap buffers.
     eglSwapBuffers(surface->_egl_context->egl_display, surface->_egl_surface);
+
+    // Delete texture.
+    glDeleteTextures(1, &texture);
 
     // Delete program.
     glDeleteProgram(surface->gl.program);
