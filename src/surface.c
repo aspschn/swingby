@@ -267,11 +267,34 @@ void _add_frame_callback(sb_surface_t *surface)
 
 void _draw_frame(sb_surface_t *surface)
 {
-    _gl_init(surface);
+    enum sb_skia_backend backend = sb_skia_context_backend(surface->skia_context);
+    if (backend != SB_SKIA_BACKEND_GL) {
+        _gl_init(surface);
 
-    eglMakeCurrent(surface->_egl_context->egl_display,
-        surface->_egl_surface, surface->_egl_surface,
-        surface->_egl_context->egl_context);
+        eglMakeCurrent(surface->_egl_context->egl_display,
+            surface->_egl_surface, surface->_egl_surface,
+            surface->_egl_context->egl_context);
+    }
+
+    // Skia context begin.
+    sb_skia_context_set_buffer_size(surface->skia_context,
+        surface->_size.width, surface->_size.height);
+    sb_skia_context_begin(surface->skia_context,
+        surface->_size.width, surface->_size.height);
+
+    // Clear color.
+    sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
+    sb_skia_clear(surface->skia_context, &clear_color);
+
+    _draw_recursive(surface, surface->_root_view);
+
+    // Skia context end.
+    sb_skia_context_end(surface->skia_context);
+
+    // Late make current if OpenGL backend.
+    if (backend == SB_SKIA_BACKEND_GL) {
+        _gl_init(surface);
+    }
 
     // Compile shaders and attach to the program.
     if (surface->gl.vert_shader == 0) {
@@ -289,21 +312,6 @@ void _draw_frame(sb_surface_t *surface)
     // Link and use the program.
     glLinkProgram(surface->gl.program);
     glUseProgram(surface->gl.program);
-
-    // Skia context begin.
-    sb_skia_context_set_buffer_size(surface->skia_context,
-        surface->_size.width, surface->_size.height);
-    sb_skia_context_begin(surface->skia_context,
-        surface->_size.width, surface->_size.height);
-
-    // Clear color.
-    sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
-    sb_skia_clear(surface->skia_context, &clear_color);
-
-    _draw_recursive(surface, surface->_root_view);
-
-    // Skia context end.
-    sb_skia_context_end(surface->skia_context);
 
     // GL draw.
     // Set texture.
