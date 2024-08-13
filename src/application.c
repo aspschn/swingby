@@ -436,15 +436,26 @@ struct wl_seat* sb_application_wl_seat(sb_application_t *application)
 
 int sb_application_exec(sb_application_t *application)
 {
-    while (wl_display_dispatch(application->_wl_display) != -1) {
+    int err = wl_display_dispatch(application->_wl_display);
+    while (err != -1) {
         // sb_log_debug("wl_display_dispatch() - desktop surfaces: %d\n",
         //              sb_list_length(application->_desktop_surfaces));
         sb_event_dispatcher_process_events(application->_event_dispatcher);
         // Exit event loop when last desktop surface closed.
         if (sb_list_length(application->_desktop_surfaces) == 0) {
+            sb_log_debug("Last desktop surface closed.\n");
             break;
         }
+
+        err = wl_display_dispatch(application->_wl_display);
     }
+
+    if (err == -1) {
+        sb_log_warn("Error on wl_display_dispatch().\n");
+        return 1;
+    }
+
+    sb_log_debug("Quit application.\n");
 
     return 0;
 }
