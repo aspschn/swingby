@@ -23,7 +23,7 @@ struct sb_desktop_surface_t {
     sb_rect_t wm_geometry;
     struct {
         sb_size_t minimum_size;
-        enum sb_desktop_surface_toplevel_state_flags states;
+        sb_desktop_surface_toplevel_state_flags states;
         /// \brief Initial resizing configure event gives me the garbage values.
         ///
         /// Ignore first resizing event since it contains garbage values.
@@ -69,6 +69,8 @@ static struct xdg_toplevel_listener xdg_toplevel_listener = {
 
 static sb_event_t* _state_change_event_new(
     sb_desktop_surface_t *desktop_surface,
+    enum sb_desktop_surface_toplevel_state state,
+    bool value,
     int32_t width,
     int32_t height)
 {
@@ -188,7 +190,7 @@ void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface)
     sb_surface_detach(desktop_surface->_surface);
 }
 
-enum sb_desktop_surface_toplevel_state_flags
+sb_desktop_surface_toplevel_state_flags
 sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface)
 {
     return desktop_surface->toplevel.states;
@@ -335,7 +337,7 @@ static void xdg_toplevel_configure_handler(void *data,
     // end of iteration.
     bool maximized = false;
     bool fullscreen = false;
-    enum sb_desktop_surface_toplevel_state_flags curr_states = 0;
+    sb_desktop_surface_toplevel_state_flags curr_states = 0;
 
     void *it;
     wl_array_for_each(it, states) {
@@ -404,7 +406,7 @@ static void xdg_toplevel_configure_handler(void *data,
 
     // Compare states.
     {
-        enum sb_desktop_surface_toplevel_state_flags states;
+        sb_desktop_surface_toplevel_state_flags states;
         states = desktop_surface->toplevel.states;
 
         if (states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
@@ -414,6 +416,8 @@ static void xdg_toplevel_configure_handler(void *data,
                 ~SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
 
             sb_event_t *event = _state_change_event_new(desktop_surface,
+                SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL,
+                true,
                 width, height);
 
             sb_application_post_event(sb_application_instance(), event);
