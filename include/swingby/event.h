@@ -60,6 +60,8 @@ typedef struct sb_resize_event_t {
 typedef struct sb_state_change_event_t {
     /// Must a valid value in `enum sb_desktop_surface_toplevel_state`.
     int state;
+    /// The value of the changed state. On or off.
+    bool value;
     sb_size_t size;
 } sb_state_change_event_t;
 

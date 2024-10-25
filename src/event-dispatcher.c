@@ -30,8 +30,7 @@ sb_queue_t* sb_queue_new()
     queue->capacity = 16;
     queue->length = 0;
 
-    queue->data = malloc(sizeof(void*));
-    *queue->data = malloc(sizeof(void*) * queue->capacity);
+    queue->data = malloc(sizeof(void**) * queue->capacity);
 
     return queue;
 }

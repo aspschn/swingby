@@ -69,12 +69,16 @@ static struct xdg_toplevel_listener xdg_toplevel_listener = {
 
 static sb_event_t* _state_change_event_new(
     sb_desktop_surface_t *desktop_surface,
+    enum sb_desktop_surface_toplevel_state state,
+    bool value,
     int32_t width,
     int32_t height)
 {
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
         desktop_surface,
         SB_EVENT_TYPE_STATE_CHANGE);
+    event->state_change.state = state;
+    event->state_change.value = value;
     event->state_change.size.width = width;
     event->state_change.size.height = height;
 
@@ -335,6 +339,7 @@ static void xdg_toplevel_configure_handler(void *data,
     // end of iteration.
     bool maximized = false;
     bool fullscreen = false;
+    sb_desktop_surface_toplevel_state_flags curr_states = 0;
 
     void *it;
     wl_array_for_each(it, states) {
@@ -344,7 +349,9 @@ static void xdg_toplevel_configure_handler(void *data,
         case XDG_TOPLEVEL_STATE_MAXIMIZED:
         {
             maximized = true;
+            curr_states |= SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
 
+            /*
             int state = desktop_surface->toplevel.states;
 
             if (state | SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
@@ -362,12 +369,14 @@ static void xdg_toplevel_configure_handler(void *data,
 
                 sb_application_post_event(sb_application_instance(), event);
             }
+            */
 
             break;
         }
         case XDG_TOPLEVEL_STATE_RESIZING:
         {
             sb_log_debug("Resize %dx%d\n", width, height);
+            curr_states |= SB_DESKTOP_SURFACE_TOPLEVEL_STATE_RESIZING;
             if (desktop_surface->toplevel.initial_resizing == false) {
                 sb_surface_t *surface = desktop_surface->_surface;
 
@@ -402,13 +411,28 @@ static void xdg_toplevel_configure_handler(void *data,
         sb_desktop_surface_toplevel_state_flags states;
         states = desktop_surface->toplevel.states;
 
-        if (states | SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
+        // Maximized.
+        if (!(states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) &&
+            curr_states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
+            desktop_surface->toplevel.states
+                |= SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
+
+            sb_event_t *event = _state_change_event_new(desktop_surface,
+                SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED, true,
+                width, height);
+
+            sb_application_post_event(sb_application_instance(), event);
+        }
+
+        if (states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
             maximized != true) {
             // Restored from maximized.
             desktop_surface->toplevel.states &=
                 ~SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
 
             sb_event_t *event = _state_change_event_new(desktop_surface,
+                SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL,
+                true,
                 width, height);
 
             sb_application_post_event(sb_application_instance(), event);

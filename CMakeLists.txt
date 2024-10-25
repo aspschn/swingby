@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(swingby
     VERSION 0.1.0
-    LANGUAGES C
+    LANGUAGES C CXX
 )
 
 set(WAYLAND_PROTOCOLS_SOURCES
@@ -49,6 +49,18 @@ set(SWINGBY_SOURCES
     src/cursor.c
     src/event.c
     src/event-dispatcher.c
+    src/skia/gl-context.h
+    src/skia/gl-context.cpp
+    src/skia/raster-context.h
+    src/skia/raster-context.cpp
+    src/skia/context.h
+    src/skia/context.cpp
+    src/skia/draw.h
+    src/skia/draw.cpp
+    src/skia/backend/gl.h
+    src/skia/backend/gl.cpp
+    src/skia/backend/raster.h
+    src/skia/backend/raster.cpp
     ${WAYLAND_PROTOCOLS_SOURCES}
 )
 
@@ -58,6 +70,9 @@ add_library(swingby SHARED
 
 target_include_directories(swingby
     PRIVATE ./include
+    # Skia
+    PRIVATE ./
+    PRIVATE ./skia
 )
 
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
@@ -71,6 +86,20 @@ target_link_options(swingby
     PRIVATE -lwayland-egl
     PRIVATE -lEGL
     PRIVATE -lGL
+    # Skia
+    PRIVATE -lfreetype
+    PRIVATE -lz
+    PRIVATE -lpng16
+    PRIVATE -ljpeg
+    PRIVATE -lwebp
+    PRIVATE -lwebpmux
+    PRIVATE -lwebpdemux
+)
+
+set(SWINGBY_SKIA_STATIC_DIR ${CMAKE_SOURCE_DIR}/skia/out/Static)
+
+target_link_libraries(swingby
+    PRIVATE ${SWINGBY_SKIA_STATIC_DIR}/libskia.a
 )
 
 # Version info.
