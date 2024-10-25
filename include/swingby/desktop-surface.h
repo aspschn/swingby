@@ -26,20 +26,18 @@ typedef enum sb_desktop_surface_toplevel_resize_edge {
     SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT    = 10,
 } sb_desktop_surface_toplevel_resize_edge;
 
-enum sb_desktop_surface_toplevel_state {
+enum sb_desktop_surface_toplevel_state_flags {
     SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL            = 0,
     SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED         = 1,
     SB_DESKTOP_SURFACE_TOPLEVEL_STATE_FULLSCREEN        = 2,
-    //
-    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_LEFT        = 5,
-    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_RIGHT       = 6,
-    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_TOP         = 7,
-    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_BOTTOM      = 8,
-    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_SUSPENDED         = 9,
+    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_RESIZING          = 4,
+    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED         = 8,
+    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_LEFT        = 16,
+    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_RIGHT       = 32,
+    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_TOP         = 64,
+    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_TILED_BOTTOM      = 128,
+    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_SUSPENDED         = 256,
 };
-
-typedef enum sb_desktop_surface_toplevel_state
-    sb_desktop_surface_toplevel_state_flags;
 
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
 
@@ -53,7 +51,7 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface);
 
 void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface);
 
-sb_desktop_surface_toplevel_state_flags
+enum sb_desktop_surface_toplevel_state_flags
 sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface);
 
 /// \brief Tell the geometry is the actual window area to the compositor.
