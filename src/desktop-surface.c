@@ -77,6 +77,8 @@ static sb_event_t* _state_change_event_new(
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
         desktop_surface,
         SB_EVENT_TYPE_STATE_CHANGE);
+    event->state_change.state = state;
+    event->state_change.value = value;
     event->state_change.size.width = width;
     event->state_change.size.height = height;
 
@@ -408,6 +410,19 @@ static void xdg_toplevel_configure_handler(void *data,
     {
         sb_desktop_surface_toplevel_state_flags states;
         states = desktop_surface->toplevel.states;
+
+        // Maximized.
+        if (!(states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) &&
+            curr_states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
+            desktop_surface->toplevel.states
+                |= SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
+
+            sb_event_t *event = _state_change_event_new(desktop_surface,
+                SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED, true,
+                width, height);
+
+            sb_application_post_event(sb_application_instance(), event);
+        }
 
         if (states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
             maximized != true) {
