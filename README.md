@@ -3,13 +3,16 @@
 A thin wrapper library for building Wayland client GUI programs.
 
 It is derived from [Blusher](https://github.com/orbitrc/blusher2/tree/scroll-view) the
-Wayland GUI framework. These two projects share much of codebase, however this is
-not a direct fork.
+Wayland GUI framework. These two projects share much of the codebase,
+however, this is not a direct fork.
 
-Originally Blusher has too high-level APIs while Wayland protocol is low-level.
+Originally, Blusher has too high-level APIs while Wayland protocol is low-level.
 This gap finally made development more difficult.
 
-So, I decided to make a less abstracted library works as a middle-ware.
+So, I decided to make a less abstracted library that works as a middle-ware.
+
+Swingby uses [Skia](https://skia.org/) the 2D graphics library
+as a rendering engine.
 
 
 ## Features
@@ -19,7 +22,7 @@ client-side decorated).
 
 The event system makes easier to make the event driven GUI programs.
 
-It based on OpenGL 4.6 (the latest version of) for rendering performance.
+It is based on OpenGL 4.6 (the latest version) for easier buffer management.
 
 
 ## Build
@@ -52,7 +55,22 @@ code which are not included in the core of Wayland protocol.
 I'm not sure that these must be committed or not. Therefore you must generate
 the C code with this script.
 
-Bulid is simple.
+Additionally, since it uses Skia, you need to build Skia first.
+
+To build Skia, follow the below commands.
+
+```sh
+$ git submodule update --init --recursive
+$ make build-skia
+```
+
+The core is `libskia.a` file.
+
+```sh
+$ file skia/out/Static/libskia.a
+```
+
+You can now build Swingby using CMake.
 
 ```sh
 $ mkdir build
