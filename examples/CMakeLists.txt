@@ -6,6 +6,7 @@ add_subdirectory(04_event-listener)
 add_subdirectory(05_image-view)
 add_subdirectory(06_window)
 add_subdirectory(07_blending)
+add_subdirectory(08_windowing)
 
 add_custom_target(example)
 
@@ -18,4 +19,5 @@ add_dependencies(example
     example_image-view
     example_window
     example_blending
+    example_windowing
 )
