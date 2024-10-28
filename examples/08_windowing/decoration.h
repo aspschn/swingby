@@ -38,7 +38,10 @@ struct decoration* decoration_new(struct window *window);
 
 sb_size_t decoration_size(struct decoration *decoration, struct window *window);
 
-void decoration_update_size(struct decoration *decoration);
+sb_size_t decoration_border_size(struct decoration *decoration);
+
+/// Set the decoration size. Same as surface size.
+void decoration_set_size(struct decoration *decoration, sb_size_t size);
 
 //!<===================
 //!< Event Handlers

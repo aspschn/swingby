@@ -100,23 +100,33 @@ sb_size_t decoration_size(struct decoration *decoration, struct window *window)
     return size;
 }
 
-void decoration_update_size(struct decoration *decoration)
+sb_size_t decoration_border_size(struct decoration *decoration)
 {
-    sb_size_t surface_size = window_whole_size(decoration->window);
-    sb_size_t body_size = window_body_size(decoration->window);
+    const sb_rect_t *geometry = sb_view_geometry(decoration->border.view);
+
+    return geometry->size;
+}
+
+void decoration_set_size(struct decoration *decoration, sb_size_t size)
+{
+    // Calculate the body size.
+    sb_size_t body_size;
+    body_size.width = size.width - (decoration->shadow.thickness * 2);
+    body_size.height = size.height - (decoration->shadow.thickness * 2);
+    body_size.height -= decoration->title_bar->height;
 
     // Update decoration root.
     sb_rect_t decoration_geometry;
     decoration_geometry.pos.x = 0.0f;
     decoration_geometry.pos.y = 0.0f;
-    decoration_geometry.size = surface_size;
+    decoration_geometry.size = size;
     sb_view_set_geometry(decoration->view, &decoration_geometry);
 
     // Update shadow.
     sb_rect_t shadow_geometry;
     shadow_geometry.pos.x = 0.0f;
     shadow_geometry.pos.y = 0.0f;
-    shadow_geometry.size = surface_size;
+    shadow_geometry.size = size;
     sb_view_set_geometry(decoration->shadow.view, &shadow_geometry);
 
     // Update resize.
@@ -152,6 +162,7 @@ void decoration_update_size(struct decoration *decoration)
     title_bar_geometry.pos.y =
         decoration->shadow.thickness;
     title_bar_geometry.size.width = body_size.width;
+    title_bar_geometry.size.height = decoration->title_bar->height;
     title_bar_set_geometry(decoration->title_bar, title_bar_geometry);
 }
 

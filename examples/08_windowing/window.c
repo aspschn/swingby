@@ -1,13 +1,21 @@
 #include "window.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+
+static struct window *window_global;
 
 struct window* window_new(sb_size_t size)
 {
     struct window *window = malloc(sizeof(struct window));
+    window_global = window;
 
     window->desktop_surface =
         sb_desktop_surface_new(SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
+
+    sb_desktop_surface_add_event_listener(window->desktop_surface,
+                                          SB_EVENT_TYPE_RESIZE,
+                                          on_desktop_surface_resize);
 
     sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
     sb_size_t initial_size;
@@ -39,7 +47,7 @@ struct window* window_new(sb_size_t size)
     sb_view_set_geometry(window->body, &body_geometry);
 
     // Update initial decoration geometry.
-    decoration_update_size(window->decoration);
+    decoration_set_size(window->decoration, window_whole_size(window));
 
     // Set window surface size.
     sb_size_t surface_size = window_whole_size(window);
@@ -56,6 +64,47 @@ void window_show(struct window *window)
     sb_rect_t frame_geometry = window_frame_geometry(window);
     sb_desktop_surface_set_wm_geometry(window->desktop_surface,
         &frame_geometry);
+}
+
+
+void on_desktop_surface_resize(sb_event_t *event)
+{
+    fprintf(stderr, "Desktop surface resize: %fx%f\n",
+            event->resize.size.width, event->resize.size.height);
+    // Calculate the whole surface size.
+    sb_size_t surface_size;
+    surface_size.width =
+        event->resize.size.width
+        + (window_global->decoration->shadow.thickness * 2)
+        - (window_global->decoration->border.thickness * 2);
+    surface_size.height =
+        event->resize.size.height
+        + (window_global->decoration->shadow.thickness * 2)
+        - (window_global->decoration->border.thickness * 2);
+
+    // Set surface size.
+    window_set_surface_size(window_global, surface_size);
+
+    // Set decoration size.
+    decoration_set_size(window_global->decoration, surface_size);
+
+    // Set body geometry.
+    const sb_rect_t *old_geometry = sb_view_geometry(window_global->body);
+    sb_rect_t new_geometry;
+    new_geometry.pos = old_geometry->pos;
+    new_geometry.size = decoration_border_size(window_global->decoration);
+    new_geometry.size.width -=
+        (window_global->decoration->border.thickness * 2);
+    new_geometry.size.height -=
+        (window_global->decoration->border.thickness * 2)
+        + window_global->decoration->title_bar->height;
+
+    sb_view_set_geometry(window_global->body, &new_geometry);
+
+    // Set window frame geometry hint.
+    sb_rect_t frame_geometry = window_frame_geometry(window_global);
+    sb_desktop_surface_set_wm_geometry(window_global->desktop_surface,
+                                       &frame_geometry);
 }
 
 //!<============
@@ -87,6 +136,13 @@ sb_size_t window_whole_size(struct window *window)
     sb_size_t size = decoration_size(window->decoration, window);
 
     return size;
+}
+
+void window_set_surface_size(struct window *window, sb_size_t size)
+{
+    sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
+
+    sb_surface_set_size(surface, &size);
 }
 
 //!<============
