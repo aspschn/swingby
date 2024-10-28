@@ -43,10 +43,6 @@ void on_minimize_button_click(sb_event_t *event);
 
 void on_maximize_restore_button_click(sb_event_t *event);
 
-void on_title_bar_press(sb_event_t *event);
-void on_title_bar_release(sb_event_t *event);
-void on_title_bar_pointer_move(sb_event_t *event);
-
 //!<===================
 //!< Button Colours
 //!<===================

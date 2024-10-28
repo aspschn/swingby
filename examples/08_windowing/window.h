@@ -13,6 +13,7 @@ struct window {
     sb_desktop_surface_t *desktop_surface;
     struct decoration *decoration;
     sb_view_t *body;
+    void (*on_close_button_click)(sb_event_t*);
 };
 
 /// New window with body size.
@@ -22,6 +23,18 @@ void window_show(struct window *window);
 
 
 void on_desktop_surface_resize(sb_event_t *event);
+
+void window_set_on_close_button_click(struct window *window,
+                                      void (*handler)(sb_event_t*));
+
+void window_set_on_title_bar_press(struct window *window,
+                                   void (*handler)(sb_event_t*));
+
+void window_set_on_title_bar_release(struct window *window,
+                                     void (*handler)(sb_event_t*));
+
+void window_set_on_title_bar_pointer_move(struct window *window,
+                                          void (*handler)(sb_event_t*));
 
 //!<============
 //!< Sizes

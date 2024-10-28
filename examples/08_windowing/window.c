@@ -107,6 +107,38 @@ void on_desktop_surface_resize(sb_event_t *event)
                                        &frame_geometry);
 }
 
+void window_set_on_close_button_click(struct window* window,
+                                      void (*handler)(sb_event_t*))
+{
+    sb_view_add_event_listener(window->decoration->title_bar->close_button,
+                               SB_EVENT_TYPE_POINTER_CLICK,
+                               handler);
+}
+
+void window_set_on_title_bar_press(struct window *window,
+                                   void (*handler)(sb_event_t*))
+{
+    sb_view_add_event_listener(window->decoration->title_bar->view,
+                               SB_EVENT_TYPE_POINTER_PRESS,
+                               handler);
+}
+
+void window_set_on_title_bar_release(struct window *window,
+                                     void (*handler)(sb_event_t*))
+{
+    sb_view_add_event_listener(window->decoration->title_bar->view,
+                               SB_EVENT_TYPE_POINTER_RELEASE,
+                               handler);
+}
+
+void window_set_on_title_bar_pointer_move(struct window *window,
+                                          void (*handler)(sb_event_t*))
+{
+    sb_view_add_event_listener(window->decoration->title_bar->view,
+                               SB_EVENT_TYPE_POINTER_MOVE,
+                               handler);
+}
+
 //!<============
 //!< Sizes
 //!<============
