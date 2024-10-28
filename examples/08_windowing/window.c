@@ -45,13 +45,6 @@ struct window* window_new(sb_size_t size)
     sb_size_t surface_size = window_whole_size(window);
     sb_surface_set_size(surface, &surface_size);
 
-    // Window frame geometry hint.
-    sb_rect_t frame_geometry = window_frame_geometry(window);
-    /*
-    sb_desktop_surface_set_wm_geometry(window->desktop_surface,
-                                       &frame_geometry);
-    */
-
     return window;
 }
 
@@ -59,6 +52,7 @@ void window_show(struct window *window)
 {
     sb_desktop_surface_show(window->desktop_surface);
 
+    // Window frame geometry hint.
     sb_rect_t frame_geometry = window_frame_geometry(window);
     sb_desktop_surface_set_wm_geometry(window->desktop_surface,
         &frame_geometry);

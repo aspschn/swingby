@@ -54,6 +54,16 @@ struct title_bar* title_bar_new(sb_view_t *parent)
                                SB_EVENT_TYPE_POINTER_LEAVE,
                                on_close_button_pointer_leave);
 
+    sb_view_add_event_listener(title_bar->view,
+                               SB_EVENT_TYPE_POINTER_PRESS,
+                               on_title_bar_press);
+    sb_view_add_event_listener(title_bar->view,
+                               SB_EVENT_TYPE_POINTER_RELEASE,
+                               on_title_bar_release);
+    sb_view_add_event_listener(title_bar->view,
+                               SB_EVENT_TYPE_POINTER_MOVE,
+                               on_title_bar_pointer_move);
+
     return title_bar;
 }
 
@@ -113,6 +123,26 @@ sb_color_t close_button_color_hover()
     color.a = 255;
 
     return color;
+}
+
+void on_title_bar_press(sb_event_t *event)
+{
+    title_bar_global->pressed = true;
+    event->propagation = false;
+}
+
+void on_title_bar_release(sb_event_t *event)
+{
+    title_bar_global->pressed = false;
+    event->propagation = false;
+}
+
+void on_title_bar_pointer_move(sb_event_t *event)
+{
+    if (title_bar_global->pressed) {
+        sb_desktop_surface_toplevel_move(title_bar_global->window->desktop_surface);
+        title_bar_global->pressed = false;
+    }
 }
 
 

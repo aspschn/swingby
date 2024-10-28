@@ -1,6 +1,8 @@
 #ifndef _08_WINDOWING_TITLE_BAR_H
 #define _08_WINDOWING_TITLE_BAR_H
 
+#include <stdbool.h>
+
 #include <swingby/swingby.h>
 
 #define TITLE_BAR_HEIGHT 30
@@ -18,12 +20,17 @@ struct title_bar {
     sb_view_t *close_button;
     sb_view_t *minimize_button;
     sb_view_t *maximize_restore_button;
+    bool pressed;
     struct window *window;
 };
 
 struct title_bar* title_bar_new(sb_view_t *parent);
 
 void title_bar_set_window(struct title_bar *title_bar, struct window *window);
+
+//!<===================
+//!< Event Handlers
+//!<===================
 
 // Stop propagation.
 void on_button_press(sb_event_t *event);
@@ -35,6 +42,10 @@ void on_close_button_pointer_leave(sb_event_t *event);
 void on_minimize_button_click(sb_event_t *event);
 
 void on_maximize_restore_button_click(sb_event_t *event);
+
+void on_title_bar_press(sb_event_t *event);
+void on_title_bar_release(sb_event_t *event);
+void on_title_bar_pointer_move(sb_event_t *event);
 
 //!<===================
 //!< Button Colours
