@@ -40,6 +40,14 @@ sb_size_t decoration_size(struct decoration *decoration, struct window *window);
 
 void decoration_update_size(struct decoration *decoration);
 
+//!<===================
+//!< Event Handlers
+//!<===================
+
+void on_resize_press(sb_event_t *event);
+
+void on_resize_release(sb_event_t *event);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

@@ -17,7 +17,7 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     sb_rect_t geometry;
     geometry.pos.x = 0;
     geometry.pos.y = 0;
-    geometry.size.width = 100.0;
+    geometry.size.width = 10.0;
     geometry.size.height = TITLE_BAR_HEIGHT;
 
     sb_view_t *view = sb_view_new(parent, &geometry);
