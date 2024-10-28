@@ -39,6 +39,8 @@ sb_size_t window_whole_size(struct window *window);
 
 sb_rect_t window_body_geometry(struct window *window);
 
+sb_rect_t window_frame_geometry(struct window *window);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

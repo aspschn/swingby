@@ -105,6 +105,7 @@ sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
 
     // Initialize the members.
     d_surface->_role = role;
+    d_surface->_xdg_surface = NULL;
     d_surface->_xdg_toplevel = NULL;
     d_surface->_xdg_popup = NULL;
 
@@ -202,6 +203,10 @@ void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
                                         const sb_rect_t *geometry)
 {
     desktop_surface->wm_geometry = *geometry;
+
+    if (desktop_surface->_xdg_surface == NULL) {
+        sb_log_warn("XDG surface of the desktop surface is NULL!\n");
+    }
 
     xdg_surface_set_window_geometry(desktop_surface->_xdg_surface,
         geometry->pos.x, geometry->pos.y,

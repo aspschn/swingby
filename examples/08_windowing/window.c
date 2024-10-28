@@ -45,6 +45,13 @@ struct window* window_new(sb_size_t size)
     sb_size_t surface_size = window_whole_size(window);
     sb_surface_set_size(surface, &surface_size);
 
+    // Window frame geometry hint.
+    sb_rect_t frame_geometry = window_frame_geometry(window);
+    /*
+    sb_desktop_surface_set_wm_geometry(window->desktop_surface,
+                                       &frame_geometry);
+    */
+
     return window;
 }
 
@@ -64,8 +71,10 @@ sb_size_t window_frame_size(struct window *window)
     sb_size_t body_size = window_body_size(window);
 
     sb_size_t size;
-
-    // TODO
+    size.width = body_size.width + (window->decoration->border.thickness * 2);
+    size.height = body_size.height + (window->decoration->border.thickness * 2);
+    // Add title bar height.
+    size.height += window->decoration->title_bar->height;
 
     return size;
 }
@@ -88,6 +97,19 @@ sb_rect_t window_body_geometry(struct window *window)
     geometry.pos.x = window->decoration->shadow.thickness;
     geometry.pos.y = window->decoration->shadow.thickness;
     geometry.pos.y += window->decoration->title_bar->height;
+
+    return geometry;
+}
+
+sb_rect_t window_frame_geometry(struct window *window)
+{
+    float shadow_thickness = window->decoration->shadow.thickness;
+    float border_thickness = window->decoration->border.thickness;
+
+    sb_rect_t geometry;
+    geometry.size = window_frame_size(window);
+    geometry.pos.x = shadow_thickness - border_thickness;
+    geometry.pos.y = shadow_thickness - border_thickness;
 
     return geometry;
 }
