@@ -1,16 +1,12 @@
 #include "decoration.h"
 
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "window.h"
-
-static struct decoration *decoration_global;
 
 struct decoration* decoration_new(struct window *window)
 {
     struct decoration *decoration = malloc(sizeof(struct decoration));
-    decoration_global = decoration;
     decoration->window = window;
 
     sb_surface_t *window_surface =
@@ -61,13 +57,6 @@ struct decoration* decoration_new(struct window *window)
     resize_color.b = 0;
     resize_color.a = 255;
     sb_view_set_color(decoration->resize.view, &resize_color);
-
-    sb_view_add_event_listener(decoration->resize.view,
-                               SB_EVENT_TYPE_POINTER_PRESS,
-                               on_resize_press);
-    sb_view_add_event_listener(decoration->resize.view,
-                               SB_EVENT_TYPE_POINTER_RELEASE,
-                               on_resize_release);
 
     // Border.
     decoration->border.thickness = 1.0f;
@@ -164,22 +153,4 @@ void decoration_set_size(struct decoration *decoration, sb_size_t size)
     title_bar_geometry.size.width = body_size.width;
     title_bar_geometry.size.height = decoration->title_bar->height;
     title_bar_set_geometry(decoration->title_bar, title_bar_geometry);
-}
-
-//!<===================
-//!< Event Handlers
-//!<===================
-
-void on_resize_press(sb_event_t *event)
-{
-    fprintf(stderr, " = on_resize_press\n");
-    sb_desktop_surface_toplevel_resize(
-        decoration_global->window->desktop_surface,
-        SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT
-    );
-}
-
-void on_resize_release(sb_event_t *event)
-{
-    //
 }

@@ -5,6 +5,9 @@
 
 static struct window *window_global;
 
+static void on_window_resize_press(sb_event_t*);
+static void on_window_resize_release(sb_event_t*);
+
 struct window* window_new(sb_size_t size)
 {
     struct window *window = malloc(sizeof(struct window));
@@ -35,6 +38,12 @@ struct window* window_new(sb_size_t size)
     // Create decoration.
     window->decoration = decoration_new(window);
     title_bar_set_window(window->decoration->title_bar, window);
+    sb_view_add_event_listener(window->decoration->resize.view,
+                               SB_EVENT_TYPE_POINTER_PRESS,
+                               on_window_resize_press);
+    sb_view_add_event_listener(window->decoration->resize.view,
+                               SB_EVENT_TYPE_POINTER_RELEASE,
+                               on_window_resize_release);
 
     // Create body.
     sb_rect_t body_geometry;
@@ -137,6 +146,20 @@ void window_set_on_title_bar_pointer_move(struct window *window,
     sb_view_add_event_listener(window->decoration->title_bar->view,
                                SB_EVENT_TYPE_POINTER_MOVE,
                                handler);
+}
+
+
+static void on_window_resize_press(sb_event_t *event)
+{
+    sb_desktop_surface_toplevel_resize(
+        window_global->desktop_surface,
+        SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT
+    );
+}
+
+static void on_window_resize_release(sb_event_t *event)
+{
+    // TODO.
 }
 
 //!<============

@@ -13,7 +13,6 @@ struct window {
     sb_desktop_surface_t *desktop_surface;
     struct decoration *decoration;
     sb_view_t *body;
-    void (*on_close_button_click)(sb_event_t*);
 };
 
 /// New window with body size.

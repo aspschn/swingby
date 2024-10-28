@@ -43,13 +43,6 @@ sb_size_t decoration_border_size(struct decoration *decoration);
 /// Set the decoration size. Same as surface size.
 void decoration_set_size(struct decoration *decoration, sb_size_t size);
 
-//!<===================
-//!< Event Handlers
-//!<===================
-
-void on_resize_press(sb_event_t *event);
-
-void on_resize_release(sb_event_t *event);
 
 #ifdef __cplusplus
 }
