@@ -20,6 +20,8 @@ struct window {
 /// New window with body size.
 struct window* window_new(sb_size_t size);
 
+void window_show(struct window *window);
+
 void on_desktop_surface_resize(sb_event_t *event);
 
 //!<============

@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     window_size.height = 200;
     struct window *window = window_new(window_size);
 
-    sb_desktop_surface_show(window->desktop_surface);
+    window_show(window);
 
     // Set the actual window size.
     // sb_rect_t win_geometry = get_window_geometry(&window);
