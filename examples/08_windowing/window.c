@@ -75,6 +75,11 @@ void window_show(struct window *window)
         &frame_geometry);
 }
 
+void window_maximize(struct window *window)
+{
+    //
+}
+
 
 void on_desktop_surface_resize(sb_event_t *event)
 {
@@ -148,6 +153,14 @@ void window_set_on_title_bar_pointer_move(struct window *window,
                                handler);
 }
 
+void window_set_on_state_change(struct window *window,
+                                void (*handler)(sb_event_t*))
+{
+    sb_desktop_surface_add_event_listener(window->desktop_surface,
+                                          SB_EVENT_TYPE_STATE_CHANGE,
+                                          handler);
+}
+
 
 static void on_window_resize_press(sb_event_t *event)
 {
@@ -160,6 +173,18 @@ static void on_window_resize_press(sb_event_t *event)
 static void on_window_resize_release(sb_event_t *event)
 {
     // TODO.
+}
+
+//!<==============
+//!< Properties
+//!<==============
+
+bool window_maximized(struct window *window)
+{
+    sb_desktop_surface_toplevel_state_flags states =
+        sb_desktop_surface_toplevel_states(window->desktop_surface);
+
+    return states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
 }
 
 //!<============
@@ -200,6 +225,44 @@ void window_set_surface_size(struct window *window, sb_size_t size)
     sb_surface_set_size(surface, &size);
 }
 
+sb_size_t window_body_size_for(struct window *window, sb_size_t size)
+{
+    if (!window_maximized(window)) {
+        sb_size_t body_size;
+        body_size.width =
+            size.width - (window->decoration->border.thickness * 2);
+        body_size.height =
+            size.height - (window->decoration->border.thickness * 2);
+        body_size.height -= (window->decoration->title_bar->height);
+
+        return body_size;
+    } else {
+        sb_size_t body_size;
+        body_size.width = size.width;
+        body_size.height =
+            size.height - (window->decoration->title_bar->height);
+
+        return body_size;
+    }
+}
+
+sb_size_t window_surface_size_for(struct window *window, sb_size_t size)
+{
+    if (!window_maximized(window)) {
+        sb_size_t surface_size;
+        surface_size.width =
+            size.width + (window->decoration->shadow.thickness * 2)
+            - (window->decoration->border.thickness * 2);
+        surface_size.height =
+            size.height + (window->decoration->shadow.thickness * 2)
+            - (window->decoration->border.thickness * 2);
+
+        return surface_size;
+    } else {
+        return size;
+    }
+}
+
 //!<============
 //!< Geometry
 //!<============
@@ -228,3 +291,50 @@ sb_rect_t window_frame_geometry(struct window *window)
     return geometry;
 }
 
+float window_decoration_border_offset(struct window *window)
+{
+    if (window_maximized(window)) {
+        return 0.0f;
+    }
+
+    float offset = window->decoration->shadow.thickness;
+    offset -= window->decoration->border.thickness;
+
+    return offset;
+}
+
+float window_body_offset_x(struct window *window)
+{
+    if (window_maximized(window)) {
+        return 0.0f;
+    }
+
+    float offset = window_decoration_border_offset(window);
+    offset += window->decoration->border.thickness;
+
+    return offset;
+}
+
+float window_body_offset_y(struct window *window)
+{
+    if (window_maximized(window)) {
+        return window->decoration->title_bar->height;
+    }
+
+    float offset = window_decoration_border_offset(window);
+    offset += window->decoration->border.thickness;
+    offset += window->decoration->title_bar->height;
+
+    return offset;
+}
+
+float window_decoration_title_bar_offset(struct window *window)
+{
+    if (window_maximized(window)) {
+        return 0.0f;
+    }
+
+    float offset = window->decoration->shadow.thickness;
+
+    return offset;
+}

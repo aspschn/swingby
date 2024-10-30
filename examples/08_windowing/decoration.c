@@ -134,9 +134,9 @@ void decoration_set_size(struct decoration *decoration, sb_size_t size)
     // Update border.
     sb_rect_t border_geometry;
     border_geometry.pos.x =
-        decoration->shadow.thickness - decoration->border.thickness;
+        window_decoration_border_offset(decoration->window);
     border_geometry.pos.y =
-        decoration->shadow.thickness - decoration->border.thickness;
+        window_decoration_border_offset(decoration->window);
     border_geometry.size.width =
         body_size.width + decoration->border.thickness * 2;
     border_geometry.size.height =
@@ -147,10 +147,15 @@ void decoration_set_size(struct decoration *decoration, sb_size_t size)
     // Update title bar.
     sb_rect_t title_bar_geometry;
     title_bar_geometry.pos.x =
-        decoration->shadow.thickness;
+        window_decoration_title_bar_offset(decoration->window);
     title_bar_geometry.pos.y =
-        decoration->shadow.thickness;
+        window_decoration_title_bar_offset(decoration->window);
     title_bar_geometry.size.width = body_size.width;
     title_bar_geometry.size.height = decoration->title_bar->height;
     title_bar_set_geometry(decoration->title_bar, title_bar_geometry);
+}
+
+void _decoration_set_size_nodeco(struct decoration *decoration, sb_size_t size)
+{
+    // TODO.
 }
