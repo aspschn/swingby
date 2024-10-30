@@ -129,6 +129,15 @@ void window_set_on_close_button_click(struct window* window,
                                handler);
 }
 
+void window_set_on_maximize_restore_button_click(struct window *window,
+                                                 void (*handler)(sb_event_t*))
+{
+    sb_view_add_event_listener(
+        window->decoration->title_bar->maximize_restore_button,
+        SB_EVENT_TYPE_POINTER_CLICK,
+        handler);
+}
+
 void window_set_on_title_bar_press(struct window *window,
                                    void (*handler)(sb_event_t*))
 {

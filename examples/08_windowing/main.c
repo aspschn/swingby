@@ -20,6 +20,15 @@ static void on_window_close_button_click(sb_event_t *event)
     sb_desktop_surface_toplevel_close(window->desktop_surface);
 }
 
+static void on_window_maximize_restore_button_click(sb_event_t *event)
+{
+    if (window_maximized(window) == false) {
+        sb_desktop_surface_toplevel_set_maximized(window->desktop_surface);
+    } else {
+        sb_desktop_surface_toplevel_unset_maximized(window->desktop_surface);
+    }
+}
+
 static void on_window_title_bar_press(sb_event_t *event)
 {
     window->decoration->title_bar->pressed = true;
@@ -106,6 +115,8 @@ int main(int argc, char *argv[])
     window = window_new(window_size);
 
     window_set_on_close_button_click(window, on_window_close_button_click);
+    window_set_on_maximize_restore_button_click(window,
+        on_window_maximize_restore_button_click);
     window_set_on_title_bar_press(window, on_window_title_bar_press);
     window_set_on_title_bar_release(window, on_window_title_bar_release);
     window_set_on_title_bar_pointer_move(window,

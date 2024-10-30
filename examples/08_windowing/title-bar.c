@@ -53,6 +53,20 @@ struct title_bar* title_bar_new(sb_view_t *parent)
                                SB_EVENT_TYPE_POINTER_LEAVE,
                                on_close_button_pointer_leave);
 
+    // Minimize button.
+    geometry.pos.x += TITLE_BAR_BUTTON_SIZE + 3;
+    title_bar->minimize_button = sb_view_new(title_bar->view, &geometry);
+
+    // Maximize/Restore button.
+    geometry.pos.x += TITLE_BAR_BUTTON_SIZE + 3;
+    title_bar->maximize_restore_button = sb_view_new(title_bar->view,
+        &geometry);
+    button_color.r = 0;
+    button_color.g = 200;
+    button_color.b = 0;
+    button_color.a = 255;
+    sb_view_set_color(title_bar->maximize_restore_button, &button_color);
+
     return title_bar;
 }
 

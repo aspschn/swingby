@@ -90,6 +90,14 @@ void sb_desktop_surface_toplevel_move(sb_desktop_surface_t *desktop_surface);
 void sb_desktop_surface_toplevel_resize(sb_desktop_surface_t *desktop_surface,
     sb_desktop_surface_toplevel_resize_edge edge);
 
+/// \brief Maximize the window.
+void sb_desktop_surface_toplevel_set_maximized(
+    sb_desktop_surface_t *desktop_surface);
+
+/// \brief Restore the window from maximized state.
+void sb_desktop_surface_toplevel_unset_maximized(
+    sb_desktop_surface_t *desktop_surface);
+
 void sb_desktop_surface_add_event_listener(
     sb_desktop_surface_t *desktop_surface,
     enum sb_event_type event_type,
