@@ -56,6 +56,8 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     // Minimize button.
     geometry.pos.x += TITLE_BAR_BUTTON_SIZE + 3;
     title_bar->minimize_button = sb_view_new(title_bar->view, &geometry);
+    button_color = minimize_button_color();
+    sb_view_set_color(title_bar->minimize_button, &button_color);
 
     // Maximize/Restore button.
     geometry.pos.x += TITLE_BAR_BUTTON_SIZE + 3;
@@ -113,6 +115,17 @@ sb_color_t close_button_color_hover()
     color.r = 255;
     color.g = 100;
     color.b = 100;
+    color.a = 255;
+
+    return color;
+}
+
+sb_color_t minimize_button_color()
+{
+    sb_color_t color;
+    color.r = 255;
+    color.g = 255;
+    color.b = 0;
     color.a = 255;
 
     return color;

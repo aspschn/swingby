@@ -32,6 +32,9 @@ void on_desktop_surface_resize(sb_event_t *event);
 void window_set_on_close_button_click(struct window *window,
                                       void (*handler)(sb_event_t*));
 
+void window_set_on_minimize_button_click(struct window *window,
+                                         void (*handler)(sb_event_t*));
+
 void window_set_on_maximize_restore_button_click(struct window *window,
                                                  void (*handler)(sb_event_t*));
 

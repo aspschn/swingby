@@ -98,6 +98,10 @@ void sb_desktop_surface_toplevel_set_maximized(
 void sb_desktop_surface_toplevel_unset_maximized(
     sb_desktop_surface_t *desktop_surface);
 
+/// \brief Minimize the toplevel desktop surface.
+void sb_desktop_surface_toplevel_set_minimized(
+    sb_desktop_surface_t *desktop_surface);
+
 void sb_desktop_surface_add_event_listener(
     sb_desktop_surface_t *desktop_surface,
     enum sb_event_type event_type,

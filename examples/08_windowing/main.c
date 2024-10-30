@@ -20,6 +20,11 @@ static void on_window_close_button_click(sb_event_t *event)
     sb_desktop_surface_toplevel_close(window->desktop_surface);
 }
 
+static void on_window_minimize_button_click(sb_event_t *event)
+{
+    sb_desktop_surface_toplevel_set_minimized(window->desktop_surface);
+}
+
 static void on_window_maximize_restore_button_click(sb_event_t *event)
 {
     if (window_maximized(window) == false) {
@@ -115,6 +120,8 @@ int main(int argc, char *argv[])
     window = window_new(window_size);
 
     window_set_on_close_button_click(window, on_window_close_button_click);
+    window_set_on_minimize_button_click(window,
+        on_window_minimize_button_click);
     window_set_on_maximize_restore_button_click(window,
         on_window_maximize_restore_button_click);
     window_set_on_title_bar_press(window, on_window_title_bar_press);

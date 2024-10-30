@@ -308,6 +308,16 @@ void sb_desktop_surface_toplevel_unset_maximized(
     xdg_toplevel_unset_maximized(desktop_surface->_xdg_toplevel);
 }
 
+void sb_desktop_surface_toplevel_set_minimized(
+    sb_desktop_surface_t *desktop_surface)
+{
+    if (desktop_surface->_xdg_toplevel == NULL) {
+        sb_log_warn("XDG toplevel of the desktop surface is NULL!\n");
+        return;
+    }
+    xdg_toplevel_set_minimized(desktop_surface->_xdg_toplevel);
+}
+
 void sb_desktop_surface_add_event_listener(
     sb_desktop_surface_t *desktop_surface,
     enum sb_event_type event_type,
