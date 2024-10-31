@@ -26,6 +26,24 @@ bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point)
     return false;
 }
 
+bool sb_rect_intersects(const sb_rect_t *rect, const sb_rect_t *other)
+{
+    if (rect->pos.x + rect->size.width <= other->pos.x) {
+        return false;
+    }
+    if (rect->pos.x >= other->pos.x + other->size.width) {
+        return false;
+    }
+    if (rect->pos.y + rect->size.height <= other->pos.y) {
+        return false;
+    }
+    if (rect->pos.y >= other->pos.y + other->size.height) {
+        return false;
+    }
+
+    return true;
+}
+
 #ifdef __cplusplus
 }
 #endif
