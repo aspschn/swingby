@@ -1,12 +1,15 @@
 #include "draw.h"
 
 #include "skia/include/core/SkRect.h"
+#include "skia/include/core/SkRRect.h"
 #include "skia/include/core/SkColor.h"
 #include "skia/include/core/SkBitmap.h"
 #include "skia/include/core/SkImage.h"
 
 #include "./gl-context.h"
 #include "./raster-context.h"
+
+#include <swingby/view.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,6 +50,36 @@ void sb_skia_draw_rect(sb_skia_context_t *context,
     SkPaint paint;
     paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
     canvas->drawRect(sk_rect, paint);
+}
+
+void sb_skia_draw_rect_with_radius(sb_skia_context_t *context,
+                                   const sb_rect_t *rect,
+                                   const sb_color_t *color,
+                                   const sb_view_radius_t *radius)
+{
+    SkCanvas *canvas = _get_canvas(context);
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+        rect->pos.x, rect->pos.y,
+        rect->size.width, rect->size.height);
+
+    float top_left = sb_view_radius_top_left(radius);
+    float top_right = sb_view_radius_top_right(radius);
+    float bottom_right = sb_view_radius_bottom_right(radius);
+    float bottom_left = sb_view_radius_bottom_left(radius);
+    SkVector radii[] = {
+        { top_left, top_left },
+        { top_right, top_right },
+        { bottom_right, bottom_right },
+        { bottom_left, bottom_left },
+    };
+
+    SkRRect rrect;
+    rrect.setRectRadii(sk_rect, radii);
+
+    SkPaint paint;
+    paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
+    canvas->drawRRect(rrect, paint);
 }
 
 void sb_skia_draw_image(sb_skia_context_t *context,

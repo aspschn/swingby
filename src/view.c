@@ -16,6 +16,7 @@ struct sb_view_t {
     sb_list_t *_children;
     enum sb_view_fill_type fill_type;
     sb_image_t *image;
+    sb_view_radius_t radius;
     sb_list_t *event_listeners;
 };
 
@@ -52,6 +53,10 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     view->_color.g = 255;
     view->_color.b = 255;
     view->_color.a = 255;
+
+    // Set initial radius.
+    sb_view_radius_t radius = { 0.0f, 0.0f, 0.0f, 0.0f };
+    view->radius = radius;
 
     view->_children = sb_list_new();
 
@@ -142,6 +147,20 @@ sb_image_t* sb_view_image(sb_view_t *view)
     return view->image;
 }
 
+const sb_view_radius_t* sb_view_radius(sb_view_t *view)
+{
+    return &view->radius;
+}
+
+void sb_view_set_radius(sb_view_t *view, const sb_view_radius_t *radius)
+{
+    if (radius->top_left < 0.0f || radius->top_right < 0.0f ||
+        radius->bottom_right < 0.0f || radius->bottom_left < 0.0f) {
+        sb_log_warn("sb_view_set_radius() - Radius must greater than zero.\n");
+    }
+    view->radius = *radius;
+}
+
 sb_list_t* sb_view_children(sb_view_t *view)
 {
     return view->_children;
@@ -193,6 +212,44 @@ void sb_view_add_event_listener(sb_view_t *view,
         event_type, listener);
     sb_list_push(view->event_listeners, (void*)tuple);
 }
+
+//!<====================
+//!< View Radius
+//!<====================
+
+bool sb_view_radius_is_zero(const sb_view_radius_t *radius)
+{
+    if (radius->top_left == 0.0f && radius->top_right == 0.0f &&
+        radius->bottom_right == 0.0f && radius->bottom_left == 0.0f) {
+        return true;
+    }
+
+    return false;
+}
+
+float sb_view_radius_top_left(const sb_view_radius_t *radius)
+{
+    return radius->top_left;
+}
+
+float sb_view_radius_top_right(const sb_view_radius_t *radius)
+{
+    return radius->top_right;
+}
+
+float sb_view_radius_bottom_right(const sb_view_radius_t *radius)
+{
+    return radius->bottom_right;
+}
+
+float sb_view_radius_bottom_left(const sb_view_radius_t *radius)
+{
+    return radius->bottom_left;
+}
+
+//!<====================
+//!< Event Handlers
+//!<====================
 
 void sb_view_on_pointer_enter(sb_view_t *view, sb_event_t *event)
 {
