@@ -2,6 +2,8 @@
 
 #include "skia/include/core/SkRect.h"
 #include "skia/include/core/SkColor.h"
+#include "skia/include/core/SkBitmap.h"
+#include "skia/include/core/SkImage.h"
 
 #include "./gl-context.h"
 #include "./raster-context.h"
@@ -45,6 +47,37 @@ void sb_skia_draw_rect(sb_skia_context_t *context,
     SkPaint paint;
     paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
     canvas->drawRect(sk_rect, paint);
+}
+
+void sb_skia_draw_image(sb_skia_context_t *context,
+                        const sb_rect_t *rect,
+                        const sb_image_t *image)
+{
+    SkCanvas *canvas = _get_canvas(context);
+
+    const sb_size_i_t *image_size = sb_image_size((sb_image_t*)image);
+
+    SkImageInfo image_info = SkImageInfo::Make(
+        image_size->width,
+        image_size->height,
+        kRGBA_8888_SkColorType,
+        kPremul_SkAlphaType
+    );
+
+    SkBitmap bitmap;
+    bitmap.installPixels(image_info,
+        sb_image_data((sb_image_t*)image),
+        image_size->width * 4);
+
+    sk_sp<SkImage> sk_image = SkImages::RasterFromBitmap(bitmap);
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+        rect->pos.x, rect->pos.y,
+        rect->size.width, rect->size.height);
+
+    SkSamplingOptions sampling;
+
+    canvas->drawImageRect(sk_image, sk_rect, sampling, nullptr);
 }
 
 void sb_skia_save_pos(sb_skia_context_t *context, const sb_point_t *pos)

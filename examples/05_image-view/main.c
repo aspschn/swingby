@@ -2,6 +2,8 @@
 
 #include <swingby/swingby.h>
 
+#include "image.h"
+
 sb_view_t *image_view = NULL;
 
 void on_resize(sb_event_t *event)
@@ -23,8 +25,10 @@ int main(int argc, char *argv[])
 
     sb_desktop_surface_t *surface = sb_desktop_surface_new(
         SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
+    sb_size_t init_size = { 300.0f, 300.0f };
+    sb_surface_set_size(sb_desktop_surface_surface(surface), &init_size);
 
-    sb_rect_t geometry = { { 10.0f, 10.0f }, { 101.0f, 101.0f } };
+    sb_rect_t geometry = { { 10.0f, 10.0f }, { 256.0f, 256.0f } };
     sb_view_t *view = sb_view_new(
         sb_surface_root_view(sb_desktop_surface_surface(surface)), &geometry);
     image_view = view;
@@ -32,16 +36,14 @@ int main(int argc, char *argv[])
 
     sb_image_t *image = sb_view_image(view);
     uint64_t len = sb_image_size(image)->width * sb_image_size(image)->height;
+    fprintf(stderr, "Length: %ld\n", len);
     uint32_t *pixel = (uint32_t*)sb_image_data(image);
-    int red = 1;
     for (uint32_t i = 0; i < len; ++i) {
-        if (red) {
-            *pixel = 0xFF0000FF;
-            red = 0;
-        } else {
-            *pixel = 0xFF00FF00;
-            red = 1;
-        }
+        uint32_t r = image_data[i * 4 + 0] << 0;
+        uint32_t g = image_data[i * 4 + 1] << 8;
+        uint32_t b = image_data[i * 4 + 2] << 16;
+        uint32_t a = image_data[i * 4 + 3] << 24;
+        *pixel = r | g | b | a;
         ++pixel;
     }
 
