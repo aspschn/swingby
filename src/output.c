@@ -27,6 +27,10 @@ sb_output_t* sb_output_new(struct wl_output *wl_output, uint32_t wl_name)
     output->wl_output = wl_output;
     output->wl_name = wl_name;
 
+    output->name = NULL;
+    output->description = NULL;
+    output->scale = 1;
+
     output->done = false;
 
     return output;
