@@ -14,11 +14,12 @@ extern "C" {
 
 struct sb_cursor_t {
     sb_surface_t *surface;
-    sb_cursor_shape shape;
+    enum sb_cursor_shape shape;
     sb_point_t hot_spot;
 };
 
-sb_cursor_t* sb_cursor_new(sb_cursor_shape shape, const sb_point_t *hot_spot)
+sb_cursor_t* sb_cursor_new(enum sb_cursor_shape shape,
+                           const sb_point_t *hot_spot)
 {
     sb_log_debug("sb_cursor_new()\n");
     sb_cursor_t *cursor = malloc(sizeof(sb_cursor_t));
