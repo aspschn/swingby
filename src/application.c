@@ -17,6 +17,7 @@
 #include <swingby/list.h>
 #include <swingby/input.h>
 #include <swingby/cursor.h>
+#include <swingby/output.h>
 #include <swingby/event.h>
 #include <swingby/event-dispatcher.h>
 
@@ -66,6 +67,8 @@ struct sb_application_t {
     sb_list_t *_desktop_surfaces;
     /// \brief Default cursor when view not set cursor.
     sb_cursor_t *cursor;
+    /// \brief Output list.
+    sb_list_t *outputs;
     /// \brief An event dispatcher.
     sb_event_dispatcher_t *_event_dispatcher;
 };
@@ -327,6 +330,23 @@ static void _reset_double_click(sb_application_t *application)
     application->double_click.button = SB_POINTER_BUTTON_NONE;
 }
 
+/// \brief Get the output object.
+static sb_output_t* _get_output(sb_application_t *application,
+                                struct wl_output *wl_output)
+{
+    sb_output_t *ret = NULL;
+
+    for (int i = 0; i < sb_list_length(application->outputs); ++i) {
+        sb_output_t *output = sb_list_at(application->outputs, i);
+        if (sb_output_wl_output(output) == wl_output) {
+            ret = output;
+            break;
+        }
+    }
+
+    return ret;
+}
+
 //!<===============
 //!< Application
 //!<===============
@@ -346,6 +366,9 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->_pointer_view = NULL;
     app->click.view = NULL;
     app->click.button = SB_POINTER_BUTTON_NONE;
+
+    // Create output list.
+    app->outputs = sb_list_new();
 
     _reset_double_click(app);
 
@@ -487,6 +510,11 @@ static void app_global_handler(void *data,
         sb_log_debug("wl_output - name: %d\n", name);
         struct wl_output *wl_output = wl_registry_bind(wl_registry,
             name, &wl_output_interface, 4);
+        // Add the output.
+        {
+            sb_output_t *output = sb_output_new(wl_output, name);
+            sb_list_push(app->outputs, output);
+        }
         wl_output_add_listener(wl_output, &output_listener, (void*)app);
     }
 }
@@ -525,6 +553,8 @@ static void output_geometry_handler(void *data,
                                     int32_t transform)
 {
     sb_log_debug("output_geometry_handler() - %p\n", wl_output);
+    sb_log_debug(" - make: %s\n", make);
+    sb_log_debug(" - model: %s\n", model);
 }
 
 static void output_mode_handler(void *data,
@@ -540,21 +570,39 @@ static void output_mode_handler(void *data,
 static void output_done_handler(void *data,
                                 struct wl_output *wl_output)
 {
-    sb_log_debug("output_done_handler() - %p\n", wl_output);
+    sb_application_t *application = (sb_application_t*)data;
+    sb_output_t *output = _get_output(application, wl_output);
+    if (output == NULL) {
+        sb_log_warn("output_done_handler() - output is NULL!\n");
+        return;
+    }
+    sb_output_set_done(output, true);
 }
 
 static void output_scale_handler(void *data,
                                  struct wl_output *wl_output,
                                  int32_t factor)
 {
-    sb_log_debug("output_scale_handler() - %p\n", wl_output);
+    sb_application_t *application = (sb_application_t*)data;
+    sb_output_t *output = _get_output(application, wl_output);
+    if (output == NULL) {
+        sb_log_warn("output_scale_handler() - output is NULL!\n");
+        return;
+    }
+    sb_output_set_scale(output, factor);
 }
 
 static void output_name_handler(void *data,
                                 struct wl_output *wl_output,
                                 const char *name)
 {
-    sb_log_debug("output_name_handler() - %p\n", wl_output);
+    sb_application_t *application = (sb_application_t*)data;
+    sb_output_t *output = _get_output(application, wl_output);
+    if (output == NULL) {
+        sb_log_warn("output_name_handler() - output is NULL!\n");
+        return;
+    }
+    sb_output_set_name(output, name);
 }
 
 static void output_description_handler(void *data,
