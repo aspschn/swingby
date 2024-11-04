@@ -8,6 +8,7 @@ add_subdirectory(06_window)
 add_subdirectory(07_blending)
 add_subdirectory(08_windowing)
 add_subdirectory(09_radius-view)
+add_subdirectory(10_filters-view)
 
 add_custom_target(example)
 
@@ -22,4 +23,5 @@ add_dependencies(example
     example_blending
     example_windowing
     example_radius-view
+    example_filters-view
 )

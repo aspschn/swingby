@@ -5,11 +5,14 @@
 #include "skia/include/core/SkColor.h"
 #include "skia/include/core/SkBitmap.h"
 #include "skia/include/core/SkImage.h"
+#include "skia/include/effects/SkImageFilters.h"
 
 #include "./gl-context.h"
 #include "./raster-context.h"
 
 #include <swingby/view.h>
+#include <swingby/list.h>
+#include <swingby/filter.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,6 +83,60 @@ void sb_skia_draw_rect_with_radius(sb_skia_context_t *context,
     SkPaint paint;
     paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
     canvas->drawRRect(rrect, paint);
+}
+
+void sb_skia_draw_rect2(sb_skia_context_t *context,
+                        const sb_rect_t *rect,
+                        const sb_color_t *color,
+                        const sb_view_radius_t *radius,
+                        const sb_list_t *filters)
+{
+    SkCanvas *canvas = _get_canvas(context);
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+        rect->pos.x, rect->pos.y,
+        rect->size.width, rect->size.height);
+
+    SkPaint paint;
+    paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
+
+    if (filters != NULL) {
+        for (int i = 0; i < sb_list_length((sb_list_t*)filters); ++i) {
+            const sb_filter_t *filter = (sb_filter_t*)sb_list_at((sb_list_t*)filters, i);
+            if (sb_filter_type(filter) == SB_FILTER_TYPE_BLUR) {
+                float radius = sb_filter_blur_radius(filter);
+
+                sk_sp<SkImageFilter> blur_filter = SkImageFilters::Blur(
+                    radius, radius, SkTileMode::kClamp, nullptr);
+                SkPaint filter_paint;
+                filter_paint.setImageFilter(blur_filter);
+                canvas->saveLayer(nullptr, &filter_paint);
+            }
+        }
+    }
+
+    if (radius != NULL) {
+        float top_left = sb_view_radius_top_left(radius);
+        float top_right = sb_view_radius_top_right(radius);
+        float bottom_right = sb_view_radius_bottom_right(radius);
+        float bottom_left = sb_view_radius_bottom_left(radius);
+        SkVector radii[] = {
+            { top_left, top_left },
+            { top_right, top_right },
+            { bottom_right, bottom_right },
+            { bottom_left, bottom_left },
+        };
+
+        SkRRect rrect;
+        rrect.setRectRadii(sk_rect, radii);
+
+        canvas->drawRRect(rrect, paint);
+        canvas->restore();
+        return;
+    }
+
+    canvas->drawRect(sk_rect, paint);
+    canvas->restore();
 }
 
 void sb_skia_draw_image(sb_skia_context_t *context,

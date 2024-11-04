@@ -7,6 +7,7 @@
 #include <swingby/egl-context.h>
 #include <swingby/event-dispatcher.h>
 #include <swingby/event.h>
+#include <swingby/filter.h>
 #include <swingby/image.h>
 #include <swingby/input.h>
 #include <swingby/log.h>

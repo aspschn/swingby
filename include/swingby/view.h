@@ -12,6 +12,7 @@ extern "C" {
 
 typedef struct sb_image_t sb_image_t;
 typedef struct sb_list_t sb_list_t;
+typedef struct sb_filter_t sb_filter_t;
 typedef struct sb_event_t sb_event_t;
 
 typedef struct sb_view_radius_t {
@@ -49,6 +50,10 @@ sb_image_t* sb_view_image(sb_view_t *view);
 const sb_view_radius_t* sb_view_radius(sb_view_t *view);
 
 void sb_view_set_radius(sb_view_t *view, const sb_view_radius_t *radius);
+
+void sb_view_add_filter(sb_view_t *view, const sb_filter_t *filter);
+
+const sb_list_t* sb_view_filters(const sb_view_t *view);
 
 sb_list_t* sb_view_children(sb_view_t *view);
 

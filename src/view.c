@@ -5,6 +5,7 @@
 #include <swingby/log.h>
 #include <swingby/surface.h>
 #include <swingby/image.h>
+#include <swingby/filter.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
 
@@ -17,6 +18,7 @@ struct sb_view_t {
     enum sb_view_fill_type fill_type;
     sb_image_t *image;
     sb_view_radius_t radius;
+    sb_list_t *filters;
     sb_list_t *event_listeners;
 };
 
@@ -62,6 +64,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 
     view->fill_type = SB_VIEW_FILL_TYPE_SINGLE_COLOR;
     view->image = NULL;
+
+    view->filters = sb_list_new();
 
     view->event_listeners = sb_list_new();
 
@@ -159,6 +163,16 @@ void sb_view_set_radius(sb_view_t *view, const sb_view_radius_t *radius)
         sb_log_warn("sb_view_set_radius() - Radius must greater than zero.\n");
     }
     view->radius = *radius;
+}
+
+void sb_view_add_filter(sb_view_t *view, const sb_filter_t *filter)
+{
+    sb_list_push(view->filters, (sb_filter_t*)filter);
+}
+
+const sb_list_t* sb_view_filters(const sb_view_t *view)
+{
+    return view->filters;
 }
 
 sb_list_t* sb_view_children(sb_view_t *view)
