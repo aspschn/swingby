@@ -13,9 +13,9 @@ sb_list_t* sb_list_new();
 
 void sb_list_push(sb_list_t *list, void *data);
 
-void* sb_list_at(sb_list_t *list, uint64_t index);
+void* sb_list_at(const sb_list_t *list, uint64_t index);
 
-uint64_t sb_list_length(sb_list_t *list);
+uint64_t sb_list_length(const sb_list_t *list);
 
 void* sb_list_remove(sb_list_t *list, uint64_t index);
 

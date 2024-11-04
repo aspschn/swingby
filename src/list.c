@@ -45,12 +45,12 @@ void sb_list_push(sb_list_t *list, void *data)
     list->length += 1;
 }
 
-void* sb_list_at(sb_list_t *list, uint64_t index)
+void* sb_list_at(const sb_list_t *list, uint64_t index)
 {
     return list->data[index];
 }
 
-uint64_t sb_list_length(sb_list_t *list)
+uint64_t sb_list_length(const sb_list_t *list)
 {
     return list->length;
 }
