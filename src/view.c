@@ -84,6 +84,11 @@ void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface)
     view->_surface = surface;
 }
 
+sb_surface_t* sb_view_surface(const sb_view_t *view)
+{
+    return view->_surface;
+}
+
 const sb_rect_t* sb_view_geometry(sb_view_t *view)
 {
     return &view->_geometry;

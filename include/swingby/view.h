@@ -33,6 +33,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry);
 
 void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface);
 
+sb_surface_t* sb_view_surface(const sb_view_t *view);
+
 const sb_rect_t* sb_view_geometry(sb_view_t *view);
 
 void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry);
