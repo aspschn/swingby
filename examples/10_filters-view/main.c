@@ -17,6 +17,14 @@ int main(int argc, char *argv[])
     sb_view_radius_t radius = { 2.0f, 10.0f, 15.0f, 50.0f };
     sb_view_set_radius(view, &radius);
 
+    sb_filter_t *shadow = sb_filter_new(SB_FILTER_TYPE_DROP_SHADOW);
+    sb_point_t offset = { 3.0f, 3.0f };
+    sb_color_t shadow_color = { 0, 0, 0, 255 };
+    sb_filter_drop_shadow_set_offset(shadow, &offset);
+    sb_filter_drop_shadow_set_radius(shadow, 3.0f);
+    sb_filter_drop_shadow_set_color(shadow, &shadow_color);
+    sb_view_add_filter(view, shadow);
+
     sb_filter_t *blur = sb_filter_new(SB_FILTER_TYPE_BLUR);
     sb_filter_blur_set_radius(blur, 3.0f);
     sb_view_add_filter(view, blur);
@@ -25,4 +33,3 @@ int main(int argc, char *argv[])
 
     return sb_application_exec(app);
 }
-

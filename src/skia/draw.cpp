@@ -101,18 +101,39 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
     paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
 
     if (filters != NULL) {
+        SkPaint filter_paint;
+        sk_sp<SkImageFilter> prev_filter = nullptr; // For multiple filters,
+                                                    // store the previous one.
         for (int i = 0; i < sb_list_length((sb_list_t*)filters); ++i) {
             const sb_filter_t *filter = (sb_filter_t*)sb_list_at((sb_list_t*)filters, i);
             if (sb_filter_type(filter) == SB_FILTER_TYPE_BLUR) {
                 float radius = sb_filter_blur_radius(filter);
 
                 sk_sp<SkImageFilter> blur_filter = SkImageFilters::Blur(
-                    radius, radius, SkTileMode::kClamp, nullptr);
-                SkPaint filter_paint;
+                    radius, radius, SkTileMode::kClamp, prev_filter, {});
                 filter_paint.setImageFilter(blur_filter);
-                canvas->saveLayer(nullptr, &filter_paint);
+
+                prev_filter = blur_filter;
+            } else if (sb_filter_type(filter) == SB_FILTER_TYPE_DROP_SHADOW) {
+                const sb_point_t *offset = sb_filter_drop_shadow_offset(filter);
+                float radius = sb_filter_drop_shadow_radius(filter);
+                const sb_color_t *color = sb_filter_drop_shadow_color(filter);
+
+                auto sk_color = SkColorSetARGB(
+                    color->a, color->r, color->g, color->b);
+                sk_sp<SkImageFilter> shadow_filter = SkImageFilters::DropShadow(
+                    offset->x, offset->y,
+                    radius, radius,
+                    sk_color,
+                    prev_filter,
+                    {}
+                );
+                filter_paint.setImageFilter(shadow_filter);
+
+                prev_filter = shadow_filter;
             }
         }
+        canvas->saveLayer(nullptr, &filter_paint);
     }
 
     if (radius != NULL) {
