@@ -5,6 +5,7 @@
 #include <swingby/log.h>
 #include <swingby/surface.h>
 #include <swingby/image.h>
+#include <swingby/filter.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
 
@@ -12,10 +13,15 @@ struct sb_view_t {
     sb_surface_t *_surface;
     sb_rect_t _geometry;
     sb_view_t *_parent;
+    /// \brief View's color if the view fill type is single color.
     sb_color_t _color;
     sb_list_t *_children;
     enum sb_view_fill_type fill_type;
     sb_image_t *image;
+    /// \brief Rectangle view radius.
+    sb_view_radius_t radius;
+    /// \brief View effect filters.
+    sb_list_t *filters;
     sb_list_t *event_listeners;
 };
 
@@ -53,10 +59,16 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     view->_color.b = 255;
     view->_color.a = 255;
 
+    // Set initial radius.
+    sb_view_radius_t radius = { 0.0f, 0.0f, 0.0f, 0.0f };
+    view->radius = radius;
+
     view->_children = sb_list_new();
 
     view->fill_type = SB_VIEW_FILL_TYPE_SINGLE_COLOR;
     view->image = NULL;
+
+    view->filters = sb_list_new();
 
     view->event_listeners = sb_list_new();
 
@@ -73,6 +85,11 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface)
 {
     view->_surface = surface;
+}
+
+sb_surface_t* sb_view_surface(const sb_view_t *view)
+{
+    return view->_surface;
 }
 
 const sb_rect_t* sb_view_geometry(sb_view_t *view)
@@ -142,6 +159,30 @@ sb_image_t* sb_view_image(sb_view_t *view)
     return view->image;
 }
 
+const sb_view_radius_t* sb_view_radius(sb_view_t *view)
+{
+    return &view->radius;
+}
+
+void sb_view_set_radius(sb_view_t *view, const sb_view_radius_t *radius)
+{
+    if (radius->top_left < 0.0f || radius->top_right < 0.0f ||
+        radius->bottom_right < 0.0f || radius->bottom_left < 0.0f) {
+        sb_log_warn("sb_view_set_radius() - Radius must greater than zero.\n");
+    }
+    view->radius = *radius;
+}
+
+void sb_view_add_filter(sb_view_t *view, const sb_filter_t *filter)
+{
+    sb_list_push(view->filters, (sb_filter_t*)filter);
+}
+
+const sb_list_t* sb_view_filters(const sb_view_t *view)
+{
+    return view->filters;
+}
+
 sb_list_t* sb_view_children(sb_view_t *view)
 {
     return view->_children;
@@ -193,6 +234,44 @@ void sb_view_add_event_listener(sb_view_t *view,
         event_type, listener);
     sb_list_push(view->event_listeners, (void*)tuple);
 }
+
+//!<====================
+//!< View Radius
+//!<====================
+
+bool sb_view_radius_is_zero(const sb_view_radius_t *radius)
+{
+    if (radius->top_left == 0.0f && radius->top_right == 0.0f &&
+        radius->bottom_right == 0.0f && radius->bottom_left == 0.0f) {
+        return true;
+    }
+
+    return false;
+}
+
+float sb_view_radius_top_left(const sb_view_radius_t *radius)
+{
+    return radius->top_left;
+}
+
+float sb_view_radius_top_right(const sb_view_radius_t *radius)
+{
+    return radius->top_right;
+}
+
+float sb_view_radius_bottom_right(const sb_view_radius_t *radius)
+{
+    return radius->bottom_right;
+}
+
+float sb_view_radius_bottom_left(const sb_view_radius_t *radius)
+{
+    return radius->bottom_left;
+}
+
+//!<====================
+//!< Event Handlers
+//!<====================
 
 void sb_view_on_pointer_enter(sb_view_t *view, sb_event_t *event)
 {

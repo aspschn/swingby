@@ -105,6 +105,7 @@ sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
 
     // Initialize the members.
     d_surface->_role = role;
+    d_surface->_xdg_surface = NULL;
     d_surface->_xdg_toplevel = NULL;
     d_surface->_xdg_popup = NULL;
 
@@ -203,6 +204,10 @@ void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
 {
     desktop_surface->wm_geometry = *geometry;
 
+    if (desktop_surface->_xdg_surface == NULL) {
+        sb_log_warn("XDG surface of the desktop surface is NULL!\n");
+    }
+
     xdg_surface_set_window_geometry(desktop_surface->_xdg_surface,
         geometry->pos.x, geometry->pos.y,
         geometry->size.width, geometry->size.height);
@@ -283,6 +288,34 @@ void sb_desktop_surface_toplevel_resize(sb_desktop_surface_t *desktop_surface,
         sb_application_wl_seat(app),
         sb_application_pointer_button_serial(app),
         resize_edge);
+}
+
+void sb_desktop_surface_toplevel_set_maximized(
+    sb_desktop_surface_t *desktop_surface)
+{
+    if (desktop_surface->_xdg_toplevel == NULL) {
+        sb_log_warn("XDG toplevel of the desktop surface is NULL!\n");
+    }
+    xdg_toplevel_set_maximized(desktop_surface->_xdg_toplevel);
+}
+
+void sb_desktop_surface_toplevel_unset_maximized(
+    sb_desktop_surface_t *desktop_surface)
+{
+    if (desktop_surface->_xdg_toplevel == NULL) {
+        sb_log_warn("XDG toplevel of the desktop surface is NULL!\n");
+    }
+    xdg_toplevel_unset_maximized(desktop_surface->_xdg_toplevel);
+}
+
+void sb_desktop_surface_toplevel_set_minimized(
+    sb_desktop_surface_t *desktop_surface)
+{
+    if (desktop_surface->_xdg_toplevel == NULL) {
+        sb_log_warn("XDG toplevel of the desktop surface is NULL!\n");
+        return;
+    }
+    xdg_toplevel_set_minimized(desktop_surface->_xdg_toplevel);
 }
 
 void sb_desktop_surface_add_event_listener(
@@ -422,17 +455,13 @@ static void xdg_toplevel_configure_handler(void *data,
                 width, height);
 
             sb_application_post_event(sb_application_instance(), event);
-        }
-
-        if (states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
-            maximized != true) {
-            // Restored from maximized.
-            desktop_surface->toplevel.states &=
-                ~SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
+        } else if (states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
+            !(curr_states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED)) {
+            desktop_surface->toplevel.states
+                &= ~SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
 
             sb_event_t *event = _state_change_event_new(desktop_surface,
-                SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL,
-                true,
+                SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED, false,
                 width, height);
 
             sb_application_post_event(sb_application_instance(), event);

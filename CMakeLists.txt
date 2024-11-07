@@ -17,6 +17,7 @@ set(SWINGBY_HEADERS
     include/swingby/size.h
     include/swingby/rect.h
     include/swingby/color.h
+    include/swingby/filter.h
     include/swingby/application.h
     include/swingby/output.h
     include/swingby/surface.h
@@ -39,6 +40,7 @@ set(SWINGBY_SOURCES
     src/size.c
     src/rect.c
     src/color.c
+    src/filter.c
     src/application.c
     src/output.c
     src/surface.c

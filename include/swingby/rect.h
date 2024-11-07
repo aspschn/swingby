@@ -22,6 +22,8 @@ typedef struct sb_rect_i_t {
 
 bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point);
 
+bool sb_rect_intersects(const sb_rect_t *rect, const sb_rect_t *other);
+
 #ifdef __cplusplus
 }
 #endif

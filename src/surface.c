@@ -239,7 +239,30 @@ static void _draw_recursive(sb_surface_t *surface,
 {
     enum sb_view_fill_type fill_type = sb_view_fill_type(view);
 
-    sb_skia_draw_rect(surface->skia_context, sb_view_geometry(view), sb_view_color(view));
+    if (fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
+        const sb_view_radius_t *radius = NULL;
+        const sb_list_t *filters = NULL;
+        {
+            // Set radius or NULL.
+            if (!sb_view_radius_is_zero(sb_view_radius(view))) {
+                radius = sb_view_radius(view);
+            }
+            // Set filters or NULL.
+            if (sb_list_length((sb_list_t*)sb_view_filters(view))) {
+                filters = sb_view_filters(view);
+            }
+        }
+        sb_skia_draw_rect2(
+            surface->skia_context,
+            sb_view_geometry(view),
+            sb_view_color(view),
+            radius,
+            filters
+        );
+    } else if (fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
+        sb_skia_draw_image(surface->skia_context,
+            sb_view_geometry(view), sb_view_image(view));
+    }
 
     // Child views.
     sb_list_t *children = sb_view_children(view);

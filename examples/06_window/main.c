@@ -152,10 +152,18 @@ static void on_desktop_surface_state_change(sb_event_t *event)
 
     int state = event->state_change.state;
     if (state == SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
-        sb_size_t size;
-        size.width = event->state_change.size.width;
-        size.height = event->state_change.size.height;
-        sb_surface_set_size(surface, &size);
+        fprintf(stderr, " - Maximized: %d\n", event->state_change.value);
+        if (event->state_change.value == true) {
+            sb_size_t size;
+            size.width = event->state_change.size.width;
+            size.height = event->state_change.size.height;
+            sb_surface_set_size(surface, &size);
+        } else {
+            sb_size_t size;
+            size.width = event->state_change.size.width;
+            size.height = event->state_change.size.height;
+            sb_surface_set_size(surface, &size);
+        }
     }
 }
 
@@ -234,6 +242,11 @@ static void init_window(struct window *window)
     // Set resize.
     sb_rect_t resize_geometry = get_resize_geometry(window);
     window->resize = sb_view_new(window->shadow, &resize_geometry);
+    color.r = 0;
+    color.g = 255;
+    color.b = 0;
+    color.a = 100;
+    sb_view_set_color(window->resize, &color);
 
     // Set border.
     sb_rect_t border_geometry = get_border_geometry(window);

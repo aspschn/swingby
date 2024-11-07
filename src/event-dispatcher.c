@@ -167,6 +167,7 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                     event->pointer.position.x, event->pointer.position.y,
                     event->target);
                 sb_view_on_pointer_enter(event->target, event);
+                break;
             case SB_EVENT_TYPE_POINTER_LEAVE:
                 sb_view_on_pointer_leave(event->target, event);
                 break;

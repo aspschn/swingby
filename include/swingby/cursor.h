@@ -9,7 +9,7 @@ extern "C" {
 
 typedef struct sb_surface_t sb_surface_t;
 
-typedef enum sb_cursor_shape {
+enum sb_cursor_shape {
     SB_CURSOR_SHAPE_NONE,
     /// Default arrow cursor.
     SB_CURSOR_SHAPE_ARROW,
@@ -43,11 +43,12 @@ typedef enum sb_cursor_shape {
     SB_CURSOR_SHAPE_SPLIT_HOR,
     /// Tow arrows for top and bottom with a horizontal bar.
     SB_CURSOR_SHAPE_SPLIT_VER,
-} sb_cursor_shape;
+};
 
 typedef struct sb_cursor_t sb_cursor_t;
 
-sb_cursor_t* sb_cursor_new(sb_cursor_shape shape, const sb_point_t *hot_spot);
+sb_cursor_t* sb_cursor_new(enum sb_cursor_shape shape,
+                           const sb_point_t *hot_spot);
 
 sb_surface_t* sb_cursor_surface(sb_cursor_t *cursor);
 
