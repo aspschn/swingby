@@ -100,6 +100,9 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
     SkPaint paint;
     paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
 
+    // For restore stack.
+    int save_count = 0;
+
     if (filters != NULL) {
         SkPaint filter_paint;
         sk_sp<SkImageFilter> prev_filter = nullptr; // For multiple filters,
@@ -134,6 +137,7 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
             }
         }
         canvas->saveLayer(nullptr, &filter_paint);
+        ++save_count;
     }
 
     if (radius != NULL) {
@@ -152,12 +156,16 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
         rrect.setRectRadii(sk_rect, radii);
 
         canvas->drawRRect(rrect, paint);
-        canvas->restore();
+        for (int i = 0; i < save_count; ++i) {
+            canvas->restore();
+        }
         return;
     }
 
     canvas->drawRect(sk_rect, paint);
-    canvas->restore();
+    for (int i = 0; i < save_count; ++i) {
+        canvas->restore();
+    }
 }
 
 void sb_skia_draw_image(sb_skia_context_t *context,
