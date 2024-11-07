@@ -41,11 +41,15 @@ typedef struct sb_event_listener_tuple_t {
     void (*listener)(sb_event_t*);
 } sb_event_listener_tuple_t;
 
+/// \brief Pointer enter, leave and move event.
 typedef struct sb_pointer_event_t {
     sb_pointer_button button;
     sb_point_t position;
 } sb_pointer_event_t;
 
+/// \brief This should not be used.
+///
+/// Pointer move event must use `sb_pointer_event_t`.
 typedef struct sb_move_event_t {
     sb_point_t old_position;
     sb_point_t position;

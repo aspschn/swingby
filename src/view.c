@@ -13,11 +13,14 @@ struct sb_view_t {
     sb_surface_t *_surface;
     sb_rect_t _geometry;
     sb_view_t *_parent;
+    /// \brief View's color if the view fill type is single color.
     sb_color_t _color;
     sb_list_t *_children;
     enum sb_view_fill_type fill_type;
     sb_image_t *image;
+    /// \brief Rectangle view radius.
     sb_view_radius_t radius;
+    /// \brief View effect filters.
     sb_list_t *filters;
     sb_list_t *event_listeners;
 };
