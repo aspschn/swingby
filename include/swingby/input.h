@@ -15,6 +15,22 @@ typedef enum sb_pointer_button {
 
 typedef sb_pointer_button sb_pointer_button_flags;
 
+enum sb_keyboard_modifier {
+    SB_KEYBOARD_MODIFIER_NONE       = 0,
+    SB_KEYBOARD_MODIFIER_SHIFT,
+    /// \brief Same as Ctrl key.
+    SB_KEYBOARD_MODIFIER_CONTROL,
+    SB_KEYBOARD_MODIFIER_ALT,
+    /// \brief The Super key is commonly located between ctrl and alt key.
+    ///
+    /// The Super key is often used interchangeably with the Meta key, but
+    /// the Meta key is a different key from the Meta key.
+    /// Therefore, the term "Super" is used to refer to this key.
+    SB_KEYBOARD_MODIFIER_SUPER,
+};
+
+typedef enum sb_keyboard_modifier sb_keyboard_modifier_flags;
+
 #ifdef __cplusplus
 }
 #endif

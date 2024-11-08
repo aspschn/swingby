@@ -63,6 +63,8 @@ set(SWINGBY_SOURCES
     src/skia/backend/gl.cpp
     src/skia/backend/raster.h
     src/skia/backend/raster.cpp
+    src/xkb/xkb-context.h
+    src/xkb/xkb-context.c
     ${WAYLAND_PROTOCOLS_SOURCES}
 )
 
@@ -88,6 +90,7 @@ target_link_options(swingby
     PRIVATE -lwayland-egl
     PRIVATE -lEGL
     PRIVATE -lGL
+    PRIVATE -lxkbcommon
     # Skia
     PRIVATE -lfreetype
     PRIVATE -lz

@@ -26,6 +26,10 @@ enum sb_event_type {
     SB_EVENT_TYPE_POINTER_RELEASE           = 14,
     SB_EVENT_TYPE_POINTER_CLICK             = 15,
     SB_EVENT_TYPE_POINTER_DOUBLE_CLICK      = 16,
+    SB_EVENT_TYPE_KEYBOARD_ENTER            = 30,
+    SB_EVENT_TYPE_KEYBOARD_LEAVE            = 31,
+    SB_EVENT_TYPE_KEYBOARD_KEY_PRESS        = 32,
+    SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE      = 33,
     SB_EVENT_TYPE_REQUEST_UPDATE            = 70,
     SB_EVENT_TYPE_SHOW                      = 80,
     SB_EVENT_TYPE_HIDE                      = 81,
@@ -69,6 +73,12 @@ typedef struct sb_state_change_event_t {
     sb_size_t size;
 } sb_state_change_event_t;
 
+/// \brief Keyboard enter, leave, key press and key release.
+typedef struct sb_keyboard_event_t {
+    int key;
+    uint32_t keycode;
+} sb_keyboard_event_t;
+
 struct sb_event_t {
     enum sb_event_target_type target_type;
     void *target;
@@ -76,6 +86,7 @@ struct sb_event_t {
     bool propagation;
     union {
         sb_pointer_event_t pointer;
+        sb_keyboard_event_t keyboard;
         sb_move_event_t move;
         sb_resize_event_t resize;
         sb_state_change_event_t state_change;
