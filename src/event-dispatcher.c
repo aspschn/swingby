@@ -1,7 +1,10 @@
 #include <swingby/event-dispatcher.h>
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+#include <sys/time.h>
 
 #include <swingby/log.h>
 #include <swingby/bench.h>
@@ -103,6 +106,13 @@ void _propagate_pointer_event(sb_view_t *view, sb_event_t *event)
 
 struct sb_event_dispatcher_t {
     sb_queue_t *queue;
+    struct {
+        sb_event_t *event;
+        uint32_t delay;
+        uint32_t rate;
+        uint64_t time;
+        bool repeating;
+    } keyboard_key_repeat;
 };
 
 sb_event_dispatcher_t* sb_event_dispatcher_new()
@@ -111,6 +121,13 @@ sb_event_dispatcher_t* sb_event_dispatcher_new()
         sizeof(sb_event_dispatcher_t));
 
     event_dispatcher->queue = sb_queue_new();
+
+    // Initialize keyboard key repeat info.
+    event_dispatcher->keyboard_key_repeat.event = NULL;
+    event_dispatcher->keyboard_key_repeat.delay = 100000;
+    event_dispatcher->keyboard_key_repeat.rate = 0;
+    event_dispatcher->keyboard_key_repeat.time = 0;
+    event_dispatcher->keyboard_key_repeat.repeating = false;
 
     return event_dispatcher;
 }
@@ -196,7 +213,68 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
         }
     }
 
+    // Process keyboard key repeat.
+    sb_event_t *repeat_event = event_dispatcher->keyboard_key_repeat.event;
+    if (repeat_event != NULL) {
+        uint64_t delay = event_dispatcher->keyboard_key_repeat.delay;
+        uint64_t rate = event_dispatcher->keyboard_key_repeat.rate;
+        uint64_t time = event_dispatcher->keyboard_key_repeat.time;
+
+        if (!event_dispatcher->keyboard_key_repeat.repeating) {
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+            if (now - time >= delay) {
+                event_dispatcher->keyboard_key_repeat.repeating = true;
+                event_dispatcher->keyboard_key_repeat.time = now;
+            }
+        } else {
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+            if (now - time >= rate) {
+                sb_log_debug("Key repeat!\n");
+                event_dispatcher->keyboard_key_repeat.time = now;
+            }
+        }
+    }
+
     // sb_bench_end(bench);
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_set_delay(
+    sb_event_dispatcher_t *event_dispatcher, uint32_t delay)
+{
+    event_dispatcher->keyboard_key_repeat.delay = delay;
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_set_rate(
+    sb_event_dispatcher_t *event_dispatcher, uint32_t rate)
+{
+    event_dispatcher->keyboard_key_repeat.rate = rate;
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_set_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
+{
+    if (event != NULL) {
+        event_dispatcher->keyboard_key_repeat.event = event;
+        // Set begin time.
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        uint64_t ms = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+        event_dispatcher->keyboard_key_repeat.time = ms;
+    } else {
+        event_dispatcher->keyboard_key_repeat.event = NULL;
+        event_dispatcher->keyboard_key_repeat.time = 0;
+        event_dispatcher->keyboard_key_repeat.repeating = false;
+    }
+}
+
+bool sb_event_dispatcher_keyboard_key_repeat_has_event(
+    sb_event_dispatcher_t *event_dispatcher)
+{
+    return event_dispatcher->keyboard_key_repeat.event != NULL;
 }
 
 #ifdef __cplusplus

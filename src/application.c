@@ -523,16 +523,29 @@ int sb_application_exec(sb_application_t *application)
 {
     int err = wl_display_dispatch(application->_wl_display);
     while (err != -1) {
-        // sb_log_debug("wl_display_dispatch() - desktop surfaces: %d\n",
-        //              sb_list_length(application->_desktop_surfaces));
         sb_event_dispatcher_process_events(application->_event_dispatcher);
+
         // Exit event loop when last desktop surface closed.
         if (sb_list_length(application->_desktop_surfaces) == 0) {
             sb_log_debug("Last desktop surface closed.\n");
             break;
         }
 
-        err = wl_display_dispatch(application->_wl_display);
+        wl_display_flush(application->_wl_display);
+
+        // Keyboard key repeat.
+        bool has_event = sb_event_dispatcher_keyboard_key_repeat_has_event(
+            application->_event_dispatcher);
+        if (has_event != true) {
+            err = wl_display_dispatch(application->_wl_display);
+        } else {
+            err = wl_display_dispatch_pending(application->_wl_display);
+            int prepare = wl_display_prepare_read(application->_wl_display);
+            if (prepare == 0) {
+                wl_display_read_events(application->_wl_display);
+                err = wl_display_dispatch_pending(application->_wl_display);
+            }
+        }
     }
 
     if (err == -1) {
@@ -955,12 +968,42 @@ static void keyboard_key_handler(void *data,
 {
     sb_application_t *application = (sb_application_t*)data;
 
+    enum sb_event_type event_type = SB_EVENT_TYPE_KEYBOARD_KEY_PRESS;
+    if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+        event_type = SB_EVENT_TYPE_KEYBOARD_KEY_PRESS;
+    } else if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+        event_type = SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE;
+    } else {
+        sb_log_warn("keyboard_key_handler - Unkown state.\n");
+    }
+
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
+        application->keyboard.surface,
+        event_type);
+
     if (application->xkb_context != NULL) {
         uint32_t keysym = xkb_state_key_get_one_sym(
             application->xkb_context->xkb_state, key + 8);
         sb_log_debug("keyboard_key_handler - serial: %d\n", serial);
         sb_log_debug(" - Keysym: 0x%X\n", keysym);
-        sb_log_debug(" - Key: %d\n", key);
+        sb_log_debug(" - Keycode: %d\n", key);
+
+        event->keyboard.key = keysym;
+        event->keyboard.keycode = key;
+    } else {
+        event->keyboard.key = 0;
+        event->keyboard.keycode = key;
+    }
+
+    sb_application_post_event(application, event);
+
+    // Pass event to the event dispatcher to repeat.
+    if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+        sb_event_dispatcher_keyboard_key_repeat_set_event(
+            application->_event_dispatcher, event);
+    } else if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+        sb_event_dispatcher_keyboard_key_repeat_set_event(
+            application->_event_dispatcher, NULL);
     }
 }
 
@@ -995,7 +1038,14 @@ static void keyboard_repeat_info_handler(void *data,
                                          int32_t rate,
                                          int32_t delay)
 {
+    sb_application_t *application = (sb_application_t*)data;
+
     sb_log_debug("Keyboard repeat - rate: %d, delay: %d\n", rate, delay);
+
+    sb_event_dispatcher_keyboard_key_repeat_set_delay(
+        application->_event_dispatcher, delay);
+    sb_event_dispatcher_keyboard_key_repeat_set_rate(
+        application->_event_dispatcher, rate);
 }
 
 //!<=========
