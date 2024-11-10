@@ -51,6 +51,12 @@ void sb_event_dispatcher_keyboard_key_repeat_set_event(
 bool sb_event_dispatcher_keyboard_key_repeat_has_event(
     sb_event_dispatcher_t *event_dispatcher);
 
+void sb_event_dispatcher_keyboard_key_repeat_add_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event);
+
+void sb_event_dispatcher_keyboard_key_repeat_remove_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event);
+
 #ifdef __cplusplus
 }
 #endif

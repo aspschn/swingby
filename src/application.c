@@ -999,11 +999,11 @@ static void keyboard_key_handler(void *data,
 
     // Pass event to the event dispatcher to repeat.
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-        sb_event_dispatcher_keyboard_key_repeat_set_event(
+        sb_event_dispatcher_keyboard_key_repeat_add_event(
             application->_event_dispatcher, event);
     } else if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
-        sb_event_dispatcher_keyboard_key_repeat_set_event(
-            application->_event_dispatcher, NULL);
+        sb_event_dispatcher_keyboard_key_repeat_remove_event(
+            application->_event_dispatcher, event);
     }
 }
 
