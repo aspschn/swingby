@@ -92,7 +92,7 @@ sb_surface_t* sb_view_surface(const sb_view_t *view)
     return view->_surface;
 }
 
-const sb_rect_t* sb_view_geometry(sb_view_t *view)
+const sb_rect_t* sb_view_geometry(const sb_view_t *view)
 {
     return &view->_geometry;
 }
@@ -108,12 +108,12 @@ void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
     sb_surface_update(view->_surface);
 }
 
-const sb_color_t* sb_view_color(sb_view_t *view)
+const sb_color_t* sb_view_color(const sb_view_t *view)
 {
     return &view->_color;
 }
 
-enum sb_view_fill_type sb_view_fill_type(sb_view_t *view)
+enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view)
 {
     return view->fill_type;
 }
@@ -159,7 +159,7 @@ sb_image_t* sb_view_image(sb_view_t *view)
     return view->image;
 }
 
-const sb_view_radius_t* sb_view_radius(sb_view_t *view)
+const sb_view_radius_t* sb_view_radius(const sb_view_t *view)
 {
     return &view->radius;
 }
