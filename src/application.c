@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <unistd.h>
 #include <sys/mman.h>
 
 #include <linux/input.h>
@@ -540,6 +541,8 @@ int sb_application_exec(sb_application_t *application)
             err = wl_display_dispatch(application->_wl_display);
         } else {
             err = wl_display_dispatch_pending(application->_wl_display);
+            // Throttle to prevent 100% CPU usage.
+            usleep(500);
             int prepare = wl_display_prepare_read(application->_wl_display);
             if (prepare == 0) {
                 wl_display_read_events(application->_wl_display);
@@ -984,15 +987,19 @@ static void keyboard_key_handler(void *data,
     if (application->xkb_context != NULL) {
         uint32_t keysym = xkb_state_key_get_one_sym(
             application->xkb_context->xkb_state, key + 8);
-        sb_log_debug("keyboard_key_handler - serial: %d\n", serial);
+        sb_log_debug("keyboard_key_handler - state: %d\n", state);
         sb_log_debug(" - Keysym: 0x%X\n", keysym);
         sb_log_debug(" - Keycode: %d\n", key);
+        sb_log_debug(" - serial: %d\n", serial);
+        sb_log_debug(" - event: %p\n", event);
 
         event->keyboard.key = keysym;
         event->keyboard.keycode = key;
+        event->keyboard.repeated = false;
     } else {
         event->keyboard.key = 0;
         event->keyboard.keycode = key;
+        event->keyboard.repeated = false;
     }
 
     sb_application_post_event(application, event);

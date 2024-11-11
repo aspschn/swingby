@@ -69,6 +69,11 @@ const sb_size_t* sb_event_resize_size(sb_event_t *event)
     return &event->resize.size;
 }
 
+void sb_event_free(sb_event_t *event)
+{
+    free(event);
+}
+
 //!<================
 //!< Pointer Event
 //!<================

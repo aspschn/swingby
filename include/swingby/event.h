@@ -77,6 +77,7 @@ typedef struct sb_state_change_event_t {
 typedef struct sb_keyboard_event_t {
     int key;
     uint32_t keycode;
+    bool repeated;
 } sb_keyboard_event_t;
 
 struct sb_event_t {
