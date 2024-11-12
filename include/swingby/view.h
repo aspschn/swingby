@@ -32,6 +32,7 @@ typedef struct sb_view_t sb_view_t;
 /// \brief Create a new view with the parent and the geometry.
 ///
 /// The parent must not be NULL. Pass a surface's root view for top level view.
+/// Pass parent as NULL used in creation surface's root view.
 sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry);
 
 void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface);
