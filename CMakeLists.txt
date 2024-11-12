@@ -96,9 +96,6 @@ target_link_options(swingby
     PRIVATE -lz
     PRIVATE -lpng16
     PRIVATE -ljpeg
-    PRIVATE -lwebp
-    PRIVATE -lwebpmux
-    PRIVATE -lwebpdemux
 )
 
 set(SWINGBY_SKIA_STATIC_DIR ${CMAKE_SOURCE_DIR}/skia/out/Static)
