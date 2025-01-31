@@ -5,9 +5,9 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
-#include "skia/include/gpu/GrDirectContext.h"
+#include "skia/include/gpu/ganesh/GrDirectContext.h"
 // GrBackendTexture
-#include "skia/include/gpu/GrBackendSurface.h"
+#include "skia/include/gpu/ganesh/GrBackendSurface.h"
 // SkSurfaces::WrapBackendTexture
 #include "skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 // GrGLTextureInfo, GrBackendTextures::GetGLTextureInfo
