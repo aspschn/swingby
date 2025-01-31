@@ -81,8 +81,8 @@ target_include_directories(swingby
 
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
-if(FOUNDATION_DEBUG)
-    add_definitions(-DFOUNDATION_DEBUG)
+if(SWINGBY_DEBUG)
+    add_definitions(-DSWINGBY_DEBUG)
 endif()
 
 target_link_options(swingby
