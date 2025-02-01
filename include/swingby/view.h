@@ -1,6 +1,8 @@
 #ifndef _FOUNDATION_VIEW_H
 #define _FOUNDATION_VIEW_H
 
+#include <stdbool.h>
+
 #include <swingby/rect.h>
 #include <swingby/surface.h>
 #include <swingby/color.h>
@@ -72,6 +74,12 @@ void sb_view_add_filter(sb_view_t *view, const sb_filter_t *filter);
 
 /// \brief Get the list of filters of the view.
 const sb_list_t* sb_view_filters(const sb_view_t *view);
+
+/// \brief Get the clip property of the view.
+bool sb_view_clip(const sb_view_t *view);
+
+/// \brief Set the clip property of the view.
+void sb_view_set_clip(sb_view_t *view, bool clip);
 
 /// \brief Get the list of the view's children.
 sb_list_t* sb_view_children(sb_view_t *view);

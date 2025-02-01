@@ -257,7 +257,8 @@ static void _draw_recursive(sb_surface_t *surface,
             sb_view_geometry(view),
             sb_view_color(view),
             radius,
-            filters
+            filters,
+            sb_view_clip(view)
         );
     } else if (fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
         sb_skia_draw_image(surface->skia_context,

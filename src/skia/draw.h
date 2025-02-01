@@ -37,7 +37,8 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
                         const sb_rect_t *rect,
                         const sb_color_t *color,
                         const sb_view_radius_t *radius,
-                        const sb_list_t *filters);
+                        const sb_list_t *filters,
+                        bool clip);
 
 void sb_skia_draw_image(sb_skia_context_t *context,
                         const sb_rect_t *rect,

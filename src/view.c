@@ -22,6 +22,8 @@ struct sb_view_t {
     sb_view_radius_t radius;
     /// \brief View effect filters.
     sb_list_t *filters;
+    /// \brief Clip child views. Default is false.
+    bool clip;
     sb_list_t *event_listeners;
 };
 
@@ -71,6 +73,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     view->filters = sb_list_new();
 
     view->event_listeners = sb_list_new();
+
+    view->clip = false;
 
     if (parent != NULL) {
         // Append the new view to the child list of the parent view.
@@ -224,6 +228,16 @@ void sb_view_set_color(sb_view_t *view, const sb_color_t *color)
         sb_log_warn("sb_view_set_color() - surface is NULL.\n");
     }
     sb_surface_update(view->_surface);
+}
+
+bool sb_view_clip(const sb_view_t *view)
+{
+    return view->clip;
+}
+
+void sb_view_set_clip(sb_view_t *view, bool clip)
+{
+    view->clip = clip;
 }
 
 void sb_view_add_event_listener(sb_view_t *view,
