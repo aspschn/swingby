@@ -5,4 +5,4 @@ build-skia: bin/gn
 	ninja -C skia/out/Static
 
 bin/gn:
-	cd skia && python3 tools/git-sync-deps
+	cd skia && GIT_SYNC_DEPS_SKIP_EMSDK=1 python3 tools/git-sync-deps
