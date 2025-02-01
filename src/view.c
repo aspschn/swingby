@@ -22,6 +22,8 @@ struct sb_view_t {
     sb_view_radius_t radius;
     /// \brief View effect filters.
     sb_list_t *filters;
+    /// \brief Clip child views. Default is false.
+    bool clip;
     sb_list_t *event_listeners;
 };
 
@@ -72,6 +74,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 
     view->event_listeners = sb_list_new();
 
+    view->clip = false;
+
     if (parent != NULL) {
         // Append the new view to the child list of the parent view.
         sb_list_push(parent->_children, (void*)view);
@@ -92,7 +96,7 @@ sb_surface_t* sb_view_surface(const sb_view_t *view)
     return view->_surface;
 }
 
-const sb_rect_t* sb_view_geometry(sb_view_t *view)
+const sb_rect_t* sb_view_geometry(const sb_view_t *view)
 {
     return &view->_geometry;
 }
@@ -108,12 +112,12 @@ void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
     sb_surface_update(view->_surface);
 }
 
-const sb_color_t* sb_view_color(sb_view_t *view)
+const sb_color_t* sb_view_color(const sb_view_t *view)
 {
     return &view->_color;
 }
 
-enum sb_view_fill_type sb_view_fill_type(sb_view_t *view)
+enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view)
 {
     return view->fill_type;
 }
@@ -159,7 +163,7 @@ sb_image_t* sb_view_image(sb_view_t *view)
     return view->image;
 }
 
-const sb_view_radius_t* sb_view_radius(sb_view_t *view)
+const sb_view_radius_t* sb_view_radius(const sb_view_t *view)
 {
     return &view->radius;
 }
@@ -224,6 +228,16 @@ void sb_view_set_color(sb_view_t *view, const sb_color_t *color)
         sb_log_warn("sb_view_set_color() - surface is NULL.\n");
     }
     sb_surface_update(view->_surface);
+}
+
+bool sb_view_clip(const sb_view_t *view)
+{
+    return view->clip;
+}
+
+void sb_view_set_clip(sb_view_t *view, bool clip)
+{
+    view->clip = clip;
 }
 
 void sb_view_add_event_listener(sb_view_t *view,

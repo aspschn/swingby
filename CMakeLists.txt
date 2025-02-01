@@ -63,6 +63,8 @@ set(SWINGBY_SOURCES
     src/skia/backend/gl.cpp
     src/skia/backend/raster.h
     src/skia/backend/raster.cpp
+    src/xkb/xkb-context.h
+    src/xkb/xkb-context.c
     ${WAYLAND_PROTOCOLS_SOURCES}
 )
 
@@ -79,8 +81,8 @@ target_include_directories(swingby
 
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
-if(FOUNDATION_DEBUG)
-    add_definitions(-DFOUNDATION_DEBUG)
+if(SWINGBY_DEBUG)
+    add_definitions(-DSWINGBY_DEBUG)
 endif()
 
 target_link_options(swingby
@@ -88,14 +90,12 @@ target_link_options(swingby
     PRIVATE -lwayland-egl
     PRIVATE -lEGL
     PRIVATE -lGL
+    PRIVATE -lxkbcommon
     # Skia
     PRIVATE -lfreetype
     PRIVATE -lz
     PRIVATE -lpng16
     PRIVATE -ljpeg
-    PRIVATE -lwebp
-    PRIVATE -lwebpmux
-    PRIVATE -lwebpdemux
 )
 
 set(SWINGBY_SKIA_STATIC_DIR ${CMAKE_SOURCE_DIR}/skia/out/Static)

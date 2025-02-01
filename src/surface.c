@@ -257,7 +257,8 @@ static void _draw_recursive(sb_surface_t *surface,
             sb_view_geometry(view),
             sb_view_color(view),
             radius,
-            filters
+            filters,
+            sb_view_clip(view)
         );
     } else if (fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
         sb_skia_draw_image(surface->skia_context,
@@ -640,6 +641,20 @@ void sb_surface_on_resize(sb_surface_t *surface, sb_event_t *event)
 {
     _event_listener_filter_for_each(surface->event_listeners,
         SB_EVENT_TYPE_RESIZE, event);
+}
+
+void sb_surface_on_keyboard_key_press(sb_surface_t *surface,
+                                      sb_event_t *event)
+{
+    _event_listener_filter_for_each(surface->event_listeners,
+        SB_EVENT_TYPE_KEYBOARD_KEY_PRESS, event);
+}
+
+void sb_surface_on_keyboard_key_release(sb_surface_t *surface,
+                                        sb_event_t *event)
+{
+    _event_listener_filter_for_each(surface->event_listeners,
+        SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE, event);
 }
 
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface)

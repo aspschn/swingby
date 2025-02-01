@@ -5,6 +5,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <unistd.h>
+#include <sys/mman.h>
+
 #include <linux/input.h>
 
 #include <wayland-client.h>
@@ -20,6 +23,8 @@
 #include <swingby/output.h>
 #include <swingby/event.h>
 #include <swingby/event-dispatcher.h>
+
+#include "xkb/xkb-context.h"
 
 struct sb_application_t {
     /// `struct wl_display`.
@@ -63,6 +68,11 @@ struct sb_application_t {
         uint32_t time;
         sb_pointer_button button;
     } double_click;
+    struct {
+        /// \brief Current keyboard surface.
+        sb_surface_t *surface;
+    } keyboard;
+    struct sb_xkb_context_t *xkb_context;
     /// \brief List of the desktop surfaces.
     sb_list_t *_desktop_surfaces;
     /// \brief Default cursor when view not set cursor.
@@ -194,6 +204,56 @@ static const struct wl_pointer_listener pointer_listener = {
     .motion = pointer_motion_handler,
     .button = pointer_button_handler,
     .axis = pointer_axis_handler,
+};
+
+//!<============
+//!< Keyboard
+//!<============
+
+static void keyboard_keymap_handler(void *data,
+                                    struct wl_keyboard *wl_keyboard,
+                                    uint32_t format,
+                                    int32_t fd,
+                                    uint32_t size);
+
+static void keyboard_enter_handler(void *data,
+                                   struct wl_keyboard *wl_keyboard,
+                                   uint32_t serial,
+                                   struct wl_surface *wl_surface,
+                                   struct wl_array *keys);
+
+static void keyboard_leave_handler(void *data,
+                                   struct wl_keyboard *wl_keyboard,
+                                   uint32_t serial,
+                                   struct wl_surface *wl_surface);
+
+static void keyboard_key_handler(void *data,
+                                 struct wl_keyboard *wl_keyboard,
+                                 uint32_t serial,
+                                 uint32_t time,
+                                 uint32_t key,
+                                 uint32_t state);
+
+static void keyboard_modifiers_handler(void *data,
+                                       struct wl_keyboard *wl_keyboard,
+                                       uint32_t serial,
+                                       uint32_t mods_depressed,
+                                       uint32_t mods_latched,
+                                       uint32_t mods_locked,
+                                       uint32_t group);
+
+static void keyboard_repeat_info_handler(void *data,
+                                         struct wl_keyboard *wl_keyboard,
+                                         int32_t rate,
+                                         int32_t delay);
+
+static const struct wl_keyboard_listener keyboard_listener = {
+    .keymap = keyboard_keymap_handler,
+    .enter = keyboard_enter_handler,
+    .leave = keyboard_leave_handler,
+    .key = keyboard_key_handler,
+    .modifiers = keyboard_modifiers_handler,
+    .repeat_info = keyboard_repeat_info_handler,
 };
 
 //!<=========
@@ -372,6 +432,9 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     _reset_double_click(app);
 
+    // Init xkb context as NULL.
+    app->xkb_context = NULL;
+
     app->_wl_registry = wl_display_get_registry(app->_wl_display);
     wl_registry_add_listener(app->_wl_registry, &app_registry_listener,
         (void*)app);
@@ -461,16 +524,31 @@ int sb_application_exec(sb_application_t *application)
 {
     int err = wl_display_dispatch(application->_wl_display);
     while (err != -1) {
-        // sb_log_debug("wl_display_dispatch() - desktop surfaces: %d\n",
-        //              sb_list_length(application->_desktop_surfaces));
         sb_event_dispatcher_process_events(application->_event_dispatcher);
+
         // Exit event loop when last desktop surface closed.
         if (sb_list_length(application->_desktop_surfaces) == 0) {
             sb_log_debug("Last desktop surface closed.\n");
             break;
         }
 
-        err = wl_display_dispatch(application->_wl_display);
+        wl_display_flush(application->_wl_display);
+
+        // Keyboard key repeat.
+        bool has_event = sb_event_dispatcher_keyboard_key_repeat_has_event(
+            application->_event_dispatcher);
+        if (has_event != true) {
+            err = wl_display_dispatch(application->_wl_display);
+        } else {
+            err = wl_display_dispatch_pending(application->_wl_display);
+            // Throttle to prevent 100% CPU usage.
+            usleep(500);
+            int prepare = wl_display_prepare_read(application->_wl_display);
+            if (prepare == 0) {
+                wl_display_read_events(application->_wl_display);
+                err = wl_display_dispatch_pending(application->_wl_display);
+            }
+        }
     }
 
     if (err == -1) {
@@ -830,6 +908,153 @@ static void pointer_axis_handler(void *data,
     //
 }
 
+//!<============
+//!< Keyboard
+//!<============
+
+static void keyboard_keymap_handler(void *data,
+                                    struct wl_keyboard *wl_keyboard,
+                                    uint32_t format,
+                                    int32_t fd,
+                                    uint32_t size)
+{
+    sb_application_t *application = (sb_application_t*)data;
+
+    if (format == WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP) {
+        sb_log_debug("Keyboard keymap NO_KEYMAP.\n");
+    } else if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
+        sb_log_debug("Keyboard keymap XKB_V1\n");
+
+        char *keymap_string = (char*)mmap(NULL, size,
+            PROT_READ, MAP_PRIVATE, fd, 0);
+        if (keymap_string == MAP_FAILED) {
+            sb_log_error("Keymap map failed!\n");
+            return;
+        }
+
+        application->xkb_context = sb_xkb_context_new(keymap_string);
+
+        munmap(keymap_string, size);
+    }
+}
+
+static void keyboard_enter_handler(void *data,
+                                   struct wl_keyboard *wl_keyboard,
+                                   uint32_t serial,
+                                   struct wl_surface *wl_surface,
+                                   struct wl_array *keys)
+{
+    sb_application_t *application = (sb_application_t*)data;
+
+    sb_log_debug("keyboard_enter_handler - serial: %d\n", serial);
+
+    sb_surface_t *surface = _find_surface(application, wl_surface);
+    application->keyboard.surface = surface;
+}
+
+static void keyboard_leave_handler(void *data,
+                                   struct wl_keyboard *wl_keyboard,
+                                   uint32_t serial,
+                                   struct wl_surface *wl_surface)
+{
+    sb_application_t *application = (sb_application_t*)data;
+
+    sb_log_debug("keyboard_leave_handler - serial: %d\n", serial);
+}
+
+static void keyboard_key_handler(void *data,
+                                 struct wl_keyboard *wl_keyboard,
+                                 uint32_t serial,
+                                 uint32_t time,
+                                 uint32_t key,
+                                 uint32_t state)
+{
+    sb_application_t *application = (sb_application_t*)data;
+
+    enum sb_event_type event_type = SB_EVENT_TYPE_KEYBOARD_KEY_PRESS;
+    if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+        event_type = SB_EVENT_TYPE_KEYBOARD_KEY_PRESS;
+    } else if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+        event_type = SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE;
+    } else {
+        sb_log_warn("keyboard_key_handler - Unkown state.\n");
+    }
+
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
+        application->keyboard.surface,
+        event_type);
+
+    if (application->xkb_context != NULL) {
+        uint32_t keysym = xkb_state_key_get_one_sym(
+            application->xkb_context->xkb_state, key + 8);
+        sb_log_debug("keyboard_key_handler - state: %d\n", state);
+        sb_log_debug(" - Keysym: 0x%X\n", keysym);
+        sb_log_debug(" - Keycode: %d\n", key);
+        sb_log_debug(" - serial: %d\n", serial);
+        sb_log_debug(" - event: %p\n", event);
+
+        event->keyboard.key = keysym;
+        event->keyboard.keycode = key;
+        event->keyboard.repeated = false;
+    } else {
+        event->keyboard.key = 0;
+        event->keyboard.keycode = key;
+        event->keyboard.repeated = false;
+    }
+
+    sb_application_post_event(application, event);
+
+    // Pass event to the event dispatcher to repeat.
+    if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+        sb_event_dispatcher_keyboard_key_repeat_add_event(
+            application->_event_dispatcher, event);
+    } else if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+        sb_event_dispatcher_keyboard_key_repeat_remove_event(
+            application->_event_dispatcher, event);
+    }
+}
+
+static void keyboard_modifiers_handler(void *data,
+                                       struct wl_keyboard *wl_keyboard,
+                                       uint32_t serial,
+                                       uint32_t mods_depressed,
+                                       uint32_t mods_latched,
+                                       uint32_t mods_locked,
+                                       uint32_t group)
+{
+    sb_application_t *application = (sb_application_t*)data;
+
+    sb_log_debug("keyboard_modifiers_handler\n");
+    sb_log_debug(" - mods_depressed: %d\n", mods_depressed);
+    sb_log_debug(" - mods_latched: %d\n", mods_latched);
+    sb_log_debug(" - mods_locked: %d\n", mods_locked);
+    sb_log_debug(" - group: %d\n", group);
+
+    if (application->xkb_context != NULL) {
+        xkb_state_update_mask(application->xkb_context->xkb_state,
+            mods_depressed,
+            mods_latched,
+            mods_locked,
+            group, group, group
+        );
+    }
+}
+
+static void keyboard_repeat_info_handler(void *data,
+                                         struct wl_keyboard *wl_keyboard,
+                                         int32_t rate,
+                                         int32_t delay)
+{
+    sb_application_t *application = (sb_application_t*)data;
+
+    sb_log_debug("Keyboard repeat - rate: %d, delay: %d\n", rate, delay);
+
+    sb_event_dispatcher_keyboard_key_repeat_set_delay(
+        application->_event_dispatcher, delay);
+    sb_event_dispatcher_keyboard_key_repeat_set_rate(
+        application->_event_dispatcher, rate);
+}
+
 //!<=========
 //!< Seat
 //!<=========
@@ -843,6 +1068,11 @@ static void seat_capabilities_handler(void *data,
     if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
         app->_wl_pointer = wl_seat_get_pointer(wl_seat);
         wl_pointer_add_listener(app->_wl_pointer, &pointer_listener,
+            (void*)app);
+    }
+    if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
+        app->_wl_keyboard = wl_seat_get_keyboard(wl_seat);
+        wl_keyboard_add_listener(app->_wl_keyboard, &keyboard_listener,
             (void*)app);
     }
 }

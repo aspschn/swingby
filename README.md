@@ -87,6 +87,15 @@ $ make example
 The examples are in the `examples/` directory with begin of two digit numbers.
 
 
+#### Debug Logs
+
+If you want to show debug logs, pass `SWINGBY_DEBUG` macro to CMake.
+
+```sh
+$ cmake .. -DSWINGBY_DEBUG=ON
+```
+
+
 ## Terms
 
 ### Application

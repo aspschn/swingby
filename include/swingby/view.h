@@ -1,6 +1,8 @@
 #ifndef _FOUNDATION_VIEW_H
 #define _FOUNDATION_VIEW_H
 
+#include <stdbool.h>
+
 #include <swingby/rect.h>
 #include <swingby/surface.h>
 #include <swingby/color.h>
@@ -29,38 +31,63 @@ enum sb_view_fill_type {
 
 typedef struct sb_view_t sb_view_t;
 
+/// \brief Create a new view with the parent and the geometry.
+///
+/// The parent must not be NULL. Pass a surface's root view for top level view.
+/// Pass parent as NULL used in creation surface's root view.
 sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry);
 
 void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface);
 
+/// \brief Get the surface which the view rely on.
 sb_surface_t* sb_view_surface(const sb_view_t *view);
 
-const sb_rect_t* sb_view_geometry(sb_view_t *view);
+/// \brief Get the geometry of the view.
+const sb_rect_t* sb_view_geometry(const sb_view_t *view);
 
+/// \brief Set the geometry of the view.
 void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry);
 
-const sb_color_t* sb_view_color(sb_view_t *view);
+/// \brief Get the color of the view if view's fill type is single color.
+const sb_color_t* sb_view_color(const sb_view_t *view);
 
+/// \brief Set the color of the view. Only for single color fill type view.
 void sb_view_set_color(sb_view_t *view, const sb_color_t *color);
 
-enum sb_view_fill_type sb_view_fill_type(sb_view_t *view);
+/// \brief Get the fill type of the view.
+enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view);
 
+/// \brief Set the fill type of the view.
 void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type);
 
+/// \brief Get the image of the view. Valid if only fill type is image.
 sb_image_t* sb_view_image(sb_view_t *view);
 
-const sb_view_radius_t* sb_view_radius(sb_view_t *view);
+/// \brief Get the radius of the view.
+const sb_view_radius_t* sb_view_radius(const sb_view_t *view);
 
+/// \brief Set the radius of the view.
 void sb_view_set_radius(sb_view_t *view, const sb_view_radius_t *radius);
 
+/// \brief Add a filter to the view.
 void sb_view_add_filter(sb_view_t *view, const sb_filter_t *filter);
 
+/// \brief Get the list of filters of the view.
 const sb_list_t* sb_view_filters(const sb_view_t *view);
 
+/// \brief Get the clip property of the view.
+bool sb_view_clip(const sb_view_t *view);
+
+/// \brief Set the clip property of the view.
+void sb_view_set_clip(sb_view_t *view, bool clip);
+
+/// \brief Get the list of the view's children.
 sb_list_t* sb_view_children(sb_view_t *view);
 
+/// \brief Get the child of the given position.
 sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position);
 
+/// \brief Returns the parent view.
 sb_view_t* sb_view_parent(sb_view_t *view);
 
 void sb_view_add_event_listener(sb_view_t *view,

@@ -10,7 +10,7 @@ extern "C" {
 void sb_log(sb_log_level level, const char *format, va_list args)
 {
     if (level == SB_LOG_LEVEL_DEBUG) {
-#ifdef FOUNDATION_DEBUG
+#ifdef SWINGBY_DEBUG
         fprintf(stdout, "\033[1;32m[DEBUG]\033[0m ");
         vfprintf(stdout, format, args);
         fflush(stdout);

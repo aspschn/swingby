@@ -1,5 +1,5 @@
-#ifndef _FOUNDATION_BENCH_H
-#define _FOUNDATION_BENCH_H
+#ifndef _SWINGBY_BENCH_H
+#define _SWINGBY_BENCH_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,7 +11,7 @@ sb_bench_t* sb_bench_new_F(const char *message);
 
 void sb_bench_end_F(sb_bench_t *bench);
 
-#ifdef FOUNDATION_DEBUG
+#ifdef SWINGBY_DEBUG
 #define sb_bench_new(message) sb_bench_new_F(message)
 #define sb_bench_end(bench) sb_bench_end_F(bench)
 #else
@@ -23,4 +23,4 @@ void sb_bench_end_F(sb_bench_t *bench);
 }
 #endif
 
-#endif /* _FOUNDATION_BENCH_H */
+#endif /* _SWINGBY_BENCH_H */

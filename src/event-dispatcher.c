@@ -1,11 +1,15 @@
 #include <swingby/event-dispatcher.h>
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+#include <sys/time.h>
 
 #include <swingby/log.h>
 #include <swingby/bench.h>
 #include <swingby/event.h>
+#include <swingby/list.h>
 #include <swingby/view.h>
 #include <swingby/desktop-surface.h>
 
@@ -101,8 +105,59 @@ void _propagate_pointer_event(sb_view_t *view, sb_event_t *event)
 //!< Event Dispatcher
 //!<===================
 
+typedef struct sb_repeat_event_t {
+    sb_event_t *event;
+    /// \brief Free it next repeat time.
+    sb_event_t *sent_event;
+    uint64_t time;
+    bool repeating;
+} sb_repeat_event_t;
+
+sb_repeat_event_t* sb_repeat_event_new(sb_event_t *event)
+{
+    sb_repeat_event_t *repeat_event = malloc(sizeof(sb_repeat_event_t));
+
+    repeat_event->event = event;
+    repeat_event->sent_event = NULL;
+    repeat_event->time = 0;
+    repeat_event->repeating = false;
+
+    return repeat_event;
+}
+
+void sb_repeat_event_free(sb_repeat_event_t *repeat_event)
+{
+    repeat_event->event = NULL;
+
+    if (repeat_event->event != NULL) {
+        sb_event_free(repeat_event->event);
+        repeat_event->event = NULL;
+    }
+    if (repeat_event->sent_event != NULL) {
+        sb_event_free(repeat_event->sent_event);
+        repeat_event->sent_event = NULL;
+    }
+    free(repeat_event);
+}
+
+static void _print_repeat_event_list(sb_list_t *list)
+{
+    for (int i = 0; i < sb_list_length(list); ++i) {
+        sb_repeat_event_t *repeat_event = sb_list_at(list, i);
+        sb_log_debug(" i: %d - keycode: %d, event: %p\n", i,
+                     repeat_event->event->keyboard.keycode,
+                     repeat_event->event);
+    }
+}
+
 struct sb_event_dispatcher_t {
     sb_queue_t *queue;
+    struct {
+        uint32_t delay;
+        uint32_t rate;
+        /// \brief List for sb_repeat_event_t.
+        sb_list_t *events;
+    } keyboard_key_repeat;
 };
 
 sb_event_dispatcher_t* sb_event_dispatcher_new()
@@ -111,6 +166,11 @@ sb_event_dispatcher_t* sb_event_dispatcher_new()
         sizeof(sb_event_dispatcher_t));
 
     event_dispatcher->queue = sb_queue_new();
+
+    // Initialize keyboard key repeat info.
+    event_dispatcher->keyboard_key_repeat.delay = 100000;
+    event_dispatcher->keyboard_key_repeat.rate = 0;
+    event_dispatcher->keyboard_key_repeat.events = sb_list_new();
 
     return event_dispatcher;
 }
@@ -157,6 +217,14 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
             case SB_EVENT_TYPE_RESIZE:
                 sb_surface_on_resize(event->target, event);
                 break;
+            case SB_EVENT_TYPE_KEYBOARD_KEY_PRESS:
+                sb_surface_on_keyboard_key_press(event->target, event);
+                // sb_event_free(event);
+                break;
+            case SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE:
+                sb_surface_on_keyboard_key_release(event->target, event);
+                // sb_event_free(event);
+                break;
             default:
                 break;
             }
@@ -196,7 +264,134 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
         }
     }
 
+    // Process keyboard key repeat.
+    sb_list_t *event_list = event_dispatcher->keyboard_key_repeat.events;
+    uint64_t delay = event_dispatcher->keyboard_key_repeat.delay;
+    uint64_t rate = event_dispatcher->keyboard_key_repeat.rate;
+    // For each key events.
+    for (int i = 0; i < sb_list_length(event_list); ++i) {
+        sb_repeat_event_t *repeat_event = sb_list_at(event_list, i);
+        sb_event_t *evt = repeat_event->event;
+        if (evt != NULL) {
+            uint64_t time = repeat_event->time;
+
+            if (!repeat_event->repeating) {
+                // Not repeating, wait until the time hit.
+                struct timeval tv;
+                gettimeofday(&tv, NULL);
+                uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+                if (now - time >= delay) {
+                    repeat_event->repeating = true;
+                    repeat_event->time = now;
+                }
+            } else {
+                // If repeating, make an event for the repeat info.
+                struct timeval tv;
+                gettimeofday(&tv, NULL);
+                uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+                if (now - time >= rate) {
+                    repeat_event->time = now;
+                    sb_log_debug("Key repeat: %d\n", evt->keyboard.keycode);
+                    // New event.
+                    sb_event_t *new_event = sb_event_new(evt->target_type,
+                        evt->target,
+                        evt->type);
+                    switch (new_event->target_type) {
+                    case SB_EVENT_TARGET_TYPE_SURFACE:
+                        sb_surface_on_keyboard_key_press(new_event->target,
+                            new_event);
+                        break;
+                    case SB_EVENT_TARGET_TYPE_VIEW:
+                        // sb_view_on_keyboard_key_press(new_event->target,
+                        //     new_event);
+                        break;
+                    default:
+                        break;
+                    }
+                    // Free the previous sent event.
+                    {
+                        if (repeat_event->sent_event != NULL) {
+                            sb_event_free(repeat_event->sent_event);
+                            repeat_event->sent_event = NULL;
+                        }
+                    }
+                    // Set sent event as the new event.
+                    {
+                        repeat_event->sent_event = new_event;
+                    }
+                }
+            }
+        }
+    }
+
     // sb_bench_end(bench);
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_set_delay(
+    sb_event_dispatcher_t *event_dispatcher, uint32_t delay)
+{
+    event_dispatcher->keyboard_key_repeat.delay = delay;
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_set_rate(
+    sb_event_dispatcher_t *event_dispatcher, uint32_t rate)
+{
+    event_dispatcher->keyboard_key_repeat.rate = rate;
+}
+
+bool sb_event_dispatcher_keyboard_key_repeat_has_event(
+    sb_event_dispatcher_t *event_dispatcher)
+{
+    return sb_list_length(event_dispatcher->keyboard_key_repeat.events) > 0;
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_add_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
+{
+    sb_repeat_event_t *repeat_event = sb_repeat_event_new(event);
+    sb_log_debug("_add_event - Add: %d\n", event->keyboard.keycode);
+
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    repeat_event->time = now;
+
+    {
+        if (sb_list_length(event_dispatcher->keyboard_key_repeat.events) == 0) {
+        } else {
+            sb_repeat_event_t *repeat_event = sb_list_at(event_dispatcher->keyboard_key_repeat.events, 0);
+            sb_log_debug(" === First keycode: %d\n", repeat_event->event->keyboard.keycode);
+        }
+    }
+    sb_list_push(event_dispatcher->keyboard_key_repeat.events, repeat_event);
+    // DEBUG //
+    // _print_repeat_event_list(event_dispatcher->keyboard_key_repeat.events);
+    // DEBUG END //
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_remove_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
+{
+    sb_list_t *event_list = event_dispatcher->keyboard_key_repeat.events;
+
+    // Do not remove initial release event.
+    if (sb_list_length(event_list) == 0) {
+        return;
+    }
+
+    sb_log_debug("_remove_event\n");
+    // _print_repeat_event_list(event_list);
+    for (int i = 0; i < sb_list_length(event_list); ++i) {
+        sb_repeat_event_t *repeat_event = sb_list_at(event_list, i);
+        if (repeat_event->event->keyboard.keycode == event->keyboard.keycode) {
+            // Remove the repeat event info from the list and free it.
+            sb_list_remove(event_list, i);
+            sb_log_debug("Remove: %d\n", event->keyboard.keycode);
+            sb_repeat_event_free(repeat_event);
+            return;
+        }
+    }
+    sb_log_warn("Not removed!\n");
 }
 
 #ifdef __cplusplus

@@ -55,6 +55,12 @@ void sb_surface_on_request_update(sb_surface_t *surface);
 
 void sb_surface_on_resize(sb_surface_t *surface, sb_event_t *event);
 
+void sb_surface_on_keyboard_key_press(sb_surface_t *surface,
+                                      sb_event_t *event);
+
+void sb_surface_on_keyboard_key_release(sb_surface_t *surface,
+                                        sb_event_t *event);
+
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface);
 
 #endif /* _FOUNDATION_SURFACE_H */

@@ -89,7 +89,8 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
                         const sb_rect_t *rect,
                         const sb_color_t *color,
                         const sb_view_radius_t *radius,
-                        const sb_list_t *filters)
+                        const sb_list_t *filters,
+                        bool clip)
 {
     SkCanvas *canvas = _get_canvas(context);
 
@@ -155,6 +156,11 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
         SkRRect rrect;
         rrect.setRectRadii(sk_rect, radii);
 
+        // Clip rrect.
+        if (clip == true) {
+            canvas->clipRRect(rrect);
+        }
+
         canvas->drawRRect(rrect, paint);
         for (int i = 0; i < save_count; ++i) {
             canvas->restore();
@@ -162,8 +168,17 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
         return;
     }
 
+    // Clip normal rect.
+    if (clip == true) {
+        canvas->clipRect(sk_rect);
+    }
     canvas->drawRect(sk_rect, paint);
     for (int i = 0; i < save_count; ++i) {
+        canvas->restore();
+    }
+
+    // Restore clip.
+    if (clip == true) {
         canvas->restore();
     }
 }

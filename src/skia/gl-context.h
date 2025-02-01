@@ -7,8 +7,8 @@
 
 #include <EGL/egl.h>
 
-#include "skia/include/gpu/GrDirectContext.h"
-#include "skia/include/gpu/gl/GrGLInterface.h"
+#include "skia/include/gpu/ganesh/GrDirectContext.h"
+#include "skia/include/gpu/ganesh/gl/GrGLInterface.h"
 #include "skia/include/core/SkSurface.h"
 
 #include <swingby/egl-context.h>
