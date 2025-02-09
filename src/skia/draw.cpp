@@ -87,6 +87,7 @@ void sb_skia_draw_rect_with_radius(sb_skia_context_t *context,
 
 void sb_skia_draw_rect2(sb_skia_context_t *context,
                         const sb_rect_t *rect,
+                        uint32_t scale,
                         const sb_color_t *color,
                         const sb_view_radius_t *radius,
                         const sb_list_t *filters,
@@ -96,7 +97,8 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
 
     SkRect sk_rect = SkRect::MakeXYWH(
         rect->pos.x, rect->pos.y,
-        rect->size.width, rect->size.height);
+        rect->size.width * scale,
+        rect->size.height * scale);
 
     SkPaint paint;
     paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
@@ -142,10 +144,10 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
     }
 
     if (radius != NULL) {
-        float top_left = sb_view_radius_top_left(radius);
-        float top_right = sb_view_radius_top_right(radius);
-        float bottom_right = sb_view_radius_bottom_right(radius);
-        float bottom_left = sb_view_radius_bottom_left(radius);
+        float top_left = sb_view_radius_top_left(radius) * scale;
+        float top_right = sb_view_radius_top_right(radius) * scale;
+        float bottom_right = sb_view_radius_bottom_right(radius) * scale;
+        float bottom_left = sb_view_radius_bottom_left(radius) * scale;
         SkVector radii[] = {
             { top_left, top_left },
             { top_right, top_right },

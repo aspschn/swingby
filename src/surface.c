@@ -251,8 +251,8 @@ static GLuint _set_texture(sb_surface_t *surface)
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        surface->_size.width,
-        surface->_size.height,
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -285,6 +285,7 @@ static void _draw_recursive(sb_surface_t *surface,
         sb_skia_draw_rect2(
             surface->skia_context,
             sb_view_geometry(view),
+            surface->scale,
             sb_view_color(view),
             radius,
             filters,
@@ -332,9 +333,11 @@ void _draw_frame(sb_surface_t *surface)
 
     // Skia context begin.
     sb_skia_context_set_buffer_size(surface->skia_context,
-        surface->_size.width, surface->_size.height);
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale);
     sb_skia_context_begin(surface->skia_context,
-        surface->_size.width, surface->_size.height);
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale);
 
     // Clear color.
     sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
