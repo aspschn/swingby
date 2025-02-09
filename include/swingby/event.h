@@ -36,6 +36,8 @@ enum sb_event_type {
     SB_EVENT_TYPE_MOVE                      = 100,
     SB_EVENT_TYPE_RESIZE                    = 101,
     SB_EVENT_TYPE_STATE_CHANGE              = 110,
+    /// Preferred buffer scale changed for surface.
+    SB_EVENT_TYPE_PREFERRED_SCALE           = 130,
 };
 
 typedef struct sb_event_t sb_event_t;
@@ -80,6 +82,10 @@ typedef struct sb_keyboard_event_t {
     bool repeated;
 } sb_keyboard_event_t;
 
+typedef struct sb_scale_event_t {
+    uint32_t scale;
+} sb_scale_event_t;
+
 struct sb_event_t {
     enum sb_event_target_type target_type;
     void *target;
@@ -91,6 +97,7 @@ struct sb_event_t {
         sb_move_event_t move;
         sb_resize_event_t resize;
         sb_state_change_event_t state_change;
+        sb_scale_event_t scale;
     };
 };
 

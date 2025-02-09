@@ -36,6 +36,10 @@ void sb_surface_detach(sb_surface_t *surface);
 
 void sb_surface_update(sb_surface_t *surface);
 
+uint32_t sb_surface_scale(const sb_surface_t *surface);
+
+void sb_surface_set_scale(sb_surface_t *surface, uint32_t scale);
+
 /// \brief Set the valid input geometry of the surface.
 ///
 /// Pointer events outside of the input geoemetry will be ignored.
@@ -60,6 +64,9 @@ void sb_surface_on_keyboard_key_press(sb_surface_t *surface,
 
 void sb_surface_on_keyboard_key_release(sb_surface_t *surface,
                                         sb_event_t *event);
+
+void sb_surface_on_preferred_scale(sb_surface_t *surface,
+                                   sb_event_t *event);
 
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface);
 

@@ -225,6 +225,9 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 sb_surface_on_keyboard_key_release(event->target, event);
                 // sb_event_free(event);
                 break;
+            case SB_EVENT_TYPE_PREFERRED_SCALE:
+                sb_surface_on_preferred_scale(event->target, event);
+                break;
             default:
                 break;
             }

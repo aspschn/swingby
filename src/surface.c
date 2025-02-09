@@ -38,6 +38,7 @@ struct sb_surface_t {
     sb_skia_context_t *skia_context;
     sb_size_t _size;
     sb_view_t *_root_view;
+    uint32_t scale;
     bool frame_ready;
     bool update_pending;
     /// \brief Program objects for OpenGL.
@@ -526,6 +527,9 @@ sb_surface_t* sb_surface_new()
     surface->_root_view = sb_view_new(NULL, &geo);
     sb_view_set_surface(surface->_root_view, surface);
 
+    // Scale.
+    surface->scale = 1;
+
     // Event listeners.
     surface->event_listeners = sb_list_new();
 
@@ -623,6 +627,24 @@ void sb_surface_update(sb_surface_t *surface)
     }
 }
 
+uint32_t sb_surface_scale(const sb_surface_t *surface)
+{
+    return surface->scale;
+}
+
+void sb_surface_set_scale(sb_surface_t *surface, uint32_t scale)
+{
+    surface->scale = scale;
+    wl_surface_set_buffer_scale(surface->_wl_surface, scale);
+
+    wl_egl_window_resize(surface->_wl_egl_window,
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale,
+        0, 0);
+
+    sb_surface_update(surface);
+}
+
 void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry)
 {
     sb_application_t *app = sb_application_instance();
@@ -688,6 +710,13 @@ void sb_surface_on_keyboard_key_release(sb_surface_t *surface,
         SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE, event);
 }
 
+void sb_surface_on_preferred_scale(sb_surface_t *surface,
+                                   sb_event_t *event)
+{
+    _event_listener_filter_for_each(surface->event_listeners,
+        SB_EVENT_TYPE_PREFERRED_SCALE, event);
+}
+
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface)
 {
     return surface->_wl_surface;
@@ -737,7 +766,15 @@ static void preferred_buffer_scale_handler(void *data,
                                            struct wl_surface *wl_surface,
                                            int32_t factor)
 {
+    sb_surface_t *surface = (sb_surface_t*)data;
     sb_log_debug("preferred_buffer_scale_handler - factor: %d\n", factor);
+
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE, surface,
+        SB_EVENT_TYPE_PREFERRED_SCALE);
+    event->scale.scale = factor;
+
+    sb_application_t *app = sb_application_instance();
+    sb_application_post_event(app, event);
 }
 
 static void preferred_buffer_transform_handler(void *data,
