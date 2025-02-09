@@ -34,7 +34,11 @@ int main(int argc, char *argv[])
     image_view = view;
     sb_view_set_fill_type(view, SB_VIEW_FILL_TYPE_IMAGE);
 
-    sb_image_t *image = sb_view_image(view);
+    sb_size_i_t image_size = { 256, 256 };
+
+    sb_image_t *image = sb_image_new(&image_size, SB_IMAGE_FORMAT_RGBA32);
+    sb_view_set_image(view, image);
+
     uint64_t len = sb_image_size(image)->width * sb_image_size(image)->height;
     fprintf(stderr, "Length: %ld\n", len);
     uint32_t *pixel = (uint32_t*)sb_image_data(image);

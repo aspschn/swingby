@@ -124,43 +124,17 @@ enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view)
 
 void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type)
 {
-    // From single color to single color. Do nothing.
-    if (view->fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR &&
-        fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
-        return;
-    }
-
-    // From single color to image.
-    if (view->fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR &&
-        fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
-        view->fill_type = SB_VIEW_FILL_TYPE_IMAGE;
-
-        sb_size_i_t size;
-        size.width = view->_geometry.size.width;
-        size.height = view->_geometry.size.height;
-        view->image = sb_image_new(&size, SB_IMAGE_FORMAT_RGBA32);
-
-        return;
-    }
-
-    // From image to image. Do nothing.
-    if (view->fill_type == SB_VIEW_FILL_TYPE_IMAGE &&
-        fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
-        return;
-    }
-
-    // From image to single color.
-    if (view->fill_type == SB_VIEW_FILL_TYPE_IMAGE &&
-        fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
-        view->fill_type = SB_VIEW_FILL_TYPE_SINGLE_COLOR;
-
-        return;
-    }
+    view->fill_type = fill_type;
 }
 
 sb_image_t* sb_view_image(sb_view_t *view)
 {
     return view->image;
+}
+
+void sb_view_set_image(sb_view_t *view, sb_image_t *image)
+{
+    view->image = image;
 }
 
 const sb_view_radius_t* sb_view_radius(const sb_view_t *view)

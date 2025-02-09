@@ -60,8 +60,11 @@ enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view);
 /// \brief Set the fill type of the view.
 void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type);
 
-/// \brief Get the image of the view. Valid if only fill type is image.
+/// \brief Get the image of the view. Returns NULL if there is no image.
 sb_image_t* sb_view_image(sb_view_t *view);
+
+/// \brief Set the image of the view. Pass NULL to unset.
+void sb_view_set_image(sb_view_t *view, sb_image_t *image);
 
 /// \brief Get the radius of the view.
 const sb_view_radius_t* sb_view_radius(const sb_view_t *view);
