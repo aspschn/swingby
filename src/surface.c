@@ -105,7 +105,9 @@ void _gl_init(sb_surface_t *surface)
         surface->_egl_surface,
         surface->_egl_context->egl_context);
 
-    glViewport(0, 0, surface->_size.width, surface->_size.height);
+    glViewport(0, 0,
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale);
 
     glClearColor(0.5, 0.5, 0.5, 0.5);
     glClear(GL_COLOR_BUFFER_BIT);
