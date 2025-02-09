@@ -66,6 +66,33 @@ static const struct wl_callback_listener callback_listener = {
     .done = callback_done_handler,
 };
 
+//!<===================
+//!< Wayland Surface
+//!<===================
+
+static void enter_handler(void *data,
+                          struct wl_surface *wl_surface,
+                          struct wl_output *wl_output);
+
+static void leave_handler(void *data,
+                          struct wl_surface *wl_surface,
+                          struct wl_output *wl_output);
+
+static void preferred_buffer_scale_handler(void *data,
+                                           struct wl_surface *wl_surface,
+                                           int32_t factor);
+
+static void preferred_buffer_transform_handler(void *data,
+                                               struct wl_surface *wl_surface,
+                                               uint32_t transform);
+
+static const struct wl_surface_listener surface_listener = {
+    .enter = enter_handler,
+    .leave = leave_handler,
+    .preferred_buffer_scale = preferred_buffer_scale_handler,
+    .preferred_buffer_transform = preferred_buffer_transform_handler,
+};
+
 //!<======================
 //!< Helper Functions
 //!<======================
@@ -449,6 +476,10 @@ sb_surface_t* sb_surface_new()
     wl_callback_add_listener(surface->frame_callback, &callback_listener,
         (void*)surface);
 
+    // Add surface listener.
+    wl_surface_add_listener(surface->_wl_surface, &surface_listener,
+        (void*)surface);
+
     // Initialize EGL context.
     surface->_egl_context = sb_egl_context_new();
 
@@ -684,4 +715,33 @@ static void callback_done_handler(void *data,
         surface->update_pending = false;
         surface->frame_ready = false;
     }
+}
+
+//!<====================
+//!< Wayland Surface
+//!<====================
+
+static void enter_handler(void *data,
+                          struct wl_surface *wl_surface,
+                          struct wl_output *wl_output)
+{
+}
+
+static void leave_handler(void *data,
+                          struct wl_surface *wl_surface,
+                          struct wl_output *wl_output)
+{
+}
+
+static void preferred_buffer_scale_handler(void *data,
+                                           struct wl_surface *wl_surface,
+                                           int32_t factor)
+{
+    sb_log_debug("preferred_buffer_scale_handler - factor: %d\n", factor);
+}
+
+static void preferred_buffer_transform_handler(void *data,
+                                               struct wl_surface *wl_surface,
+                                               uint32_t transform)
+{
 }
