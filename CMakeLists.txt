@@ -79,6 +79,8 @@ target_include_directories(swingby
     PRIVATE ./skia
 )
 
+target_compile_options(swingby PRIVATE -Wall)
+
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
 if(SWINGBY_DEBUG)
