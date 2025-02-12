@@ -5,6 +5,8 @@
 
 #include <swingby/log.h>
 
+#include "skia/load-image.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,6 +46,27 @@ enum sb_image_format sb_image_image_format(sb_image_t *image)
 uint8_t* sb_image_data(sb_image_t *image)
 {
     return image->data;
+}
+
+bool sb_image_load_from_file(sb_image_t *image,
+                             const char *filename,
+                             enum sb_image_file_format format)
+{
+    uint64_t width, height;
+
+    uint8_t *data = sb_skia_load_image_from_file(filename, format,
+        &width, &height);
+
+    if (data == NULL) {
+        return false;
+    }
+
+    if (image->data != NULL) {
+        free(image->data);
+        image->data = data;
+    }
+
+    return true;
 }
 
 void sb_image_free(sb_image_t *image)

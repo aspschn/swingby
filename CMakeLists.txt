@@ -59,6 +59,8 @@ set(SWINGBY_SOURCES
     src/skia/context.cpp
     src/skia/draw.h
     src/skia/draw.cpp
+    src/skia/load-image.h
+    src/skia/load-image.cpp
     src/skia/backend/gl.h
     src/skia/backend/gl.cpp
     src/skia/backend/raster.h
