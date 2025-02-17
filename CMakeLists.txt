@@ -93,7 +93,7 @@ target_link_options(swingby
     PRIVATE -lwayland-client
     PRIVATE -lwayland-egl
     PRIVATE -lEGL
-    PRIVATE -lGL
+    PRIVATE -lOpenGL
     PRIVATE -lxkbcommon
     # Skia
     PRIVATE -lfreetype
