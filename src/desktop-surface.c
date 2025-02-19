@@ -17,6 +17,7 @@
 struct sb_desktop_surface_t {
     sb_surface_t *_surface;
     sb_desktop_surface_role _role;
+    sb_desktop_surface_t *parent;
     struct xdg_surface *_xdg_surface;
     struct xdg_toplevel *_xdg_toplevel;
     struct xdg_popup *_xdg_popup;
@@ -85,6 +86,16 @@ static sb_event_t* _state_change_event_new(
     return event;
 }
 
+static void _set_toplevel_parent(sb_desktop_surface_t *parent,
+                                 sb_desktop_surface_t *child)
+{
+    if (parent->_xdg_toplevel == NULL) {
+        sb_log_warn("Parent must show before child show.\n");
+        return;
+    }
+    xdg_toplevel_set_parent(child->_xdg_toplevel, parent->_xdg_toplevel);
+}
+
 static void _event_listener_filter_for_each(sb_list_t *listeners,
                                             enum sb_event_type type,
                                             sb_event_t *event)
@@ -105,6 +116,7 @@ sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
 
     // Initialize the members.
     d_surface->_role = role;
+    d_surface->parent = NULL;
     d_surface->_xdg_surface = NULL;
     d_surface->_xdg_toplevel = NULL;
     d_surface->_xdg_popup = NULL;
@@ -126,6 +138,12 @@ sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
         d_surface);
 
     return d_surface;
+}
+
+void sb_desktop_surface_set_parent(sb_desktop_surface_t *desktop_surface,
+                                   sb_desktop_surface_t *parent)
+{
+    desktop_surface->parent = parent;
 }
 
 sb_surface_t*
@@ -154,6 +172,11 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         desktop_surface->_xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
         xdg_toplevel_add_listener(desktop_surface->_xdg_toplevel,
             &xdg_toplevel_listener, (void*)desktop_surface);
+
+        // Set parent toplevel.
+        if (desktop_surface->parent != NULL) {
+            _set_toplevel_parent(desktop_surface->parent, desktop_surface);
+        }
 
         // Must commit and roundtrip.
         sb_surface_commit(sb_desktop_surface_surface(desktop_surface));
@@ -184,11 +207,13 @@ void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface)
 {
     if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
         xdg_toplevel_destroy(desktop_surface->_xdg_toplevel);
+        desktop_surface->_xdg_toplevel = NULL;
     } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
         //
     }
 
     xdg_surface_destroy(desktop_surface->_xdg_surface);
+    desktop_surface->_xdg_surface = NULL;
 
     sb_surface_detach(desktop_surface->_surface);
 }

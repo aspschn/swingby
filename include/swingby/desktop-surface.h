@@ -46,6 +46,9 @@ typedef struct sb_desktop_surface_t sb_desktop_surface_t;
 
 sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role);
 
+void sb_desktop_surface_set_parent(sb_desktop_surface_t *desktop_surface,
+                                   sb_desktop_surface_t *parent);
+
 /// \brief Get the surface object of the desktop surface.
 sb_surface_t*
 sb_desktop_surface_surface(sb_desktop_surface_t *desktop_surface);
