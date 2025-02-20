@@ -68,6 +68,12 @@ void* sb_list_remove(sb_list_t *list, uint64_t index)
     return item;
 }
 
+void sb_list_free(sb_list_t *list)
+{
+    free(list->data);
+    free(list);
+}
+
 #ifdef __cplusplus
 }
 #endif

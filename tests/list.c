@@ -43,6 +43,9 @@ int main(int argc, char *argv[])
         free(val);
     }
 
+    // Free list.
+    sb_list_free(list);
+
     return 0;
 }
 
