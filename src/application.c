@@ -25,6 +25,7 @@
 #include <swingby/event-dispatcher.h>
 
 #include "xkb/xkb-context.h"
+#include "xcursor/xcursor.h"
 
 struct sb_application_t {
     /// `struct wl_display`.
@@ -75,6 +76,10 @@ struct sb_application_t {
     struct sb_xkb_context_t *xkb_context;
     /// \brief List of the desktop surfaces.
     sb_list_t *_desktop_surfaces;
+    struct {
+        sb_xcursor_theme_manager_t *manager;
+        char current[256];
+    } xcursor;
     /// \brief Default cursor when view not set cursor.
     sb_cursor_t *cursor;
     /// \brief Output list.
@@ -451,6 +456,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     // Event dispatcher.
     app->_event_dispatcher = sb_event_dispatcher_new();
 
+    app->xcursor.manager = NULL;
+    app->xcursor.current[0] = '\0';
     app->cursor = NULL;
 
     _sb_application_instance = app;
@@ -466,6 +473,48 @@ sb_application_t* sb_application_instance()
 uint32_t sb_application_pointer_button_serial(sb_application_t *application)
 {
     return application->pointer_button_serial;
+}
+
+void sb_application_load_cursor_themes(sb_application_t *application)
+{
+    if (application->xcursor.manager != NULL) {
+        sb_xcursor_theme_manager_free(application->xcursor.manager);
+    }
+    // Load.
+    application->xcursor.manager = sb_xcursor_theme_manager_load();
+}
+
+const sb_list_t* sb_application_cursor_theme_ids(sb_application_t *application)
+{
+    return application->xcursor.manager->ids;
+}
+
+void sb_application_set_cursor_theme(sb_application_t *application,
+                                     const char *id)
+{
+    bool found = false;
+    sb_list_t *ids = application->xcursor.manager->ids;
+    for (uint64_t i = 0; i < sb_list_length(ids); ++i) {
+        const char *it = sb_list_at(ids, i);
+        if (strcmp(it, id) == 0) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        sb_log_warn("No such cursor theme %s\n", id);
+        return;
+    }
+
+    strcpy(application->xcursor.current, id);
+}
+
+const char* sb_application_cursor_theme(sb_application_t *application)
+{
+    if (strlen(application->xcursor.current) == 0) {
+        return NULL;
+    }
+    return application->xcursor.current;
 }
 
 void sb_application_post_event(sb_application_t *application,

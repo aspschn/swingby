@@ -15,6 +15,12 @@ int main(int argc, char *argv[])
 {
     sb_application_t *app = sb_application_new(argc, argv);
 
+    sb_application_load_cursor_themes(app);
+    const sb_list_t *cursor_theme_ids = sb_application_cursor_theme_ids(app);
+    for (uint64_t i = 0; i < sb_list_length(cursor_theme_ids); ++i) {
+        fprintf(stderr, "%s\n", (char*)sb_list_at(cursor_theme_ids, i));
+    }
+
     sb_desktop_surface_t *surface = sb_desktop_surface_new(
         SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
 

@@ -67,6 +67,8 @@ set(SWINGBY_SOURCES
     src/skia/backend/raster.cpp
     src/xkb/xkb-context.h
     src/xkb/xkb-context.c
+    src/xcursor/xcursor.h
+    src/xcursor/xcursor.c
     ${WAYLAND_PROTOCOLS_SOURCES}
 )
 
