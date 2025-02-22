@@ -38,6 +38,7 @@ enum sb_event_type {
     SB_EVENT_TYPE_STATE_CHANGE              = 110,
     /// Preferred buffer scale changed for surface.
     SB_EVENT_TYPE_PREFERRED_SCALE           = 130,
+    SB_EVENT_TYPE_TIMEOUT                   = 140,
 };
 
 typedef struct sb_event_t sb_event_t;
@@ -86,6 +87,14 @@ typedef struct sb_scale_event_t {
     uint32_t scale;
 } sb_scale_event_t;
 
+typedef struct sb_timer_event_t {
+    uint32_t id;
+    uint32_t interval;
+    bool repeat;
+    /// Internal use.
+    uint64_t time;
+} sb_timer_event_t;
+
 struct sb_event_t {
     enum sb_event_target_type target_type;
     void *target;
@@ -98,6 +107,7 @@ struct sb_event_t {
         sb_resize_event_t resize;
         sb_state_change_event_t state_change;
         sb_scale_event_t scale;
+        sb_timer_event_t timer;
     };
 };
 

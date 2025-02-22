@@ -1,6 +1,8 @@
 #ifndef _FOUNDATION_APPLICATION_H
 #define _FOUNDATION_APPLICATION_H
 
+#include <stdbool.h>
+
 #include <wayland-client.h>
 
 typedef struct sb_surface_t sb_surface_t;
@@ -39,6 +41,11 @@ void sb_application_set_cursor_theme(sb_application_t *application,
 
 /// \brief Return current cursor theme id. If not set before then return NULL.
 const char* sb_application_cursor_theme(sb_application_t *application);
+
+uint32_t sb_application_add_timer(sb_application_t *application,
+                                  sb_surface_t *target,
+                                  uint32_t interval,
+                                  bool repeat);
 
 void sb_application_post_event(sb_application_t *application,
                                sb_event_t *event);

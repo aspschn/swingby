@@ -84,6 +84,9 @@ struct sb_application_t {
     sb_cursor_t *cursor;
     /// \brief Output list.
     sb_list_t *outputs;
+    struct {
+        sb_list_t *ids;
+    } timer;
     /// \brief An event dispatcher.
     sb_event_dispatcher_t *_event_dispatcher;
 };
@@ -440,6 +443,9 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     // Init xkb context as NULL.
     app->xkb_context = NULL;
 
+    // Init timer.
+    app->timer.ids = sb_list_new();
+
     app->_wl_registry = wl_display_get_registry(app->_wl_display);
     wl_registry_add_listener(app->_wl_registry, &app_registry_listener,
         (void*)app);
@@ -517,6 +523,38 @@ const char* sb_application_cursor_theme(sb_application_t *application)
     return application->xcursor.current;
 }
 
+uint32_t sb_application_add_timer(sb_application_t *application,
+                                  sb_surface_t *target,
+                                  uint32_t interval,
+                                  bool repeat)
+{
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
+        target, SB_EVENT_TYPE_TIMEOUT);
+
+    // Make a new timer id.
+    uint32_t new_id = 0;
+    for (uint64_t i = 0; i < sb_list_length(application->timer.ids); ++i) {
+        uint32_t *id = sb_list_at(application->timer.ids, i);
+        if (new_id < *id) {
+            new_id = *id + 1;
+        }
+    }
+    // Add the new timer id to the list.
+    uint32_t *new_id_ptr = malloc(sizeof(uint32_t));
+    *new_id_ptr = new_id;
+    sb_list_push(application->timer.ids, new_id_ptr);
+
+    event->timer.id = new_id;
+    event->timer.interval = interval;
+    event->timer.repeat = repeat;
+    event->timer.time = 0;
+
+    // Add new timer event to the event dispatcher.
+    sb_event_dispatcher_timer_add_event(application->_event_dispatcher, event);
+
+    return new_id;
+}
+
 void sb_application_post_event(sb_application_t *application,
                                sb_event_t *event)
 {
@@ -585,6 +623,8 @@ int sb_application_exec(sb_application_t *application)
 
         // Keyboard key repeat.
         bool has_event = sb_event_dispatcher_keyboard_key_repeat_has_event(
+            application->_event_dispatcher);
+        has_event = has_event || sb_event_dispatcher_timer_has_event(
             application->_event_dispatcher);
         if (has_event != true) {
             err = wl_display_dispatch(application->_wl_display);

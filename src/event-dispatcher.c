@@ -158,6 +158,10 @@ struct sb_event_dispatcher_t {
         /// \brief List for sb_repeat_event_t.
         sb_list_t *events;
     } keyboard_key_repeat;
+    struct {
+        /// \brief List for sb_event_t.
+        sb_list_t *events;
+    } timer;
 };
 
 sb_event_dispatcher_t* sb_event_dispatcher_new()
@@ -171,6 +175,8 @@ sb_event_dispatcher_t* sb_event_dispatcher_new()
     event_dispatcher->keyboard_key_repeat.delay = 100000;
     event_dispatcher->keyboard_key_repeat.rate = 0;
     event_dispatcher->keyboard_key_repeat.events = sb_list_new();
+
+    event_dispatcher->timer.events = sb_list_new();
 
     return event_dispatcher;
 }
@@ -327,6 +333,19 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
         }
     }
 
+    // Process timer events.
+    sb_list_t *timer_event_list = event_dispatcher->timer.events;
+    for (uint64_t i = 0; i < sb_list_length(timer_event_list); ++i) {
+        sb_event_t *event = sb_list_at(timer_event_list, i);
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+        if (now - event->timer.time >= event->timer.interval) {
+            sb_log_debug("Timer triggered!\n");
+            event->timer.time = now;
+        }
+    }
+
     // sb_bench_end(bench);
 }
 
@@ -395,6 +414,29 @@ void sb_event_dispatcher_keyboard_key_repeat_remove_event(
         }
     }
     sb_log_warn("Not removed!\n");
+}
+
+bool sb_event_dispatcher_timer_has_event(
+    sb_event_dispatcher_t *event_dispatcher)
+{
+    return sb_list_length(event_dispatcher->timer.events) > 0;
+}
+
+void sb_event_dispatcher_timer_add_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    event->timer.time = now;
+
+    sb_list_push(event_dispatcher->timer.events, event);
+}
+
+void sb_event_dispatcher_timer_remove_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
+{
+    //
 }
 
 #ifdef __cplusplus
