@@ -68,6 +68,9 @@ void sb_surface_on_keyboard_key_release(sb_surface_t *surface,
 void sb_surface_on_preferred_scale(sb_surface_t *surface,
                                    sb_event_t *event);
 
+void sb_surface_on_timeout(sb_surface_t *surface,
+                           sb_event_t *event);
+
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface);
 
 #endif /* _FOUNDATION_SURFACE_H */

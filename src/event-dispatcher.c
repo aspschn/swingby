@@ -342,6 +342,12 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
         uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
         if (now - event->timer.time >= event->timer.interval) {
             sb_log_debug("Timer triggered!\n");
+            // Call on_timeout method of the surface.
+            sb_surface_on_timeout(event->target, event);
+            // If no repeat, remove event.
+            if (event->timer.repeat == false) {
+                // TODO.
+            }
             event->timer.time = now;
         }
     }
@@ -434,9 +440,18 @@ void sb_event_dispatcher_timer_add_event(
 }
 
 void sb_event_dispatcher_timer_remove_event(
-    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
+    sb_event_dispatcher_t *event_dispatcher, uint32_t id)
 {
-    //
+    sb_list_t *event_list = event_dispatcher->timer.events;
+
+    for (uint64_t i = 0; i < sb_list_length(event_list); ++i) {
+        sb_event_t *timer_event = sb_list_at(event_list, i);
+        if (timer_event->timer.id == id) {
+            sb_list_remove(event_list, i);
+            sb_event_free(timer_event);
+            break;
+        }
+    }
 }
 
 #ifdef __cplusplus

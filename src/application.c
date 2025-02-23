@@ -555,6 +555,20 @@ uint32_t sb_application_add_timer(sb_application_t *application,
     return new_id;
 }
 
+void sb_application_remove_timer(sb_application_t *application, uint32_t id)
+{
+    sb_list_t *ids = application->timer.ids;
+    for (uint64_t i = 0; i < sb_list_length(ids); ++i) {
+        uint32_t *found = sb_list_at(ids, i);
+        if (id == *found) {
+            sb_list_remove(ids, i);
+            sb_event_dispatcher_timer_remove_event(
+                application->_event_dispatcher, id);
+            break;
+        }
+    }
+}
+
 void sb_application_post_event(sb_application_t *application,
                                sb_event_t *event)
 {

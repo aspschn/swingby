@@ -722,6 +722,13 @@ void sb_surface_on_preferred_scale(sb_surface_t *surface,
         SB_EVENT_TYPE_PREFERRED_SCALE, event);
 }
 
+void sb_surface_on_timeout(sb_surface_t *surface,
+                           sb_event_t *event)
+{
+    _event_listener_filter_for_each(surface->event_listeners,
+        SB_EVENT_TYPE_TIMEOUT, event);
+}
+
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface)
 {
     return surface->_wl_surface;

@@ -64,7 +64,7 @@ void sb_event_dispatcher_timer_add_event(
     sb_event_dispatcher_t *event_dispatcher, sb_event_t *event);
 
 void sb_event_dispatcher_timer_remove_event(
-    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event);
+    sb_event_dispatcher_t *event_dispatcher, uint32_t id);
 
 #ifdef __cplusplus
 }

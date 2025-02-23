@@ -47,6 +47,9 @@ uint32_t sb_application_add_timer(sb_application_t *application,
                                   uint32_t interval,
                                   bool repeat);
 
+/// \brief Remove timer event by id.
+void sb_application_remove_timer(sb_application_t *application, uint32_t id);
+
 void sb_application_post_event(sb_application_t *application,
                                sb_event_t *event);
 
