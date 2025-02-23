@@ -84,9 +84,6 @@ struct sb_application_t {
     sb_cursor_t *cursor;
     /// \brief Output list.
     sb_list_t *outputs;
-    struct {
-        sb_list_t *ids;
-    } timer;
     /// \brief An event dispatcher.
     sb_event_dispatcher_t *_event_dispatcher;
 };
@@ -443,9 +440,6 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     // Init xkb context as NULL.
     app->xkb_context = NULL;
 
-    // Init timer.
-    app->timer.ids = sb_list_new();
-
     app->_wl_registry = wl_display_get_registry(app->_wl_display);
     wl_registry_add_listener(app->_wl_registry, &app_registry_listener,
         (void*)app);
@@ -531,42 +525,21 @@ uint32_t sb_application_add_timer(sb_application_t *application,
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
         target, SB_EVENT_TYPE_TIMEOUT);
 
-    // Make a new timer id.
-    uint32_t new_id = 0;
-    for (uint64_t i = 0; i < sb_list_length(application->timer.ids); ++i) {
-        uint32_t *id = sb_list_at(application->timer.ids, i);
-        if (new_id < *id) {
-            new_id = *id + 1;
-        }
-    }
-    // Add the new timer id to the list.
-    uint32_t *new_id_ptr = malloc(sizeof(uint32_t));
-    *new_id_ptr = new_id;
-    sb_list_push(application->timer.ids, new_id_ptr);
-
-    event->timer.id = new_id;
+    event->timer.id = 0;
     event->timer.interval = interval;
     event->timer.repeat = repeat;
     event->timer.time = 0;
 
     // Add new timer event to the event dispatcher.
-    sb_event_dispatcher_timer_add_event(application->_event_dispatcher, event);
+    uint32_t new_id =
+        sb_event_dispatcher_timer_add_event(application->_event_dispatcher, event);
 
     return new_id;
 }
 
 void sb_application_remove_timer(sb_application_t *application, uint32_t id)
 {
-    sb_list_t *ids = application->timer.ids;
-    for (uint64_t i = 0; i < sb_list_length(ids); ++i) {
-        uint32_t *found = sb_list_at(ids, i);
-        if (id == *found) {
-            sb_list_remove(ids, i);
-            sb_event_dispatcher_timer_remove_event(
-                application->_event_dispatcher, id);
-            break;
-        }
-    }
+    sb_event_dispatcher_timer_remove_event(application->_event_dispatcher, id);
 }
 
 void sb_application_post_event(sb_application_t *application,

@@ -346,7 +346,8 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
             sb_surface_on_timeout(event->target, event);
             // If no repeat, remove event.
             if (event->timer.repeat == false) {
-                // TODO.
+                sb_event_dispatcher_timer_remove_event(event_dispatcher,
+                    event->timer.id);
             }
             event->timer.time = now;
         }
@@ -428,15 +429,27 @@ bool sb_event_dispatcher_timer_has_event(
     return sb_list_length(event_dispatcher->timer.events) > 0;
 }
 
-void sb_event_dispatcher_timer_add_event(
+uint32_t sb_event_dispatcher_timer_add_event(
     sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
 {
+    sb_list_t *timer_events = event_dispatcher->timer.events;
+    uint32_t new_id = 0;
+    for (uint64_t i = 0; i < sb_list_length(timer_events); ++i) {
+        sb_event_t *iter = sb_list_at(timer_events, i);
+        if (new_id < iter->timer.id) {
+            new_id = iter->timer.id + 1;
+        }
+    }
+    event->timer.id = new_id;
+
     struct timeval tv;
     gettimeofday(&tv, NULL);
     uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
     event->timer.time = now;
 
     sb_list_push(event_dispatcher->timer.events, event);
+
+    return new_id;
 }
 
 void sb_event_dispatcher_timer_remove_event(
