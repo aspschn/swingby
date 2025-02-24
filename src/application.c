@@ -791,30 +791,30 @@ static void pointer_enter_handler(void *data,
     app->enter.serial = serial;
 
     // Cursor shape.
-    struct wp_cursor_shape_device_v1 *device =
-        wp_cursor_shape_manager_v1_get_pointer(
-            app->wp_cursor_shape_manager_v1,
-            wl_pointer
-        );
-    wp_cursor_shape_device_v1_set_shape(device, serial,
-        WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT);
+    if (app->wp_cursor_shape_manager_v1 != NULL) {
+        struct wp_cursor_shape_device_v1 *device =
+            wp_cursor_shape_manager_v1_get_pointer(
+                app->wp_cursor_shape_manager_v1,
+                wl_pointer
+            );
+        wp_cursor_shape_device_v1_set_shape(device, serial,
+            WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT);
 
-    wp_cursor_shape_device_v1_destroy(device);
+        wp_cursor_shape_device_v1_destroy(device);
+    } else {
+        // TEST cursor.
+        // Set default cursor.
+        if (app->cursor == NULL) {
+            sb_point_t hot_spot;
+            hot_spot.x = 0;
+            hot_spot.y = 0;
+            app->cursor = sb_cursor_new(SB_CURSOR_SHAPE_DEFAULT, &hot_spot);
+        }
 
-    // TEST cursor.
-    // Set default cursor.
-    /*
-    if (app->cursor == NULL) {
-        sb_point_t hot_spot;
-        hot_spot.x = 0;
-        hot_spot.y = 0;
-        app->cursor = sb_cursor_new(SB_CURSOR_SHAPE_DEFAULT, &hot_spot);
+        sb_surface_t *cursor_surface = sb_cursor_surface(app->cursor);
+        wl_pointer_set_cursor(wl_pointer,
+            serial, sb_surface_wl_surface(cursor_surface), 0, 0);
     }
-
-    sb_surface_t *cursor_surface = sb_cursor_surface(app->cursor);
-    wl_pointer_set_cursor(wl_pointer,
-        serial, sb_surface_wl_surface(cursor_surface), 0, 0);
-    */
 
     float x = wl_fixed_to_double(sx);
     float y = wl_fixed_to_double(sy);

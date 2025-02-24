@@ -8,6 +8,7 @@
 #include <swingby/filter.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
+#include <swingby/cursor.h>
 
 struct sb_view_t {
     sb_surface_t *_surface;
@@ -24,6 +25,7 @@ struct sb_view_t {
     sb_list_t *filters;
     /// \brief Clip child views. Default is false.
     bool clip;
+    enum sb_cursor_shape cursor_shape;
     sb_list_t *event_listeners;
 };
 
@@ -75,6 +77,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     view->event_listeners = sb_list_new();
 
     view->clip = false;
+
+    view->cursor_shape = SB_CURSOR_SHAPE_DEFAULT;
 
     if (parent != NULL) {
         // Append the new view to the child list of the parent view.
@@ -212,6 +216,16 @@ bool sb_view_clip(const sb_view_t *view)
 void sb_view_set_clip(sb_view_t *view, bool clip)
 {
     view->clip = clip;
+}
+
+enum sb_cursor_shape sb_view_cursor_shape(const sb_view_t *view)
+{
+    return view->cursor_shape;
+}
+
+void sb_view_set_cursor_shape(sb_view_t *view, enum sb_cursor_shape shape)
+{
+    view->cursor_shape = shape;
 }
 
 void sb_view_add_event_listener(sb_view_t *view,
