@@ -4,4 +4,5 @@ CMakeLists.txt.user
 
 include/wayland-protocols/stable/*.h
 include/wayland-protocols/stable/*.c
-
+include/wayland-protocols/staging/*.h
+include/wayland-protocols/staging/*.c

@@ -7,6 +7,7 @@ project(swingby
 
 set(WAYLAND_PROTOCOLS_SOURCES
     include/wayland-protocols/stable/xdg-shell.c
+    include/wayland-protocols/staging/cursor-shape-v1.c
 )
 
 set(SWINGBY_HEADERS
