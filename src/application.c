@@ -28,6 +28,8 @@
 #include "xkb/xkb-context.h"
 #include "xcursor/xcursor.h"
 
+#include "helpers/application.h"
+
 struct sb_application_t {
     /// `struct wl_display`.
     struct wl_display *_wl_display;
@@ -898,6 +900,19 @@ static void pointer_motion_handler(void *data,
         _post_pointer_leave_event(app->_pointer_view, 0.0f, 0.0f);
 
         app->_pointer_view = view;
+
+        // Cursor shape.
+        enum sb_cursor_shape shape = sb_view_cursor_shape(view);
+        if (app->wp_cursor_shape_manager_v1 != NULL) {
+            struct wp_cursor_shape_device_v1 *device =
+                wp_cursor_shape_manager_v1_get_pointer(
+                    app->wp_cursor_shape_manager_v1,
+                    wl_pointer
+                );
+            wp_cursor_shape_device_v1_set_shape(device, app->enter.serial,
+                _to_wp_cursor_shape(shape));
+            wp_cursor_shape_device_v1_destroy(device);
+        }
 
         // Post the event.
         _post_pointer_enter_event(view, pos.x, pos.y);

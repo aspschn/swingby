@@ -8,7 +8,6 @@
 #include <swingby/filter.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
-#include <swingby/cursor.h>
 
 struct sb_view_t {
     sb_surface_t *_surface;

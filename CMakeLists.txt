@@ -71,6 +71,8 @@ set(SWINGBY_SOURCES
     src/xkb/xkb-context.c
     src/xcursor/xcursor.h
     src/xcursor/xcursor.c
+    src/helpers/application.h
+    src/helpers/application.c
     ${WAYLAND_PROTOCOLS_SOURCES}
 )
 

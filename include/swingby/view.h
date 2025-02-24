@@ -6,6 +6,7 @@
 #include <swingby/rect.h>
 #include <swingby/surface.h>
 #include <swingby/color.h>
+#include <swingby/cursor.h>
 #include <swingby/event.h>
 
 #ifdef __cplusplus
@@ -28,8 +29,6 @@ enum sb_view_fill_type {
     SB_VIEW_FILL_TYPE_SINGLE_COLOR,
     SB_VIEW_FILL_TYPE_IMAGE,
 };
-
-enum sb_cursor_shape;
 
 typedef struct sb_view_t sb_view_t;
 
