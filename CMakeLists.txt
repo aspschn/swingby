@@ -27,8 +27,12 @@ set(SWINGBY_HEADERS
     include/swingby/swingby.h
 )
 
+set(SWINGBY_SKIA_STATIC_DIR ${CMAKE_SOURCE_DIR}/skia/out/Static)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_subdirectory(cmake/wayland)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    add_subdirectory(cmake/win32)
 endif()
 
 set(SWINGBY_SOURCES
@@ -84,8 +88,6 @@ endif()
 target_link_options(swingby
     ${SWINGBY_PLATFORM_LINK_OPTIONS}
 )
-
-set(SWINGBY_SKIA_STATIC_DIR ${CMAKE_SOURCE_DIR}/skia/out/Static)
 
 target_link_libraries(swingby
     ${SWINGBY_PLATFORM_LINK_LIBRARIES}
