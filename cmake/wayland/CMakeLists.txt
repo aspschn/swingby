@@ -20,3 +20,24 @@ set(SWINGBY_PLATFORM_SOURCES
     src/skia/gl-context.cpp
     PARENT_SCOPE
 )
+
+set(SWINGBY_PLATFORM_LINK_OPTIONS
+    PRIVATE -lwayland-client
+    PRIVATE -lwayland-egl
+    PRIVATE -lEGL
+    PRIVATE -lOpenGL
+    PRIVATE -lxkbcommon
+    # Skia
+    PRIVATE -lfreetype
+    PRIVATE -lz
+    PRIVATE -lpng16
+    PRIVATE -ljpeg
+
+    PARENT_SCOPE
+)
+
+set(SWINGBY_PLATFORM_LINK_LIBRARIES
+    PRIVATE ${SWINGBY_SKIA_STATIC_DIR}/libskia.a
+
+    PARENT_SCOPE
+)

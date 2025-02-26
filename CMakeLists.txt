@@ -82,22 +82,13 @@ if(SWINGBY_DEBUG)
 endif()
 
 target_link_options(swingby
-    PRIVATE -lwayland-client
-    PRIVATE -lwayland-egl
-    PRIVATE -lEGL
-    PRIVATE -lOpenGL
-    PRIVATE -lxkbcommon
-    # Skia
-    PRIVATE -lfreetype
-    PRIVATE -lz
-    PRIVATE -lpng16
-    PRIVATE -ljpeg
+    ${SWINGBY_PLATFORM_LINK_OPTIONS}
 )
 
 set(SWINGBY_SKIA_STATIC_DIR ${CMAKE_SOURCE_DIR}/skia/out/Static)
 
 target_link_libraries(swingby
-    PRIVATE ${SWINGBY_SKIA_STATIC_DIR}/libskia.a
+    ${SWINGBY_PLATFORM_LINK_LIBRARIES}
 )
 
 # Version info.
