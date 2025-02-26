@@ -6,6 +6,7 @@
 #include <swingby/rect.h>
 #include <swingby/surface.h>
 #include <swingby/color.h>
+#include <swingby/cursor.h>
 #include <swingby/event.h>
 
 #ifdef __cplusplus
@@ -83,6 +84,10 @@ bool sb_view_clip(const sb_view_t *view);
 
 /// \brief Set the clip property of the view.
 void sb_view_set_clip(sb_view_t *view, bool clip);
+
+enum sb_cursor_shape sb_view_cursor_shape(const sb_view_t *view);
+
+void sb_view_set_cursor_shape(sb_view_t *view, enum sb_cursor_shape shape);
 
 /// \brief Get the list of the view's children.
 sb_list_t* sb_view_children(sb_view_t *view);

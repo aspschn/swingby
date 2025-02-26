@@ -12,6 +12,7 @@
 
 #include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
+#include <wayland-protocols/staging/cursor-shape-v1.h>
 
 #include <swingby/log.h>
 #include <swingby/surface.h>
@@ -27,6 +28,8 @@
 #include "xkb/xkb-context.h"
 #include "xcursor/xcursor.h"
 
+#include "helpers/application.h"
+
 struct sb_application_t {
     /// `struct wl_display`.
     struct wl_display *_wl_display;
@@ -38,6 +41,7 @@ struct sb_application_t {
     struct wl_pointer *_wl_pointer;
     struct wl_keyboard *_wl_keyboard;
     struct wl_touch *_wl_touch;
+    struct wp_cursor_shape_manager_v1 *wp_cursor_shape_manager_v1;
     /// \brief Current pointer surface.
     ///
     /// Pointer motion handler not pass `struct wl_surface` object.
@@ -427,6 +431,7 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->_wl_pointer = NULL;
     app->_wl_keyboard = NULL;
     app->_wl_touch = NULL;
+    app->wp_cursor_shape_manager_v1 = NULL;
     app->_pointer_surface = NULL;
     app->_pointer_view = NULL;
     app->click.view = NULL;
@@ -670,6 +675,9 @@ static void app_global_handler(void *data,
             sb_list_push(app->outputs, output);
         }
         wl_output_add_listener(wl_output, &output_listener, (void*)app);
+    } else if (strcmp(interface, "wp_cursor_shape_manager_v1") == 0) {
+        app->wp_cursor_shape_manager_v1 = wl_registry_bind(wl_registry,
+            name, &wp_cursor_shape_manager_v1_interface, 1);
     }
 }
 
@@ -784,18 +792,31 @@ static void pointer_enter_handler(void *data,
     // Set the serial.
     app->enter.serial = serial;
 
-    // TEST cursor.
-    // Set default cursor.
-    if (app->cursor == NULL) {
-        sb_point_t hot_spot;
-        hot_spot.x = 0;
-        hot_spot.y = 0;
-        app->cursor = sb_cursor_new(SB_CURSOR_SHAPE_ARROW, &hot_spot);
-    }
+    // Cursor shape.
+    if (app->wp_cursor_shape_manager_v1 != NULL) {
+        struct wp_cursor_shape_device_v1 *device =
+            wp_cursor_shape_manager_v1_get_pointer(
+                app->wp_cursor_shape_manager_v1,
+                wl_pointer
+            );
+        wp_cursor_shape_device_v1_set_shape(device, serial,
+            WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT);
 
-    sb_surface_t *cursor_surface = sb_cursor_surface(app->cursor);
-    wl_pointer_set_cursor(wl_pointer,
-        serial, sb_surface_wl_surface(cursor_surface), 0, 0);
+        wp_cursor_shape_device_v1_destroy(device);
+    } else {
+        // TEST cursor.
+        // Set default cursor.
+        if (app->cursor == NULL) {
+            sb_point_t hot_spot;
+            hot_spot.x = 0;
+            hot_spot.y = 0;
+            app->cursor = sb_cursor_new(SB_CURSOR_SHAPE_DEFAULT, &hot_spot);
+        }
+
+        sb_surface_t *cursor_surface = sb_cursor_surface(app->cursor);
+        wl_pointer_set_cursor(wl_pointer,
+            serial, sb_surface_wl_surface(cursor_surface), 0, 0);
+    }
 
     float x = wl_fixed_to_double(sx);
     float y = wl_fixed_to_double(sy);
@@ -879,6 +900,19 @@ static void pointer_motion_handler(void *data,
         _post_pointer_leave_event(app->_pointer_view, 0.0f, 0.0f);
 
         app->_pointer_view = view;
+
+        // Cursor shape.
+        enum sb_cursor_shape shape = sb_view_cursor_shape(view);
+        if (app->wp_cursor_shape_manager_v1 != NULL) {
+            struct wp_cursor_shape_device_v1 *device =
+                wp_cursor_shape_manager_v1_get_pointer(
+                    app->wp_cursor_shape_manager_v1,
+                    wl_pointer
+                );
+            wp_cursor_shape_device_v1_set_shape(device, app->enter.serial,
+                _to_wp_cursor_shape(shape));
+            wp_cursor_shape_device_v1_destroy(device);
+        }
 
         // Post the event.
         _post_pointer_enter_event(view, pos.x, pos.y);

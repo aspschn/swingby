@@ -7,6 +7,8 @@ project(swingby
 
 set(WAYLAND_PROTOCOLS_SOURCES
     include/wayland-protocols/stable/xdg-shell.c
+    include/wayland-protocols/stable/tablet-v2.c
+    include/wayland-protocols/staging/cursor-shape-v1.c
 )
 
 set(SWINGBY_HEADERS
@@ -69,6 +71,8 @@ set(SWINGBY_SOURCES
     src/xkb/xkb-context.c
     src/xcursor/xcursor.h
     src/xcursor/xcursor.c
+    src/helpers/application.h
+    src/helpers/application.c
     ${WAYLAND_PROTOCOLS_SOURCES}
 )
 
