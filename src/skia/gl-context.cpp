@@ -1,5 +1,7 @@
 #include "gl-context.h"
 
+#include <EGL/egl.h>
+
 // GrGLInterfaces::MakeEGL
 #include "skia/include/gpu/ganesh/gl/egl/GrGLMakeEGLInterface.h"
 // GrDirectContexts::MakeGL

@@ -17,16 +17,17 @@
 #include <swingby/log.h>
 #include <swingby/bench.h>
 #include <swingby/application.h>
-#include <swingby/egl-context.h>
 #include <swingby/view.h>
 #include <swingby/image.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
 
-#include "./skia/context.h"
-#include "./skia/draw.h"
+#include "egl-context/egl-context.h"
 
-#include "shaders.h"
+#include "../../skia/context.h"
+#include "../../skia/draw.h"
+
+#include "../../shaders.h"
 
 #define SWINGBY_BACKEND_DEFAULT "raster"
 

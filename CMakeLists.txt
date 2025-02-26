@@ -5,12 +5,6 @@ project(swingby
     LANGUAGES C CXX
 )
 
-set(WAYLAND_PROTOCOLS_SOURCES
-    include/wayland-protocols/stable/xdg-shell.c
-    include/wayland-protocols/stable/tablet-v2.c
-    include/wayland-protocols/staging/cursor-shape-v1.c
-)
-
 set(SWINGBY_HEADERS
     include/swingby/log.h
     include/swingby/bench.h
@@ -26,7 +20,6 @@ set(SWINGBY_HEADERS
     include/swingby/desktop-surface.h
     include/swingby/view.h
     include/swingby/image.h
-    include/swingby/egl-context.h
     include/swingby/input.h
     include/swingby/cursor.h
     include/swingby/event.h
@@ -34,8 +27,13 @@ set(SWINGBY_HEADERS
     include/swingby/swingby.h
 )
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_subdirectory(cmake/wayland)
+endif()
+
 set(SWINGBY_SOURCES
     ${SWINGBY_HEADERS}
+    ${SWINGBY_PLATFORM_SOURCES}
     src/log.c
     src/bench.c
     src/list.c
@@ -43,18 +41,13 @@ set(SWINGBY_SOURCES
     src/rect.c
     src/color.c
     src/filter.c
-    src/application.c
     src/output.c
-    src/surface.c
     src/desktop-surface.c
     src/view.c
     src/image.c
-    src/egl-context.c
     src/cursor.c
     src/event.c
     src/event-dispatcher.c
-    src/skia/gl-context.h
-    src/skia/gl-context.cpp
     src/skia/raster-context.h
     src/skia/raster-context.cpp
     src/skia/context.h
@@ -67,13 +60,6 @@ set(SWINGBY_SOURCES
     src/skia/backend/gl.cpp
     src/skia/backend/raster.h
     src/skia/backend/raster.cpp
-    src/xkb/xkb-context.h
-    src/xkb/xkb-context.c
-    src/xcursor/xcursor.h
-    src/xcursor/xcursor.c
-    src/helpers/application.h
-    src/helpers/application.c
-    ${WAYLAND_PROTOCOLS_SOURCES}
 )
 
 add_library(swingby SHARED
