@@ -41,3 +41,8 @@ set(SWINGBY_PLATFORM_LINK_LIBRARIES
 
     PARENT_SCOPE
 )
+
+# Platform macro.
+target_compile_definitions(swingby
+    PRIVATE SB_PLATFORM_WAYLAND
+)
