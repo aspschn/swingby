@@ -1,12 +1,19 @@
 #include "gl-context.h"
 
+#if defined(SB_PLATFORM_WAYLAND)
 #include <EGL/egl.h>
+#endif
 
 // GrGLInterfaces::MakeEGL
 #include "skia/include/gpu/ganesh/gl/egl/GrGLMakeEGLInterface.h"
 // GrDirectContexts::MakeGL
 #include "skia/include/gpu/ganesh/gl/GrGLDirectContext.h"
 
+#include <swingby/log.h>
+
+#include "../platform/wayland/egl-context/egl-context.h"
+
+#if defined(SB_PLATFORM_WAYLAND)
 sb_skia_gl_context_t* sb_skia_gl_context_new()
 {
     sb_skia_gl_context_t *gl_context = new sb_skia_gl_context_t;
@@ -37,3 +44,11 @@ sb_skia_gl_context_t* sb_skia_gl_context_new()
 
     return gl_context;
 }
+#else
+sb_skia_gl_context_t* sb_skia_gl_context_new()
+{
+    sb_log_error("sb_skia_gl_context_new - GL support is only on Wayland.\n");
+
+    return NULL;
+}
+#endif

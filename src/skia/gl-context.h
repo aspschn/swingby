@@ -9,9 +9,9 @@
 #include "skia/include/gpu/ganesh/gl/GrGLInterface.h"
 #include "skia/include/core/SkSurface.h"
 
-#include "../platform/wayland/egl-context/egl-context.h"
-
 typedef void* EGLSurface;
+
+typedef struct sb_egl_context_t sb_egl_context_t;
 
 #ifdef __cplusplus
 extern "C" {

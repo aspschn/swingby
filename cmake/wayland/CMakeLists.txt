@@ -17,8 +17,7 @@ set(SWINGBY_PLATFORM_SOURCES
     src/platform/wayland/xcursor/xcursor.c
     src/platform/wayland/helpers/application.h
     src/platform/wayland/helpers/application.c
-    src/skia/gl-context.h
-    src/skia/gl-context.cpp
+
     PARENT_SCOPE
 )
 

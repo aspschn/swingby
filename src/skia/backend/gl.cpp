@@ -1,9 +1,11 @@
 #include <stdint.h>
 
+#if defined(SB_PLATFORM_WAYLAND)
 #include <EGL/egl.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
+#endif
 
 #include "skia/include/gpu/ganesh/GrDirectContext.h"
 // GrBackendTexture
@@ -15,12 +17,17 @@
 #include "skia/include/core/SkColorSpace.h"
 #include "skia/include/core/SkSurface.h"
 
+#include <swingby/log.h>
+
+#include "../../platform/wayland/egl-context/egl-context.h"
+
 #include "../gl-context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#if defined(SB_PLATFORM_WAYLAND)
 void sb_skia_gl_begin(sb_skia_gl_context_t *context,
                       uint32_t width,
                       uint32_t height)
@@ -63,6 +70,19 @@ void sb_skia_gl_end(sb_skia_gl_context_t *context)
     eglMakeCurrent(context->sb_egl_context->egl_display,
         EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
+#else
+void sb_skia_gl_begin(sb_skia_gl_context_t *context,
+                      uint32_t width,
+                      uint32_t height)
+{
+    sb_log_error("sb_skia_gl_begin - GL support is only on Wayland.\n");
+}
+
+void sb_skia_gl_end(sb_skia_gl_context_t *context)
+{
+    sb_log_error("sb_skia_gl_end - GL support is only on Wayland.\n");
+}
+#endif
 
 #ifdef __cplusplus
 }
