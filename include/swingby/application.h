@@ -2,8 +2,7 @@
 #define _FOUNDATION_APPLICATION_H
 
 #include <stdbool.h>
-
-#include <wayland-client.h>
+#include <stdint.h>
 
 typedef struct sb_surface_t sb_surface_t;
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
