@@ -93,6 +93,13 @@ target_link_libraries(swingby
     ${SWINGBY_PLATFORM_LINK_LIBRARIES}
 )
 
+# Platform macros.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_compile_definitions(SB_PLATFORM_WAYLAND)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    add_compile_definitions(SB_PLATFORM_WIN32)
+endif()
+
 # Version info.
 set_target_properties(swingby PROPERTIES
     VERSION ${CMAKE_PROJECT_VERSION}

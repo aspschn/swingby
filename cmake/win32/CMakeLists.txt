@@ -1,3 +1,5 @@
+set(CMAKE_CXX_STANDARD 17)
+
 set(SWINGBY_PLATFORM_SOURCES
     PARENT_SCOPE
 )
@@ -12,9 +14,4 @@ set(SWINGBY_PLATFORM_LINK_LIBRARIES
     PRIVATE ${SWINGBY_SKIA_STATIC_DIR}/skia.lib
 
     PARENT_SCOPE
-)
-
-# Platform macro.
-target_compile_definitions(swingby
-    PRIVATE SB_PLATFORM_WIN32
 )
