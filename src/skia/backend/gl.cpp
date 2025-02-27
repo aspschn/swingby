@@ -19,7 +19,9 @@
 
 #include <swingby/log.h>
 
+#if defined(SB_PLATFORM_WAYLAND)
 #include "../../platform/wayland/egl-context/egl-context.h"
+#endif
 
 #include "../gl-context.h"
 

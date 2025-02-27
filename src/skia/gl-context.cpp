@@ -11,7 +11,9 @@
 
 #include <swingby/log.h>
 
+#if defined(SB_PLATFORM_WAYLAND)
 #include "../platform/wayland/egl-context/egl-context.h"
+#endif
 
 #if defined(SB_PLATFORM_WAYLAND)
 sb_skia_gl_context_t* sb_skia_gl_context_new()

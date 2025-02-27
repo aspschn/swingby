@@ -34,6 +34,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_subdirectory(cmake/wayland)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+    set(CMAKE_CXX_FLAGS_DEBUG "/MT")
     add_subdirectory(cmake/win32)
 endif()
 
