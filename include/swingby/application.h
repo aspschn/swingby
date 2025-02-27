@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <swingby/common.h>
+
 typedef struct sb_surface_t sb_surface_t;
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
 typedef struct sb_event_t sb_event_t;
@@ -12,8 +14,10 @@ typedef struct sb_list_t sb_list_t;
 /// \brief A global application object.
 typedef struct sb_application_t sb_application_t;
 
+SB_EXPORT
 sb_application_t* sb_application_new(int argc, char *argv[]);
 
+SB_EXPORT
 sb_application_t* sb_application_instance();
 
 /// \brief Register a desktop surface.
@@ -67,6 +71,7 @@ struct xdg_wm_base* sb_application_xdg_wm_base(
 /// \brief Get the `struct wl_seat` of the application.
 struct wl_seat* sb_application_wl_seat(sb_application_t *application);
 
+SB_EXPORT
 int sb_application_exec(sb_application_t *application);
 
 #endif /* _FOUNDATION_APPLICATION_H */

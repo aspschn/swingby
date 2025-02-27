@@ -97,6 +97,10 @@ target_link_libraries(swingby
     ${SWINGBY_PLATFORM_LINK_LIBRARIES}
 )
 
+target_compile_definitions(swingby
+    PRIVATE SB_BUILDING_SHARED_LIBRARY
+)
+
 # Platform macros.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_compile_definitions(SB_PLATFORM_WAYLAND)
