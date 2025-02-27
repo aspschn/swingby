@@ -1,14 +1,14 @@
 #ifndef _FOUNDATION_SURFACE_H
 #define _FOUNDATION_SURFACE_H
 
-#include <wayland-client.h>
-
 #include <swingby/size.h>
 #include <swingby/event.h>
 
 typedef struct sb_rect_t sb_rect_t;
 typedef struct sb_view_t sb_view_t;
 typedef struct sb_event_t sb_event_t;
+
+struct wl_surface;
 
 /// \brief A basic rectangular region.
 typedef struct sb_surface_t sb_surface_t;
