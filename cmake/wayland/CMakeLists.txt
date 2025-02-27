@@ -8,6 +8,7 @@ set(SWINGBY_PLATFORM_SOURCES
     ${WAYLAND_PROTOCOLS_SOURCES}
     src/platform/wayland/application.c
     src/platform/wayland/surface.c
+    src/platform/wayland/desktop-surface.c
     src/platform/wayland/egl-context/egl-context.h
     src/platform/wayland/egl-context/egl-context.c
     src/platform/wayland/xkb/xkb-context.h

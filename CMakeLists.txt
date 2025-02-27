@@ -48,7 +48,6 @@ set(SWINGBY_SOURCES
     src/color.c
     src/filter.c
     src/output.c
-    src/desktop-surface.c
     src/view.c
     src/image.c
     src/cursor.c
