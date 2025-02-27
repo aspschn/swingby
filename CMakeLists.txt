@@ -6,6 +6,7 @@ project(swingby
 )
 
 set(SWINGBY_HEADERS
+    include/swingby/common.h
     include/swingby/log.h
     include/swingby/bench.h
     include/swingby/list.h
@@ -38,6 +39,7 @@ endif()
 set(SWINGBY_SOURCES
     ${SWINGBY_HEADERS}
     ${SWINGBY_PLATFORM_SOURCES}
+    src/common.c
     src/log.c
     src/bench.c
     src/list.c

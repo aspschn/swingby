@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <sys/time.h>
-
+#include <swingby/common.h>
 #include <swingby/log.h>
 #include <swingby/bench.h>
 #include <swingby/event.h>
@@ -286,18 +285,14 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
 
             if (!repeat_event->repeating) {
                 // Not repeating, wait until the time hit.
-                struct timeval tv;
-                gettimeofday(&tv, NULL);
-                uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+                uint64_t now = sb_time_now_milliseconds();
                 if (now - time >= delay) {
                     repeat_event->repeating = true;
                     repeat_event->time = now;
                 }
             } else {
                 // If repeating, make an event for the repeat info.
-                struct timeval tv;
-                gettimeofday(&tv, NULL);
-                uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+                uint64_t now = sb_time_now_milliseconds();
                 if (now - time >= rate) {
                     repeat_event->time = now;
                     sb_log_debug("Key repeat: %d\n", evt->keyboard.keycode);
@@ -337,9 +332,7 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
     sb_list_t *timer_event_list = event_dispatcher->timer.events;
     for (uint64_t i = 0; i < sb_list_length(timer_event_list); ++i) {
         sb_event_t *event = sb_list_at(timer_event_list, i);
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+        uint64_t now = sb_time_now_milliseconds();
         if (now - event->timer.time >= event->timer.interval) {
             sb_log_debug("Timer triggered!\n");
             // Call on_timeout method of the surface.
@@ -380,9 +373,7 @@ void sb_event_dispatcher_keyboard_key_repeat_add_event(
     sb_repeat_event_t *repeat_event = sb_repeat_event_new(event);
     sb_log_debug("_add_event - Add: %d\n", event->keyboard.keycode);
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    uint64_t now = sb_time_now_milliseconds();
     repeat_event->time = now;
 
     {
@@ -442,9 +433,7 @@ uint32_t sb_event_dispatcher_timer_add_event(
     }
     event->timer.id = new_id;
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    uint64_t now = sb_time_now_milliseconds();
     event->timer.time = now;
 
     sb_list_push(event_dispatcher->timer.events, event);
