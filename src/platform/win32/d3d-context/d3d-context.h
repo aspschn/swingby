@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+struct HWND__;
+typedef struct HWND__* HWND;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,7 +22,8 @@ void sb_d3d_global_context_init(sb_d3d_global_context_t *context);
 sb_d3d_context_t* sb_d3d_context_new();
 
 void sb_d3d_context_init(sb_d3d_context_t *context,
-                         sb_d3d_global_context_t *global_context);
+                         sb_d3d_global_context_t *global_context,
+                         HWND hwnd);
 
 void sb_d3d_context_swap_chain_resize_buffer(sb_d3d_context_t *context,
                                              uint32_t width,

@@ -82,7 +82,8 @@ sb_d3d_context_t* sb_d3d_context_new()
 }
 
 void sb_d3d_context_init(sb_d3d_context_t *context,
-                         sb_d3d_global_context_t *global_context)
+                         sb_d3d_global_context_t *global_context,
+                         HWND hwnd)
 {
     global_context->d2dDevice->CreateDeviceContext(
         D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
@@ -128,6 +129,14 @@ void sb_d3d_context_init(sb_d3d_context_t *context,
 
     global_context->dcompDevice->CreateVisual(&context->visual);
     context->visual->SetContent(context->swapChain);
+
+    // Create target for hwnd.
+    global_context->dcompDevice->CreateTargetForHwnd(hwnd,
+        TRUE, &context->target);
+
+    context->target->SetRoot(context->visual);
+
+    global_context->dcompDevice->Commit();
 }
 
 void sb_d3d_context_swap_chain_resize_buffer(sb_d3d_context_t *context,

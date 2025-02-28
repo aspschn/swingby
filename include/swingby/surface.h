@@ -1,6 +1,7 @@
 #ifndef _FOUNDATION_SURFACE_H
 #define _FOUNDATION_SURFACE_H
 
+#include <swingby/common.h>
 #include <swingby/size.h>
 #include <swingby/event.h>
 
@@ -9,6 +10,9 @@ typedef struct sb_view_t sb_view_t;
 typedef struct sb_event_t sb_event_t;
 
 struct wl_surface;
+
+struct HWND__;
+typedef struct HWND__* HWND;
 
 /// \brief A basic rectangular region.
 typedef struct sb_surface_t sb_surface_t;
@@ -72,5 +76,11 @@ void sb_surface_on_timeout(sb_surface_t *surface,
                            sb_event_t *event);
 
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface);
+
+/// \brief Get the hwnd of this surface.
+///
+/// This method is available only on win32 platform.
+SB_EXPORT
+HWND sb_surface_hwnd(sb_surface_t *surface);
 
 #endif /* _FOUNDATION_SURFACE_H */

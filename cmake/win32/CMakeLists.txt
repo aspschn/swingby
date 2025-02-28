@@ -1,4 +1,9 @@
 set(SWINGBY_PLATFORM_SOURCES
+    src/platform/win32/application.c
+    src/platform/win32/surface.c
+    src/platform/win32/d3d-context/d3d-context.h
+    src/platform/win32/d3d-context/d3d-context.cpp
+
     PARENT_SCOPE
 )
 

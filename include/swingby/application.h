@@ -71,6 +71,16 @@ struct xdg_wm_base* sb_application_xdg_wm_base(
 /// \brief Get the `struct wl_seat` of the application.
 struct wl_seat* sb_application_wl_seat(sb_application_t *application);
 
+/// \brief Get the `WNDCLASS` of the application.
+///
+/// This method is available only on win32 platform.
+SB_EXPORT
+WNDCLASS* sb_application_wndclass(sb_application_t *application);
+
+/// \brief Get the global D3D context.
+sb_d3d_global_context_t* sb_application_d3d_context(
+    sb_application_t *application);
+
 SB_EXPORT
 int sb_application_exec(sb_application_t *application);
 
