@@ -49,6 +49,7 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     // Init WNDCLASS and register it.
     HINSTANCE hInstance = GetModuleHandle(NULL);
+    memset(&app->wc, 0, sizeof(WNDCLASS));
     app->wc.lpfnWndProc = WindowProc;
     app->wc.hInstance = hInstance;
     app->wc.lpszClassName = "SwingbyWindowClass";
