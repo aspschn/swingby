@@ -54,8 +54,18 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
                                    LPARAM lParam)
 {
     switch (uMsg) {
-    case WM_SIZE: {
+    case WM_SHOWWINDOW: {
         sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
+        sb_log_debug("surface: %p\n", surface);
+
+        break;
+    }
+    case WM_SIZE: {
+        sb_log_debug("WindowProc - WM_SIZE\n");
+        sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
+        if (surface == NULL) {
+            break;
+        }
 
         uint32_t width = LOWORD(lParam);
         uint32_t height = LOWORD(lParam);
