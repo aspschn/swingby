@@ -1,0 +1,75 @@
+#include <swingby/desktop-surface.h>
+
+#include <stdlib.h>
+
+#include <Windows.h>
+
+#include <swingby/list.h>
+#include <swingby/surface.h>
+#include <swingby/application.h>
+#include <swingby/log.h>
+
+struct sb_desktop_surface_t {
+    sb_surface_t *surface;
+    enum sb_desktop_surface_role role;
+    sb_desktop_surface_t *parent;
+    sb_list_t *event_listeners;
+};
+
+//!<=====================
+//!< Helper Functions
+//!<=====================
+
+
+//!<=====================
+//!< Desktop Surface
+//!<=====================
+
+sb_desktop_surface_t* sb_desktop_surface_new(enum sb_desktop_surface_role role)
+{
+    sb_desktop_surface_t *desktop_surface =
+        malloc(sizeof(sb_desktop_surface_t));
+
+    desktop_surface->role = role;
+
+    // NULL initializations.
+    desktop_surface->surface = NULL;
+    desktop_surface->parent = NULL;
+
+    // Create a surface.
+    desktop_surface->surface = sb_surface_new();
+    sb_log_debug("sb_desktop_surface_new - Surface created.\n");
+
+    desktop_surface->event_listeners = sb_list_new();
+
+    sb_application_register_desktop_surface(
+        sb_application_instance(),
+        desktop_surface
+    );
+
+    return desktop_surface;
+}
+
+void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
+{
+    sb_surface_attach(desktop_surface->surface);
+    sb_surface_update(desktop_surface->surface);
+
+    ShowWindow(sb_surface_hwnd(desktop_surface->surface), SW_SHOWDEFAULT);
+    sb_log_debug("Desktop surface show\n");
+}
+
+void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface)
+{
+    // TODO.
+}
+
+void sb_desktop_surface_on_resize(sb_desktop_surface_t *desktop_surface,
+    sb_event_t *event)
+{
+}
+
+void sb_desktop_surface_on_state_change(sb_desktop_surface_t *desktop_surface,
+          sb_event_t *event)
+{
+}

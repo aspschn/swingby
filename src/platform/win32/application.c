@@ -72,7 +72,29 @@ sb_application_t* sb_application_instance()
     return _sb_application_instance;
 }
 
+void sb_application_register_desktop_surface(sb_application_t *application,
+    sb_desktop_surface_t *desktop_surface)
+{
+    sb_list_push(application->desktop_surfaces, (void*)desktop_surface);
+}
+
+sb_d3d_global_context_t* sb_application_d3d_context(
+    sb_application_t *application)
+{
+    return application->d3d_context;
+}
+
 WNDCLASS* sb_application_wndclass(sb_application_t *application)
 {
     return &application->wc;
+}
+
+int sb_application_exec(sb_application_t *application)
+{
+    MSG msg = {0,};
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        DispatchMessage(&msg);
+    }
+
+    return 0;
 }

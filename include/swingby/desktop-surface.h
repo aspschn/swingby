@@ -1,6 +1,7 @@
 #ifndef _FOUNDATION_DESKTOP_SURFACE_H
 #define _FOUNDATION_DESKTOP_SURFACE_H
 
+#include <swingby/common.h>
 #include <swingby/event.h>
 
 typedef struct sb_size_i_t sb_size_i_t;
@@ -44,17 +45,22 @@ typedef enum sb_desktop_surface_toplevel_state
 
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
 
+SB_EXPORT
 sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role);
 
+SB_EXPORT
 void sb_desktop_surface_set_parent(sb_desktop_surface_t *desktop_surface,
                                    sb_desktop_surface_t *parent);
 
 /// \brief Get the surface object of the desktop surface.
+SB_EXPORT
 sb_surface_t*
 sb_desktop_surface_surface(sb_desktop_surface_t *desktop_surface);
 
+SB_EXPORT
 void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface);
 
+SB_EXPORT
 void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface);
 
 sb_desktop_surface_toplevel_state_flags
