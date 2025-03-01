@@ -133,7 +133,7 @@ sb_surface_t* sb_surface_new()
     WNDCLASS *wc = sb_application_wndclass(app);
 
     // Create hwnd.
-    HRESULT hr = surface->hwnd = CreateWindowEx(
+    surface->hwnd = CreateWindowEx(
         WS_EX_NOREDIRECTIONBITMAP,
         wc->lpszClassName,
         "",
@@ -147,10 +147,11 @@ sb_surface_t* sb_surface_new()
         wc->hInstance,
         NULL
     );
-    if (FAILED(hr)) {
-        sb_log_error("sb_surface_new - CreateWindowEx failed! %08X\n", hr);
+    if (!IsWindow(surface->hwnd)) {
+        sb_log_error("sb_surface_new - CreateWindowEx failed!\n");
+    } else {
+        sb_log_debug("sb_surface_new - CreateWindowEx done.\n");
     }
-    sb_log_debug("sb_surface_new - CreateWindowEx done.\n");
 
     // Create D3D context.
     sb_d3d_global_context_t *d3d_global_context = sb_application_d3d_context(
@@ -185,7 +186,12 @@ const sb_size_t* sb_surface_size(sb_surface_t *surface)
 
 void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
 {
-    // TODO.
+    surface->size.width = size->width;
+    surface->size.height = size->height;
+
+    sb_d3d_context_swap_chain_resize_buffer(surface->d3d_context,
+        size->width,
+        size->height);
 }
 
 sb_view_t* sb_surface_root_view(sb_surface_t *surface)

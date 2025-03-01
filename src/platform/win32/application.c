@@ -6,6 +6,10 @@
 
 #include <swingby/list.h>
 #include <swingby/event-dispatcher.h>
+#include <swingby/desktop-surface.h>
+#include <swingby/surface.h>
+#include <swingby/size.h>
+#include <swingby/log.h>
 
 #include "d3d-context/d3d-context.h"
 
@@ -19,6 +23,27 @@ struct sb_application_t {
 // Singleton object.
 static sb_application_t *_sb_application_instance = NULL;
 
+
+//!<====================
+//!< Helper Functions
+//!<====================
+
+static sb_surface_t* _find_surface_by_hwnd(HWND hwnd)
+{
+    sb_application_t *app = sb_application_instance();
+
+    sb_list_t *desktop_surfaces = app->desktop_surfaces;
+    for (uint64_t i = 0; i < sb_list_length(desktop_surfaces); ++i) {
+        sb_desktop_surface_t *desktop_surface = sb_list_at(desktop_surfaces, i);
+        sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
+        if (hwnd == sb_surface_hwnd(surface)) {
+            return surface;
+        }
+    }
+
+    return NULL;
+}
+
 //!<=================
 //!< Window Proc
 //!<=================
@@ -28,12 +53,25 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
                                    WPARAM wParam,
                                    LPARAM lParam)
 {
+    switch (uMsg) {
+    case WM_SIZE: {
+        sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
+
+        uint32_t width = LOWORD(lParam);
+        uint32_t height = LOWORD(lParam);
+        sb_size_t size;
+        size.width = (float)width;
+        size.height = (float)height;
+        sb_surface_set_size(surface, &size);
+        sb_surface_update(surface);
+
+        break;
+    }
+    default:
+        break;
+    }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
-
-//!<====================
-//!< Helper Functions
-//!<====================
 
 
 //!<===============

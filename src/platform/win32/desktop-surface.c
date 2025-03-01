@@ -50,6 +50,11 @@ sb_desktop_surface_t* sb_desktop_surface_new(enum sb_desktop_surface_role role)
     return desktop_surface;
 }
 
+sb_surface_t* sb_desktop_surface_surface(sb_desktop_surface_t *desktop_surface)
+{
+    return desktop_surface->surface;
+}
+
 void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
 {
     sb_surface_attach(desktop_surface->surface);

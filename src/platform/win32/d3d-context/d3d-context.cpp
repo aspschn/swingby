@@ -47,7 +47,7 @@ void sb_d3d_global_context_init(sb_d3d_global_context_t *context)
 {
     HRESULT hr;
 
-    D3D11CreateDevice(nullptr,
+    hr = D3D11CreateDevice(nullptr,
         D3D_DRIVER_TYPE_HARDWARE,
         nullptr,
         D3D11_CREATE_DEVICE_BGRA_SUPPORT,
@@ -57,21 +57,41 @@ void sb_d3d_global_context_init(sb_d3d_global_context_t *context)
         nullptr,
         nullptr
     );
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_global_context_init - Failed to create D3D device.\n");
+    }
 
-    context->d3dDevice->QueryInterface(&context->dxgiDevice);
+    hr = context->d3dDevice->QueryInterface(&context->dxgiDevice);
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_global_context_init - Failed to query interface!\n");
+    }
 
-    CreateDXGIFactory2(
+    hr = CreateDXGIFactory2(
         DXGI_CREATE_FACTORY_DEBUG,
         __uuidof(context->dxgiFactory),
         (void**)&context->dxgiFactory
     );
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_global_context_init - Failed to create DXGI factory!\n");
+    }
 
-    D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
+    hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
         &context->d2dFactory);
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_global_context_init - Failed to create D2D factory!\n");
+    }
 
-    context->d2dFactory->CreateDevice(
+    hr = context->d2dFactory->CreateDevice(
         context->dxgiDevice,
         &context->d2dDevice);
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_global_context_init - Failed to create D2D device!\n");
+    }
 
     hr = DCompositionCreateDevice(context->dxgiDevice,
         __uuidof(context->dcompDevice),
@@ -106,10 +126,15 @@ void sb_d3d_context_init(sb_d3d_context_t *context,
 {
     HRESULT hr;
 
-    global_context->d2dDevice->CreateDeviceContext(
+    hr = global_context->d2dDevice->CreateDeviceContext(
         D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
         &context->dc
     );
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_context_init - Failed to create device context. %08X\n",
+            hr);
+    }
 
     DXGI_SWAP_CHAIN_DESC1 desc = {};
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
