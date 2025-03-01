@@ -133,7 +133,7 @@ sb_surface_t* sb_surface_new()
     WNDCLASS *wc = sb_application_wndclass(app);
 
     // Create hwnd.
-    surface->hwnd = CreateWindowEx(
+    HRESULT hr = surface->hwnd = CreateWindowEx(
         WS_EX_NOREDIRECTIONBITMAP,
         wc->lpszClassName,
         "",
@@ -147,6 +147,9 @@ sb_surface_t* sb_surface_new()
         wc->hInstance,
         NULL
     );
+    if (FAILED(hr)) {
+        sb_log_error("sb_surface_new - CreateWindowEx failed! %08X\n", hr);
+    }
     sb_log_debug("sb_surface_new - CreateWindowEx done.\n");
 
     // Create D3D context.

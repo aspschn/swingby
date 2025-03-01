@@ -9,6 +9,8 @@
 #include <d2d1_3.h>
 #include <dcomp.h>
 
+#include <swingby/log.h>
+
 struct sb_d3d_global_context_t {
     ID3D11Device *d3dDevice;
     IDXGIDevice *dxgiDevice;
@@ -36,6 +38,7 @@ sb_d3d_global_context_t* sb_d3d_global_context_new()
     context->dxgiFactory = NULL;
     context->d2dFactory = NULL;
     context->d2dDevice = NULL;
+    context->dcompDevice = NULL;
 
     return context;
 }
@@ -69,6 +72,20 @@ void sb_d3d_global_context_init(sb_d3d_global_context_t *context)
     context->d2dFactory->CreateDevice(
         context->dxgiDevice,
         &context->d2dDevice);
+
+    hr = DCompositionCreateDevice(context->dxgiDevice,
+        __uuidof(context->dcompDevice),
+        (void**)&context->dcompDevice
+    );
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_global_context_init - Failed to create dcomp device. %08X\n",
+            hr);
+    } else {
+        sb_log_debug(
+            "sb_d3d_global_context_init - Create dcomp device done. %p\n",
+            context->dcompDevice);
+    }
 }
 
 sb_d3d_context_t* sb_d3d_context_new()
@@ -77,6 +94,8 @@ sb_d3d_context_t* sb_d3d_context_new()
 
     context->dc = NULL;
     context->swapChain = NULL;
+    context->visual = NULL;
+    context->target = NULL;
 
     return context;
 }
@@ -85,12 +104,14 @@ void sb_d3d_context_init(sb_d3d_context_t *context,
                          sb_d3d_global_context_t *global_context,
                          HWND hwnd)
 {
+    HRESULT hr;
+
     global_context->d2dDevice->CreateDeviceContext(
         D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
         &context->dc
     );
 
-    DXGI_SWAP_CHAIN_DESC1 desc;
+    DXGI_SWAP_CHAIN_DESC1 desc = {};
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
@@ -100,16 +121,26 @@ void sb_d3d_context_init(sb_d3d_context_t *context,
     desc.Width = 100;
     desc.Height = 100;
 
-    global_context->dxgiFactory->CreateSwapChainForComposition(
+    hr = global_context->dxgiFactory->CreateSwapChainForComposition(
         global_context->dxgiDevice,
         &desc,
         nullptr,
         &context->swapChain
     );
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_context_init - Failed to create swap chain %08X\n", hr);
+    } else {
+        sb_log_debug("sb_d3d_context_init - Swap chain created.\n");
+    }
 
     // Retrieve the swap chain's back buffer.
-    context->swapChain->GetBuffer(0, __uuidof(context->surface),
+    hr = context->swapChain->GetBuffer(0, __uuidof(context->surface),
         (void**)&context->surface);
+    if (FAILED(hr)) {
+        sb_log_error("sb_d3d_context_init - Get surface failed %08X\n", hr);
+    }
+    sb_log_debug("sb_d3d_context_init - Get surface done.\n");
 
     // Create a Direct2D bitmap that points to the swap chain surface.
     D2D1_BITMAP_PROPERTIES1 props = {};
@@ -123,20 +154,39 @@ void sb_d3d_context_init(sb_d3d_context_t *context,
         &props,
         &context->bitmap
     );
+    sb_log_debug("sb_d3d_context_init - Bitmap creation done.\n");
 
     // Point the device context to the bitmap.
     context->dc->SetTarget(context->bitmap);
+    sb_log_debug("sb_d3d_context_init - Set bitmap target done.\n");
 
-    global_context->dcompDevice->CreateVisual(&context->visual);
-    context->visual->SetContent(context->swapChain);
+    hr = global_context->dcompDevice->CreateVisual(&context->visual);
+    if (FAILED(hr)) {
+        sb_log_error("sb_d3d_context_init - Failed to create visual. %08X\n",
+            hr);
+    } else {
+        sb_log_debug("sb_d3d_context_init - Create visual done.\n");
+    }
+    hr = context->visual->SetContent(context->swapChain);
+    if (FAILED(hr)) {
+        sb_log_error("sb_d3d_context_init - Failed to set visual content.\n");
+    }
 
     // Create target for hwnd.
-    global_context->dcompDevice->CreateTargetForHwnd(hwnd,
+    hr = global_context->dcompDevice->CreateTargetForHwnd(hwnd,
         TRUE, &context->target);
+    if (FAILED(hr)) {
+        sb_log_error("sb_d3d_context_init - Failed to create target. %08X\n",
+            hr);
+    } else {
+        sb_log_debug("sb_d3d_context_init - Create target done.\n");
+    }
 
     context->target->SetRoot(context->visual);
+    sb_log_debug("sb_d3d_context_init - Set root done.\n");
 
     global_context->dcompDevice->Commit();
+    sb_log_debug("sb_d3d_context_init - Commit done.\n");
 }
 
 void sb_d3d_context_swap_chain_resize_buffer(sb_d3d_context_t *context,
