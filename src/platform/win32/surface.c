@@ -198,9 +198,14 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
     new_geo.size.height = size->height;
     sb_view_set_geometry(surface->root_view, &new_geo);
 
+    sb_d3d_context_release(surface->d3d_context);
+
     sb_d3d_context_swap_chain_resize_buffer(surface->d3d_context,
         size->width,
         size->height);
+
+    sb_d3d_context_recreate(surface->d3d_context,
+        sb_application_d3d_context(sb_application_instance()));
 
     sb_surface_update(surface);
 }

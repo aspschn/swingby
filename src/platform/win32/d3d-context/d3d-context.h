@@ -25,6 +25,11 @@ void sb_d3d_context_init(sb_d3d_context_t *context,
                          sb_d3d_global_context_t *global_context,
                          HWND hwnd);
 
+void sb_d3d_context_release(sb_d3d_context_t *context);
+
+void sb_d3d_context_recreate(sb_d3d_context_t *context,
+                             sb_d3d_global_context_t *global_context);
+
 void sb_d3d_context_swap_chain_resize_buffer(sb_d3d_context_t *context,
                                              uint32_t width,
                                              uint32_t height);

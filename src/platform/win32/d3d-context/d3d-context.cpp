@@ -214,6 +214,89 @@ void sb_d3d_context_init(sb_d3d_context_t *context,
     sb_log_debug("sb_d3d_context_init - Commit done.\n");
 }
 
+void sb_d3d_context_release(sb_d3d_context_t *context)
+{
+    // Release.
+    context->bitmap->Release();
+    context->surface->Release();
+    context->visual->Release();
+    context->dc->Release();
+}
+
+void sb_d3d_context_recreate(sb_d3d_context_t *context,
+                             sb_d3d_global_context_t *global_context)
+{
+    HRESULT hr;
+
+    hr = global_context->d2dDevice->CreateDeviceContext(
+        D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
+        &context->dc
+    );
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_context_recreate - Failed to create device context. %08X\n",
+            hr);
+    }
+
+    DXGI_SWAP_CHAIN_DESC1 desc = {};
+    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    desc.BufferCount = 2;
+    desc.SampleDesc.Count = 1;
+    desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+    desc.Width = 100;
+    desc.Height = 100;
+
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_context_recreate - Failed to create swap chain %08X\n", hr);
+    } else {
+        sb_log_debug("sb_d3d_context_recreate - Swap chain created.\n");
+    }
+
+    // Retrieve the swap chain's back buffer.
+    hr = context->swapChain->GetBuffer(0, __uuidof(context->surface),
+        (void**)&context->surface);
+    if (FAILED(hr)) {
+        sb_log_error("sb_d3d_context_recreate - Get surface failed %08X\n", hr);
+    }
+    sb_log_debug("sb_d3d_context_recreate - Get surface done.\n");
+
+    // Create a Direct2D bitmap that points to the swap chain surface.
+    D2D1_BITMAP_PROPERTIES1 props = {};
+    props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
+    props.pixelFormat.format = DXGI_FORMAT_R8G8B8A8_UNORM,
+    props.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET |
+        D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
+
+    context->dc->CreateBitmapFromDxgiSurface(
+        context->surface,
+        &props,
+        &context->bitmap
+    );
+    sb_log_debug("sb_d3d_context_recreate - Bitmap creation done.\n");
+
+    // Point the device context to the bitmap.
+    context->dc->SetTarget(context->bitmap);
+    sb_log_debug("sb_d3d_context_recreate - Set bitmap target done.\n");
+
+    hr = global_context->dcompDevice->CreateVisual(&context->visual);
+    if (FAILED(hr)) {
+        sb_log_error("sb_d3d_context_recreate - Failed to create visual. %08X\n",
+            hr);
+    } else {
+        sb_log_debug("sb_d3d_context_recreate - Create visual done.\n");
+    }
+
+    hr = context->target->SetRoot(context->visual);
+    if (FAILED(hr)) {
+        sb_log_error("sb_d3d_context_recreate - Failed to set root!\n");
+    } else {
+        sb_log_debug("sb_d3d_context_recreate - Set root done.\n");
+    }
+}
+
 void sb_d3d_context_swap_chain_resize_buffer(sb_d3d_context_t *context,
                                              uint32_t width,
                                              uint32_t height)
