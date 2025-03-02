@@ -70,6 +70,8 @@ set(SWINGBY_SOURCES
     src/skia/backend/gl.cpp
     src/skia/backend/raster.h
     src/skia/backend/raster.cpp
+    src/helpers/shared.h
+    src/helpers/shared.c
 )
 
 add_library(swingby SHARED
