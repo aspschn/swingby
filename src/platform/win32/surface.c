@@ -6,6 +6,7 @@
 
 #include <swingby/list.h>
 #include <swingby/size.h>
+#include <swingby/rect.h>
 #include <swingby/application.h>
 #include <swingby/view.h>
 #include <swingby/log.h>
@@ -189,9 +190,19 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
     surface->size.width = size->width;
     surface->size.height = size->height;
 
+    // Set root view's size.
+    sb_rect_t new_geo;
+    new_geo.pos.x = 0.0f;
+    new_geo.pos.y = 0.0f;
+    new_geo.size.width = size->width;
+    new_geo.size.height = size->height;
+    sb_view_set_geometry(surface->root_view, &new_geo);
+
     sb_d3d_context_swap_chain_resize_buffer(surface->d3d_context,
         size->width,
         size->height);
+
+    sb_surface_update(surface);
 }
 
 sb_view_t* sb_surface_root_view(sb_surface_t *surface)
@@ -212,6 +223,8 @@ void sb_surface_attach(sb_surface_t *surface)
 void sb_surface_update(sb_surface_t *surface)
 {
     _draw_frame(surface);
+
+    sb_d3d_context_swap_chain_present(surface->d3d_context);
 }
 
 HWND sb_surface_hwnd(sb_surface_t *surface)

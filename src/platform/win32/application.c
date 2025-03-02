@@ -55,8 +55,16 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
 {
     switch (uMsg) {
     case WM_SHOWWINDOW: {
+        sb_log_debug("WindowProc - WM_SHOWWINDOW\n");
         sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
-        sb_log_debug("surface: %p\n", surface);
+        if (surface == NULL) {
+            sb_log_warn("WindowProc - WM_SHOWWINDOW - Surface is NULL.\n");
+            break;
+        }
+
+        // Initialize buffer size.
+        const sb_size_t *size = sb_surface_size(surface);
+        sb_surface_set_size(surface, size);
 
         break;
     }

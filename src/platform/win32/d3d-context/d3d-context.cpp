@@ -218,11 +218,17 @@ void sb_d3d_context_swap_chain_resize_buffer(sb_d3d_context_t *context,
                                              uint32_t width,
                                              uint32_t height)
 {
-    context->swapChain->ResizeBuffers(2,
+    HRESULT hr;
+
+    hr = context->swapChain->ResizeBuffers(2,
         width, height,
         DXGI_FORMAT_R8G8B8A8_UNORM,
         0
     );
+    if (FAILED(hr)) {
+        sb_log_error(
+            "sb_d3d_context_swap_chain_resize_buffer - Failed! %08X\n", hr);
+    }
 }
 
 void sb_d3d_context_bitmap_copy_from_memory(sb_d3d_context_t *context,
