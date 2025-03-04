@@ -237,6 +237,15 @@ HWND sb_surface_hwnd(sb_surface_t *surface)
     return surface->hwnd;
 }
 
+void sb_surface_add_event_listener(sb_surface_t *surface,
+                                   enum sb_event_type event_type,
+                                   void (*listener)(sb_event_t*))
+{
+    sb_event_listener_tuple_t *tuple = sb_event_listener_tuple_new(
+        event_type, listener);
+    sb_list_push(surface->event_listeners, (void*)tuple);
+}
+
 void sb_surface_on_pointer_enter(sb_surface_t *surface, sb_event_t *event)
 {
 }

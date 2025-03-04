@@ -17,31 +17,39 @@ typedef struct HWND__* HWND;
 /// \brief A basic rectangular region.
 typedef struct sb_surface_t sb_surface_t;
 
+SB_EXPORT
 sb_surface_t* sb_surface_new();
 
 void sb_surface_set_wl_surface(sb_surface_t *surface,
                                struct wl_surface *wl_surface);
 
+SB_EXPORT
 const sb_size_t* sb_surface_size(sb_surface_t *surface);
 
 /// \brief Set the surface size.
 ///
 /// Surface size is always integer values. Values below the decimal point
 /// may cause undefined behavior.
+SB_EXPORT
 void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size);
 
+SB_EXPORT
 sb_view_t* sb_surface_root_view(sb_surface_t *surface);
 
+SB_EXPORT
 void sb_surface_commit(sb_surface_t *surface);
 
 void sb_surface_attach(sb_surface_t *surface);
 
 void sb_surface_detach(sb_surface_t *surface);
 
+SB_EXPORT
 void sb_surface_update(sb_surface_t *surface);
 
+SB_EXPORT
 uint32_t sb_surface_scale(const sb_surface_t *surface);
 
+SB_EXPORT
 void sb_surface_set_scale(sb_surface_t *surface, uint32_t scale);
 
 /// \brief Set the valid input geometry of the surface.
@@ -49,8 +57,10 @@ void sb_surface_set_scale(sb_surface_t *surface, uint32_t scale);
 /// Pointer events outside of the input geoemetry will be ignored.
 /// This is useful to draw the window's shadow. The shadow still a part of
 /// the surface in CSD but click the shadow should not activate the window.
+SB_EXPORT
 void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry);
 
+SB_EXPORT
 void sb_surface_add_event_listener(sb_surface_t *surface,
                                    enum sb_event_type event_type,
                                    void (*listener)(sb_event_t*));
