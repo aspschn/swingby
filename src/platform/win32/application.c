@@ -5,17 +5,25 @@
 #include <Windows.h>
 
 #include <swingby/list.h>
+#include <swingby/event.h>
 #include <swingby/event-dispatcher.h>
 #include <swingby/desktop-surface.h>
 #include <swingby/surface.h>
+#include <swingby/view.h>
 #include <swingby/size.h>
 #include <swingby/log.h>
 
 #include "d3d-context/d3d-context.h"
 
+#include "../../helpers/shared.h"
+
 struct sb_application_t {
     WNDCLASS wc;
     sb_d3d_global_context_t *d3d_context;
+    struct {
+        sb_surface_t *surface;
+        sb_view_t *view;
+    } pointer;
     sb_list_t *desktop_surfaces;
     sb_event_dispatcher_t *event_dispatcher;
 };
@@ -85,6 +93,42 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
 
         break;
     }
+    case WM_MOUSEMOVE: {
+        sb_application_t *app = sb_application_instance();
+        sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
+        sb_view_t *root_view = sb_surface_root_view(surface);
+
+        // TODO: float point geometry.
+        sb_point_t pos;
+        pos.x = LOWORD(lParam);
+        pos.y = HIWORD(lParam);
+
+        sb_view_t *view = _find_most_child(root_view, &pos);
+        // Pointer move event.
+        {
+            sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+                view,
+                SB_EVENT_TYPE_POINTER_MOVE);
+            event->pointer.button = SB_POINTER_BUTTON_NONE;
+            event->pointer.position.x = pos.x;
+            event->pointer.position.y = pos.y;
+            sb_application_post_event(app, event);
+        }
+
+        // Check difference.
+        if (view != app->pointer.view) {
+            sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+                view, SB_EVENT_TYPE_POINTER_ENTER);
+            event->pointer.button = SB_POINTER_BUTTON_NONE;
+            event->pointer.position.x = pos.x;
+            event->pointer.position.y = pos.y;
+            sb_application_post_event(app, event);
+
+            app->pointer.view = view;
+        }
+
+        break;
+    }
     default:
         break;
     }
@@ -115,6 +159,10 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->d3d_context = sb_d3d_global_context_new();
     sb_d3d_global_context_init(app->d3d_context);
 
+    // NULL init pointer event struct.
+    app->pointer.surface = NULL;
+    app->pointer.view = NULL;
+
     app->desktop_surfaces = sb_list_new();
 
     app->event_dispatcher = sb_event_dispatcher_new();
@@ -141,6 +189,12 @@ sb_d3d_global_context_t* sb_application_d3d_context(
     return application->d3d_context;
 }
 
+void sb_application_post_event(sb_application_t *application,
+                               sb_event_t *event)
+{
+    sb_event_dispatcher_post_event(application->event_dispatcher, event);
+}
+
 WNDCLASS* sb_application_wndclass(sb_application_t *application)
 {
     return &application->wc;
@@ -148,9 +202,19 @@ WNDCLASS* sb_application_wndclass(sb_application_t *application)
 
 int sb_application_exec(sb_application_t *application)
 {
+    int err;
+
     MSG msg = {0,};
-    while (GetMessage(&msg, NULL, 0, 0)) {
+    err = GetMessage(&msg, NULL, 0, 0);
+    while (err > 0) {
         DispatchMessage(&msg);
+        sb_event_dispatcher_process_events(application->event_dispatcher);
+
+        err = GetMessage(&msg, NULL, 0, 0);
+    }
+
+    if (err == -1) {
+        return 1;
     }
 
     return 0;
