@@ -24,6 +24,7 @@ struct sb_application_t {
         sb_surface_t *surface;
         sb_view_t *view;
     } pointer;
+    int nchittest_param;
     sb_list_t *desktop_surfaces;
     sb_event_dispatcher_t *event_dispatcher;
 };
@@ -61,7 +62,19 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
                                    WPARAM wParam,
                                    LPARAM lParam)
 {
+    sb_application_t *app = sb_application_instance();
+
     switch (uMsg) {
+    case WM_NCHITTEST: {
+        if (app->nchittest_param != 0) {
+            sb_log_debug("WindowProc - WM_NCHITTEST - Value: %d\n",
+                app->nchittest_param);
+            return app->nchittest_param;
+        } else {
+            return DefWindowProc(hwnd, uMsg, wParam, lParam);
+        }
+        break;
+    }
     case WM_SHOWWINDOW: {
         sb_log_debug("WindowProc - WM_SHOWWINDOW\n");
         sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
@@ -129,6 +142,25 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
 
         break;
     }
+    case WM_LBUTTONDOWN:
+    {
+        sb_point_t pos;
+        pos.x = LOWORD(lParam);
+        pos.y = HIWORD(lParam);
+        sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
+        sb_view_t *view = _find_most_child(sb_surface_root_view(surface),
+            &pos);
+
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+            view, SB_EVENT_TYPE_POINTER_PRESS);
+        event->pointer.button = SB_POINTER_BUTTON_LEFT;
+        event->pointer.position.x = pos.x;
+        event->pointer.position.y = pos.y;
+
+        sb_application_post_event(app, event);
+
+        break;
+    }
     default:
         break;
     }
@@ -146,6 +178,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     // NULL initializations.
     app->d3d_context = NULL;
+
+    app->nchittest_param = 0;
 
     // Init WNDCLASS and register it.
     HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -198,6 +232,12 @@ void sb_application_post_event(sb_application_t *application,
 WNDCLASS* sb_application_wndclass(sb_application_t *application)
 {
     return &application->wc;
+}
+
+void sb_application_set_nchittest_return(sb_application_t *application,
+                                         int value)
+{
+    application->nchittest_param = value;
 }
 
 int sb_application_exec(sb_application_t *application)

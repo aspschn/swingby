@@ -207,6 +207,10 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
     sb_d3d_context_recreate(surface->d3d_context,
         sb_application_d3d_context(sb_application_instance()));
 
+    // Set window's size.
+    SetWindowPos(surface->hwnd, NULL, 0, 0, size->width, size->height,
+        SWP_NOMOVE | SWP_NOZORDER);
+
     sb_surface_update(surface);
 }
 

@@ -89,6 +89,9 @@ WNDCLASS* sb_application_wndclass(sb_application_t *application);
 sb_d3d_global_context_t* sb_application_d3d_context(
     sb_application_t *application);
 
+void sb_application_set_nchittest_return(sb_application_t *application,
+                                         int value);
+
 SB_EXPORT
 int sb_application_exec(sb_application_t *application);
 
