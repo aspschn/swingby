@@ -159,6 +159,9 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
 
         sb_application_post_event(app, event);
 
+        ReleaseCapture();
+        SendMessage(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, lParam);
+
         break;
     }
     default:
