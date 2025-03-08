@@ -77,6 +77,12 @@ void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface)
     // TODO.
 }
 
+sb_desktop_surface_toplevel_state_flags
+sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface)
+{
+    return SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
+}
+
 void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
                                         const sb_rect_t *geometry)
 {
@@ -94,6 +100,30 @@ void sb_desktop_surface_toplevel_move(sb_desktop_surface_t *desktop_surface)
     // TODO: Move implementation.
     sb_application_set_nchittest_return(sb_application_instance(),
         HTCAPTION);
+}
+
+void sb_desktop_surface_toplevel_resize(sb_desktop_surface_t *desktop_surface,
+    sb_desktop_surface_toplevel_resize_edge edge)
+{
+    // TODO.
+}
+
+void sb_desktop_surface_toplevel_set_maximized(
+    sb_desktop_surface_t *desktop_surface)
+{
+    // TODO.
+}
+
+void sb_desktop_surface_toplevel_unset_maximized(
+    sb_desktop_surface_t *desktop_surface)
+{
+    // TODO.
+}
+
+void sb_desktop_surface_toplevel_set_minimized(
+    sb_desktop_surface_t *desktop_surface)
+{
+    // TODO.
 }
 
 void sb_desktop_surface_add_event_listener(

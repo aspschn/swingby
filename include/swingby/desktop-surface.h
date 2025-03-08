@@ -63,6 +63,7 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface);
 SB_EXPORT
 void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface);
 
+SB_EXPORT
 sb_desktop_surface_toplevel_state_flags
 sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface);
 
@@ -99,18 +100,22 @@ SB_EXPORT
 void sb_desktop_surface_toplevel_move(sb_desktop_surface_t *desktop_surface);
 
 /// \brief Start resize the toplevel desktop surface with the given edge.
+SB_EXPORT
 void sb_desktop_surface_toplevel_resize(sb_desktop_surface_t *desktop_surface,
     sb_desktop_surface_toplevel_resize_edge edge);
 
 /// \brief Maximize the window.
+SB_EXPORT
 void sb_desktop_surface_toplevel_set_maximized(
     sb_desktop_surface_t *desktop_surface);
 
 /// \brief Restore the window from maximized state.
+SB_EXPORT
 void sb_desktop_surface_toplevel_unset_maximized(
     sb_desktop_surface_t *desktop_surface);
 
 /// \brief Minimize the toplevel desktop surface.
+SB_EXPORT
 void sb_desktop_surface_toplevel_set_minimized(
     sb_desktop_surface_t *desktop_surface);
 
