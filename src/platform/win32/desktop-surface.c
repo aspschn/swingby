@@ -96,8 +96,8 @@ void sb_desktop_surface_toplevel_close(sb_desktop_surface_t *desktop_surface)
 
 void sb_desktop_surface_toplevel_move(sb_desktop_surface_t *desktop_surface)
 {
-    desktop_surface->toplevel.moving = true;
-    // TODO: Move implementation.
+    desktop_surface->toplevel.moving = true;    // Maybe not used.
+    sb_log_debug("sb_desktop_surface_toplevel_move()\n");
     sb_application_set_nchittest_return(sb_application_instance(),
         HTCAPTION);
 }
