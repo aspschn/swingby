@@ -1,5 +1,6 @@
 #include <swingby/application.h>
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include <Windows.h>
@@ -23,8 +24,12 @@ struct sb_application_t {
     struct {
         sb_surface_t *surface;
         sb_view_t *view;
+        sb_point_t pos;
     } pointer;
-    int nchittest_param;
+    struct {
+        int param;
+        bool request_trigger;
+    } nchittest;
     sb_list_t *desktop_surfaces;
     sb_event_dispatcher_t *event_dispatcher;
 };
@@ -53,6 +58,19 @@ static sb_surface_t* _find_surface_by_hwnd(HWND hwnd)
     return NULL;
 }
 
+static void _post_pointer_release_event(sb_view_t *view,
+                                        enum sb_pointer_button button,
+                                        float x, float y)
+{
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW, view,
+        SB_EVENT_TYPE_POINTER_RELEASE);
+    event->pointer.button = button;
+    event->pointer.position.x = x;
+    event->pointer.position.y = y;
+
+    sb_application_post_event(sb_application_instance(), event);
+}
+
 //!<=================
 //!< Window Proc
 //!<=================
@@ -66,13 +84,51 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
 
     switch (uMsg) {
     case WM_NCHITTEST: {
-        if (app->nchittest_param != 0) {
-            sb_log_debug("WindowProc - WM_NCHITTEST - Value: %d\n",
-                app->nchittest_param);
-            return app->nchittest_param;
+        /*
+        if (app->nchittest.param != 0) {
+            return app->nchittest.param;
         } else {
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
         }
+        */
+        break;
+    }
+    case WM_NCLBUTTONDOWN:
+    {
+        sb_log_debug("WindowProc - WM_NCLBUTTONDOWN\n");
+
+        sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
+        sb_view_t *view = _find_most_child(sb_surface_root_view(surface),
+            &app->pointer.pos);
+
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+            view, SB_EVENT_TYPE_POINTER_PRESS);
+        event->pointer.button = SB_POINTER_BUTTON_LEFT;
+        event->pointer.position.x = app->pointer.pos.x;
+        event->pointer.position.y = app->pointer.pos.y;
+
+        sb_application_post_event(app, event);
+        sb_log_debug("Pointer press event posted!\n");
+        // Force process event.
+        sb_event_dispatcher_process_events(app->event_dispatcher);
+
+        if (app->nchittest.request_trigger == true) {
+            app->nchittest.request_trigger = false;
+            if (app->nchittest.param == HTCAPTION) {
+                SendMessage(hwnd, WM_LBUTTONDOWN, 0, 0);
+                SendMessage(hwnd, WM_LBUTTONUP, 0, 0);
+            }
+        }
+
+        break;
+    }
+    case WM_NCLBUTTONUP:
+    {
+        sb_log_debug("WindowProc - WM_NCLBUTTONUP\n");
+        sb_application_set_nchittest_return(app, 0);
+
+        SendMessage(hwnd, WM_LBUTTONUP, 0, 0);
+
         break;
     }
     case WM_SHOWWINDOW: {
@@ -116,6 +172,9 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
         pos.x = LOWORD(lParam);
         pos.y = HIWORD(lParam);
 
+        // Store the position.
+        app->pointer.pos = pos;
+
         sb_view_t *view = _find_most_child(root_view, &pos);
         // Pointer move event.
         {
@@ -144,23 +203,62 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
     }
     case WM_LBUTTONDOWN:
     {
-        sb_point_t pos;
-        pos.x = LOWORD(lParam);
-        pos.y = HIWORD(lParam);
+        sb_log_debug("WindowProc - WM_LBUTTONDOWN\n");
+
+        // Process HTCAPTION.
+        if (app->nchittest.param == HTCAPTION) {
+            sb_log_debug("nchittest == HTCAPTION\n");
+            // Reset param.
+            app->nchittest.param = 0;
+            // Send HTCAPTION message.
+            ReleaseCapture();
+            SendMessage(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, lParam);
+
+            break;
+        }
+
+        // Pass event to WM_NCLBUTTONDOWN.
+        app->nchittest.request_trigger = true;
+        ReleaseCapture();
+        SendMessage(hwnd, WM_NCLBUTTONDOWN, 0, lParam);
+
+        break;
+    }
+    case WM_LBUTTONUP:
+    {
+        sb_log_debug("WM_LBUTTONUP\n");
+
         sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
         sb_view_t *view = _find_most_child(sb_surface_root_view(surface),
-            &pos);
+            &app->pointer.pos);
 
-        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
-            view, SB_EVENT_TYPE_POINTER_PRESS);
-        event->pointer.button = SB_POINTER_BUTTON_LEFT;
-        event->pointer.position.x = pos.x;
-        event->pointer.position.y = pos.y;
+        _post_pointer_release_event(view,
+            SB_POINTER_BUTTON_LEFT,
+            app->pointer.pos.x,
+            app->pointer.pos.y);
+        // Force process events.
+        sb_event_dispatcher_process_events(app->event_dispatcher);
 
-        sb_application_post_event(app, event);
-
+        /*
         ReleaseCapture();
-        SendMessage(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, lParam);
+        sb_application_set_nchittest_return(sb_application_instance(), 0);
+        SendMessage(hwnd, WM_NCLBUTTONUP, HTCAPTION, lParam);
+        */
+
+        break;
+    }
+    case WM_RBUTTONUP:
+    {
+        sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
+        sb_view_t *view = _find_most_child(sb_surface_root_view(surface),
+            &app->pointer.pos);
+
+        _post_pointer_release_event(view,
+            SB_POINTER_BUTTON_RIGHT,
+            app->pointer.pos.x,
+            app->pointer.pos.y);
+
+        sb_application_set_nchittest_return(sb_application_instance(), 0);
 
         break;
     }
@@ -182,7 +280,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     // NULL initializations.
     app->d3d_context = NULL;
 
-    app->nchittest_param = 0;
+    app->nchittest.param = 0;
+    app->nchittest.request_trigger = false;
 
     // Init WNDCLASS and register it.
     HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -240,7 +339,8 @@ WNDCLASS* sb_application_wndclass(sb_application_t *application)
 void sb_application_set_nchittest_return(sb_application_t *application,
                                          int value)
 {
-    application->nchittest_param = value;
+    sb_log_debug("sb_application_set_nchittest_return() - Value: %d\n", value);
+    application->nchittest.param = value;
 }
 
 int sb_application_exec(sb_application_t *application)
