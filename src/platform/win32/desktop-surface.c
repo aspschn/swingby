@@ -91,7 +91,8 @@ void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
 
 void sb_desktop_surface_toplevel_close(sb_desktop_surface_t *desktop_surface)
 {
-    // TODO.
+    sb_application_set_nchittest_return(sb_application_instance(),
+        HTCLOSE);
 }
 
 void sb_desktop_surface_toplevel_move(sb_desktop_surface_t *desktop_surface)

@@ -27,6 +27,10 @@ struct sb_application_t {
         sb_point_t pos;
     } pointer;
     struct {
+        sb_view_t *view;
+        enum sb_pointer_button button;
+    } click;
+    struct {
         int param;
         bool request_trigger;
         enum sb_pointer_button button;
@@ -214,34 +218,55 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
     }
     case WM_LBUTTONDOWN:
     {
-        sb_log_debug("WindowProc - WM_LBUTTONDOWN\n");
+        sb_log_debug("WindowProc - WM_LBUTTIONDOWN\n");
 
+        sb_point_t pos = app->pointer.pos;
         sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
         sb_view_t *view = _find_most_child(sb_surface_root_view(surface),
-            &app->pointer.pos);
+            &pos);
 
         sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
             view, SB_EVENT_TYPE_POINTER_PRESS);
         event->pointer.button = SB_POINTER_BUTTON_LEFT;
-        event->pointer.position.x = app->pointer.pos.x;
-        event->pointer.position.y = app->pointer.pos.y;
+        event->pointer.position.x = pos.x;
+        event->pointer.position.y = pos.y;
+        sb_log_debug(" = event->pointer.position: (%.2f, %.2f)\n",
+            event->pointer.position.x, event->pointer.position.y);
 
         sb_application_post_event(app, event);
+
+        // Click event.
+        app->click.view = view;
+        app->click.button = SB_POINTER_BUTTON_LEFT;
+        sb_log_debug(" = Click start - view: %p\n", app->click.view);
 
         break;
     }
     case WM_LBUTTONUP:
     {
-        sb_log_debug("WM_LBUTTONUP\n");
+        sb_log_debug("WindowProc - WM_LBUTTONUP\n");
 
+        sb_point_t pos = app->pointer.pos;
         sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
         sb_view_t *view = _find_most_child(sb_surface_root_view(surface),
-            &app->pointer.pos);
+            &pos);
 
         _post_pointer_release_event(view,
             SB_POINTER_BUTTON_LEFT,
-            app->pointer.pos.x,
-            app->pointer.pos.y);
+            pos.x,
+            pos.y);
+
+        // Click event.
+        sb_log_debug(" = Click check - view: %p\n", view);
+        if (view == app->click.view &&
+            app->click.button == SB_POINTER_BUTTON_LEFT) {
+            sb_event_t *click_event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+                view, SB_EVENT_TYPE_POINTER_CLICK);
+            click_event->pointer.button = app->click.button;
+            click_event->pointer.position = pos;
+
+            sb_application_post_event(app, click_event);
+        }
 
         // Force process events.
         sb_event_dispatcher_process_events(app->event_dispatcher);
@@ -281,6 +306,9 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     // NULL initializations.
     app->d3d_context = NULL;
+
+    app->click.view = NULL;
+    app->click.button = SB_POINTER_BUTTON_NONE;
 
     app->nchittest.param = 0;
     app->nchittest.request_trigger = false;
