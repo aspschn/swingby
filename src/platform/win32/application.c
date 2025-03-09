@@ -275,14 +275,15 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
     }
     case WM_RBUTTONUP:
     {
+        sb_point_t pos = app->pointer.pos;
         sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
         sb_view_t *view = _find_most_child(sb_surface_root_view(surface),
             &app->pointer.pos);
 
         _post_pointer_release_event(view,
             SB_POINTER_BUTTON_RIGHT,
-            app->pointer.pos.x,
-            app->pointer.pos.y);
+            pos.x,
+            pos.y);
 
         // Force process events.
         sb_event_dispatcher_process_events(app->event_dispatcher);
