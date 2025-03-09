@@ -132,6 +132,10 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
                     pair_message = WM_LBUTTONUP;
                 }
                 SendMessage(hwnd, pair_message, 0, 0);
+            } else if (app->nchittest.param == HTCLOSE) {
+                app->nchittest.param = 0;
+
+                SendMessage(hwnd, WM_CLOSE, 0, 0);
             }
         }
 
@@ -230,15 +234,12 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
         event->pointer.button = SB_POINTER_BUTTON_LEFT;
         event->pointer.position.x = pos.x;
         event->pointer.position.y = pos.y;
-        sb_log_debug(" = event->pointer.position: (%.2f, %.2f)\n",
-            event->pointer.position.x, event->pointer.position.y);
 
         sb_application_post_event(app, event);
 
         // Click event.
         app->click.view = view;
         app->click.button = SB_POINTER_BUTTON_LEFT;
-        sb_log_debug(" = Click start - view: %p\n", app->click.view);
 
         break;
     }
@@ -257,7 +258,6 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
             pos.y);
 
         // Click event.
-        sb_log_debug(" = Click check - view: %p\n", view);
         if (view == app->click.view &&
             app->click.button == SB_POINTER_BUTTON_LEFT) {
             sb_event_t *click_event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
@@ -269,7 +269,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
         }
 
         // Force process events.
-        sb_event_dispatcher_process_events(app->event_dispatcher);
+        // sb_event_dispatcher_process_events(app->event_dispatcher);
 
         break;
     }
@@ -287,6 +287,12 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
 
         // Force process events.
         sb_event_dispatcher_process_events(app->event_dispatcher);
+
+        break;
+    }
+    case WM_CLOSE:
+    {
+        sb_log_debug("WindowProc - WM_CLOSE\n");
 
         break;
     }
