@@ -45,6 +45,7 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 
     view->_surface = NULL;
     view->_parent = parent;
+    sb_log_debug("sb_view_new() - view: %p, parent: %p\n", view, parent);
     view->_geometry.pos = geometry->pos;
     view->_geometry.size = geometry->size;
     view->_color.r = 255;
@@ -286,7 +287,9 @@ void sb_view_on_pointer_move(sb_view_t *view, sb_event_t *event)
 
 void sb_view_on_pointer_press(sb_view_t *view, sb_event_t *event)
 {
-    sb_log_debug("sb_view_on_pointer_press() - (%.2f, %.2f)\n", event->pointer.position.x, event->pointer.position.y);
+    sb_log_debug("sb_view_on_pointer_press() - (%.2f, %.2f) view: %p\n",
+        event->pointer.position.x, event->pointer.position.y,
+        event->target);
 
     _event_listener_filter_for_each(view->event_listeners,
         SB_EVENT_TYPE_POINTER_PRESS, event);
@@ -300,7 +303,9 @@ void sb_view_on_pointer_release(sb_view_t *view, sb_event_t *event)
 
 void sb_view_on_pointer_click(sb_view_t *view, sb_event_t *event)
 {
-    sb_log_debug("sb_view_on_pointer_click()\n");
+    sb_log_debug("sb_view_on_pointer_click() - (%.2f, %.2f) view: %p\n",
+        event->pointer.position.x, event->pointer.position.y,
+        event->target);
 
     _event_listener_filter_for_each(view->event_listeners,
         SB_EVENT_TYPE_POINTER_CLICK, event);

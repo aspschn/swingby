@@ -16,6 +16,8 @@ void _event_listener_filter_for_each(sb_list_t *listeners,
                                      sb_event_t *event);
 
 /// \brief Find most child view of the root view.
+///
+/// Caution: It changes the position!
 sb_view_t* _find_most_child(sb_view_t *view,
                             sb_point_t *position);
 

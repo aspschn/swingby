@@ -80,6 +80,8 @@ void _propagate_pointer_event(sb_view_t *view, sb_event_t *event)
             break;
         }
 
+        // Maybe next line required!
+        // event->target = parent;
         event->pointer.position.x = x;
         event->pointer.position.y = y;
 
