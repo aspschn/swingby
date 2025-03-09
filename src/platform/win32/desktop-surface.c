@@ -10,6 +10,8 @@
 #include <swingby/application.h>
 #include <swingby/log.h>
 
+#include "../../helpers/shared.h"
+
 struct sb_desktop_surface_t {
     sb_surface_t *surface;
     enum sb_desktop_surface_role role;
@@ -106,7 +108,8 @@ void sb_desktop_surface_toplevel_move(sb_desktop_surface_t *desktop_surface)
 void sb_desktop_surface_toplevel_resize(sb_desktop_surface_t *desktop_surface,
     sb_desktop_surface_toplevel_resize_edge edge)
 {
-    // TODO.
+    sb_application_set_nchittest_return(sb_application_instance(),
+        HTBOTTOMRIGHT);
 }
 
 void sb_desktop_surface_toplevel_set_maximized(
@@ -140,6 +143,8 @@ void sb_desktop_surface_add_event_listener(
 void sb_desktop_surface_on_resize(sb_desktop_surface_t *desktop_surface,
     sb_event_t *event)
 {
+    _event_listener_filter_for_each(desktop_surface->event_listeners,
+        SB_EVENT_TYPE_RESIZE, event);
 }
 
 void sb_desktop_surface_on_state_change(sb_desktop_surface_t *desktop_surface,

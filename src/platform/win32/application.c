@@ -53,10 +53,28 @@ static sb_surface_t* _find_surface_by_hwnd(HWND hwnd)
 
     sb_list_t *desktop_surfaces = app->desktop_surfaces;
     for (uint64_t i = 0; i < sb_list_length(desktop_surfaces); ++i) {
-        sb_desktop_surface_t *desktop_surface = sb_list_at(desktop_surfaces, i);
+        sb_desktop_surface_t *desktop_surface =
+            sb_list_at(desktop_surfaces, i);
         sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
         if (hwnd == sb_surface_hwnd(surface)) {
             return surface;
+        }
+    }
+
+    return NULL;
+}
+
+static sb_desktop_surface_t* _find_desktop_surface_by_hwnd(HWND hwnd)
+{
+    sb_application_t *app = sb_application_instance();
+
+    sb_list_t *desktop_surfaces = app->desktop_surfaces;
+    for (uint64_t i = 0; i < sb_list_length(desktop_surfaces); ++i) {
+        sb_desktop_surface_t *desktop_surface =
+            sb_list_at(desktop_surfaces, i);
+        sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
+        if (hwnd == sb_surface_hwnd(surface)) {
+            return desktop_surface;
         }
     }
 
@@ -132,6 +150,9 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
                     pair_message = WM_LBUTTONUP;
                 }
                 SendMessage(hwnd, pair_message, 0, 0);
+            } else if (app->nchittest.param == HTBOTTOMRIGHT) {
+                // TODO.
+                app->nchittest.param = 0;
             } else if (app->nchittest.param == HTCLOSE) {
                 app->nchittest.param = 0;
 
@@ -166,6 +187,10 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
     }
     case WM_SIZE: {
         sb_log_debug("WindowProc - WM_SIZE\n");
+        // Ignore WM_SIZE message if window is not resizing.
+        if (app->nchittest.param == 0) {
+            break;
+        }
         sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
         if (surface == NULL) {
             break;
@@ -176,8 +201,14 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
         sb_size_t size;
         size.width = (float)width;
         size.height = (float)height;
-        sb_surface_set_size(surface, &size);
-        sb_surface_update(surface);
+
+        // Post resize event to the desktop surface.
+        sb_desktop_surface_t *desktop_surface =
+            _find_desktop_surface_by_hwnd(hwnd);
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
+            desktop_surface, SB_EVENT_TYPE_RESIZE);
+        event->resize.size = size;
+        sb_application_post_event(app, event);
 
         break;
     }
