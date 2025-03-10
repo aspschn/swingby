@@ -31,7 +31,9 @@ struct sb_application_t {
         enum sb_pointer_button button;
     } click;
     struct {
+        /// NCHITTEST parameter. HTCAPTION etc.
         int param;
+        /// If trigger set to true, then hit test activate.
         bool request_trigger;
         enum sb_pointer_button button;
     } nchittest;
@@ -150,8 +152,11 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
                     pair_message = WM_LBUTTONUP;
                 }
                 SendMessage(hwnd, pair_message, 0, 0);
-            } else if (app->nchittest.param == HTBOTTOMRIGHT) {
+            } else if (app->nchittest.param == HTBOTTOMRIGHT ||
+                app->nchittest.param == HTBOTTOM ||
+                app->nchittest.param == HTLEFT) {
                 // TODO.
+                // SendMessage(hwnd, WM_USER, 0, 0);
                 app->nchittest.param = 0;
             } else if (app->nchittest.param == HTCLOSE) {
                 app->nchittest.param = 0;
@@ -191,16 +196,20 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
         if (app->nchittest.param == 0) {
             break;
         }
-        sb_surface_t *surface = _find_surface_by_hwnd(hwnd);
-        if (surface == NULL) {
-            break;
-        }
 
-        uint32_t width = LOWORD(lParam);
-        uint32_t height = LOWORD(lParam);
+        break;
+    }
+    case WM_SIZING:
+    {
+        RECT *rect = (RECT*)lParam;
+
+        uint32_t width = rect->right;
+        uint32_t height = rect->bottom;
         sb_size_t size;
         size.width = (float)width;
         size.height = (float)height;
+        sb_log_debug("WindowProc - WM_SIZING - size: %.2fx%.2f\n",
+            size.width, size.height);
 
         // Post resize event to the desktop surface.
         sb_desktop_surface_t *desktop_surface =
@@ -325,6 +334,11 @@ static LRESULT CALLBACK WindowProc(HWND hwnd,
     {
         sb_log_debug("WindowProc - WM_CLOSE\n");
 
+        break;
+    }
+    case WM_USER:
+    {
+        sb_log_debug("WindowProc - WM_USER\n");
         break;
     }
     default:

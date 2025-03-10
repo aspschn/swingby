@@ -108,8 +108,37 @@ void sb_desktop_surface_toplevel_move(sb_desktop_surface_t *desktop_surface)
 void sb_desktop_surface_toplevel_resize(sb_desktop_surface_t *desktop_surface,
     sb_desktop_surface_toplevel_resize_edge edge)
 {
+    int param = HTBOTTOMRIGHT;
+
+    switch (edge) {
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP:
+        param = HTTOP;
+        break;
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM:
+        param = HTBOTTOM;
+        break;
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_LEFT:
+        param = HTLEFT;
+        break;
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_LEFT:
+        param = HTTOPLEFT;
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT:
+        param = HTBOTTOMLEFT;
+        break;
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_RIGHT:
+        param = HTRIGHT;
+        break;
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT:
+        param = HTTOPRIGHT;
+        break;
+    case SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT:
+        param = HTBOTTOMRIGHT;
+        break;
+    default:
+        break;
+    }
     sb_application_set_nchittest_return(sb_application_instance(),
-        HTBOTTOMRIGHT);
+        param);
 }
 
 void sb_desktop_surface_toplevel_set_maximized(

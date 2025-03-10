@@ -16,6 +16,8 @@
 #include "../../skia/context.h"
 #include "../../skia/draw.h"
 
+#include "../../helpers/shared.h"
+
 #define SWINGBY_BACKEND_DEFAULT "raster"
 
 struct sb_surface_t {
@@ -198,6 +200,14 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
     new_geo.size.height = size->height;
     sb_view_set_geometry(surface->root_view, &new_geo);
 
+    // Create and post resize event.
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
+        surface, SB_EVENT_TYPE_RESIZE);
+    // TODO: Set old_size.
+    event->resize.size.width = size->width;
+    event->resize.size.height = size->height;
+    sb_application_post_event(sb_application_instance(), event);
+
     sb_d3d_context_release(surface->d3d_context);
 
     sb_d3d_context_swap_chain_resize_buffer(surface->d3d_context,
@@ -264,6 +274,8 @@ void sb_surface_on_request_update(sb_surface_t *surface)
 
 void sb_surface_on_resize(sb_surface_t *surface, sb_event_t *event)
 {
+    _event_listener_filter_for_each(surface->event_listeners,
+        SB_EVENT_TYPE_RESIZE, event);
 }
 
 void sb_surface_on_keyboard_key_press(sb_surface_t *surface,
