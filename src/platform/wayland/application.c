@@ -28,6 +28,7 @@
 #include "xkb/xkb-context.h"
 #include "xcursor/xcursor.h"
 
+#include "../../helpers/shared.h"
 #include "helpers/application.h"
 
 struct sb_application_t {
@@ -302,27 +303,6 @@ static sb_surface_t* _find_surface(sb_application_t *app,
     }
 
     return found;
-}
-
-/// \brief Find most child view of the root view.
-static sb_view_t* _find_most_child(sb_view_t *view,
-                                   sb_point_t *position)
-{
-    sb_list_t *children = sb_view_children(view);
-
-    if (sb_list_length(children) == 0) {
-        return view;
-    }
-    sb_view_t *child = sb_view_child_at(view, position);
-
-    if (child == NULL) {
-        return view;
-    }
-
-    position->x = position->x - sb_view_geometry(child)->pos.x;
-    position->y = position->y - sb_view_geometry(child)->pos.y;
-
-    return _find_most_child(child, position);
 }
 
 /// \brief Linux button to Foundation pointer button.

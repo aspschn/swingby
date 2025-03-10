@@ -1,6 +1,7 @@
 #ifndef _FOUNDATION_DESKTOP_SURFACE_H
 #define _FOUNDATION_DESKTOP_SURFACE_H
 
+#include <swingby/common.h>
 #include <swingby/event.h>
 
 typedef struct sb_size_i_t sb_size_i_t;
@@ -44,19 +45,25 @@ typedef enum sb_desktop_surface_toplevel_state
 
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
 
+SB_EXPORT
 sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role);
 
+SB_EXPORT
 void sb_desktop_surface_set_parent(sb_desktop_surface_t *desktop_surface,
                                    sb_desktop_surface_t *parent);
 
 /// \brief Get the surface object of the desktop surface.
+SB_EXPORT
 sb_surface_t*
 sb_desktop_surface_surface(sb_desktop_surface_t *desktop_surface);
 
+SB_EXPORT
 void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface);
 
+SB_EXPORT
 void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface);
 
+SB_EXPORT
 sb_desktop_surface_toplevel_state_flags
 sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface);
 
@@ -69,6 +76,7 @@ sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface);
 /// The outside of this geometry may not appear your task switcher.
 /// Some compositors offer the window magnet feature. This method give the
 /// hint to the compositor how to magnet the windows each other.
+SB_EXPORT
 void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
                                         const sb_rect_t *geometry);
 
@@ -84,27 +92,34 @@ void sb_desktop_surface_toplevel_set_minimum_size(
 /// \brief Close if the desktop surface has a toplevel role.
 ///
 /// Close the last toplevel desktop surface may quit the application.
+SB_EXPORT
 void sb_desktop_surface_toplevel_close(sb_desktop_surface_t *desktop_surface);
 
 /// \brief Start move the toplevel desktop surface.
+SB_EXPORT
 void sb_desktop_surface_toplevel_move(sb_desktop_surface_t *desktop_surface);
 
 /// \brief Start resize the toplevel desktop surface with the given edge.
+SB_EXPORT
 void sb_desktop_surface_toplevel_resize(sb_desktop_surface_t *desktop_surface,
     sb_desktop_surface_toplevel_resize_edge edge);
 
 /// \brief Maximize the window.
+SB_EXPORT
 void sb_desktop_surface_toplevel_set_maximized(
     sb_desktop_surface_t *desktop_surface);
 
 /// \brief Restore the window from maximized state.
+SB_EXPORT
 void sb_desktop_surface_toplevel_unset_maximized(
     sb_desktop_surface_t *desktop_surface);
 
 /// \brief Minimize the toplevel desktop surface.
+SB_EXPORT
 void sb_desktop_surface_toplevel_set_minimized(
     sb_desktop_surface_t *desktop_surface);
 
+SB_EXPORT
 void sb_desktop_surface_add_event_listener(
     sb_desktop_surface_t *desktop_surface,
     enum sb_event_type event_type,

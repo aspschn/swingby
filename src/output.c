@@ -2,7 +2,9 @@
 
 #include <stdlib.h>
 
+#ifdef SB_PLATFORM_WAYLAND
 #include <wayland-client.h>
+#endif
 
 #include <swingby/log.h>
 

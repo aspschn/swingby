@@ -4,7 +4,6 @@
 #include <swingby/application.h>
 #include <swingby/color.h>
 #include <swingby/desktop-surface.h>
-#include <swingby/egl-context.h>
 #include <swingby/event-dispatcher.h>
 #include <swingby/event.h>
 #include <swingby/filter.h>
