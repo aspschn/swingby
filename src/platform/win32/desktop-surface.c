@@ -5,6 +5,7 @@
 
 #include <Windows.h>
 
+#include <swingby/rect.h>
 #include <swingby/list.h>
 #include <swingby/surface.h>
 #include <swingby/application.h>
@@ -16,6 +17,7 @@ struct sb_desktop_surface_t {
     sb_surface_t *surface;
     enum sb_desktop_surface_role role;
     sb_desktop_surface_t *parent;
+    sb_rect_t wm_geometry;
     struct {
         bool moving;
         bool resizing;
@@ -42,6 +44,11 @@ sb_desktop_surface_t* sb_desktop_surface_new(enum sb_desktop_surface_role role)
     // NULL initializations.
     desktop_surface->surface = NULL;
     desktop_surface->parent = NULL;
+
+    desktop_surface->wm_geometry.pos.x = 0;
+    desktop_surface->wm_geometry.pos.y = 0;
+    desktop_surface->wm_geometry.size.width = 0;
+    desktop_surface->wm_geometry.size.height = 0;
 
     desktop_surface->toplevel.moving = false;
     desktop_surface->toplevel.resizing = false;
