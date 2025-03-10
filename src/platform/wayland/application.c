@@ -43,26 +43,29 @@ struct sb_application_t {
     struct wl_keyboard *_wl_keyboard;
     struct wl_touch *_wl_touch;
     struct wp_cursor_shape_manager_v1 *wp_cursor_shape_manager_v1;
-    /// \brief Current pointer surface.
-    ///
-    /// Pointer motion handler not pass `struct wl_surface` object.
-    /// Store this information when pointer entered to the surface.
-    struct wl_surface *_pointer_surface;
-    /// \brief Current pointer view.
-    ///
-    /// Store the position of the view under the pointer.
-    sb_view_t *_pointer_view;
-    /// \brief Pointer event position.
-    ///
-    /// Pointer button and axis event not pass the position.
-    /// Store this information when pointer moved.
-    sb_point_t _pointer_pos;
-    /// \brief Pointer button event serial.
-    uint32_t pointer_button_serial;
-    /// \brief Pointer enter event information.
     struct {
-        uint32_t serial;
-    } enter;
+        /// \brief Current pointer surface.
+        ///
+        /// Pointer motion handler not pass `struct wl_surface` object.
+        /// Store this information when pointer entered to the surface.
+        struct wl_surface *wl_surface;
+        /// \brief Current pointer view.
+        ///
+        /// Store the position of the view under the pointer.
+        /// Usefull when check differences in motion event.
+        sb_view_t *view;
+        /// \brief Pointer event position.
+        ///
+        /// Pointer button and axis event not pass the position.
+        /// Store this information when pointer moved.
+        sb_point_t pos;
+        /// \brief Pointer button event serial.
+        uint32_t button_serial;
+        /// \brief Pointer enter event information.
+        ///
+        /// Currently used only when change cursor shape.
+        uint32_t enter_serial;
+    } pointer;
     /// \brief Click event information.
     struct {
         sb_view_t *view;
@@ -412,8 +415,12 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->_wl_keyboard = NULL;
     app->_wl_touch = NULL;
     app->wp_cursor_shape_manager_v1 = NULL;
-    app->_pointer_surface = NULL;
-    app->_pointer_view = NULL;
+
+    app->pointer.wl_surface = NULL;
+    app->pointer.view = NULL;
+    app->pointer.pos.x = 0;
+    app->pointer.pos.y = 0;
+
     app->click.view = NULL;
     app->click.button = SB_POINTER_BUTTON_NONE;
 
@@ -457,7 +464,7 @@ sb_application_t* sb_application_instance()
 
 uint32_t sb_application_pointer_button_serial(sb_application_t *application)
 {
-    return application->pointer_button_serial;
+    return application->pointer.button_serial;
 }
 
 void sb_application_load_cursor_themes(sb_application_t *application)
@@ -767,10 +774,10 @@ static void pointer_enter_handler(void *data,
 {
     sb_application_t *app = (sb_application_t*)data;
 
-    app->_pointer_surface = wl_surface;
+    app->pointer.wl_surface = wl_surface;
 
     // Set the serial.
-    app->enter.serial = serial;
+    app->pointer.enter_serial = serial;
 
     // Cursor shape.
     if (app->wp_cursor_shape_manager_v1 != NULL) {
@@ -823,7 +830,7 @@ static void pointer_enter_handler(void *data,
     sb_log_debug(" == root view: %p ==\n", root_view);
     sb_view_t *view = _find_most_child(root_view, &position);
 
-    app->_pointer_view = view;
+    app->pointer.view = view;
 
     // Post the event (view).
     _post_pointer_enter_event(view, position.x, position.y);
@@ -849,11 +856,11 @@ static void pointer_motion_handler(void *data,
     float y = wl_fixed_to_double(sy);
 
     // Store the position.
-    app->_pointer_pos.x = x;
-    app->_pointer_pos.y = y;
+    app->pointer.pos.x = x;
+    app->pointer.pos.y = y;
 
     // Find the surface.
-    sb_surface_t *surface = _find_surface(app, app->_pointer_surface);
+    sb_surface_t *surface = _find_surface(app, app->pointer.wl_surface);
 
     // Find most child view.
     sb_point_t pos;
@@ -874,12 +881,12 @@ static void pointer_motion_handler(void *data,
     }
 
     // Check difference.
-    if (view != app->_pointer_view) {
+    if (view != app->pointer.view) {
         // Post the leave event for the previous view.
         // TODO: Leave position.
-        _post_pointer_leave_event(app->_pointer_view, 0.0f, 0.0f);
+        _post_pointer_leave_event(app->pointer.view, 0.0f, 0.0f);
 
-        app->_pointer_view = view;
+        app->pointer.view = view;
 
         // Cursor shape.
         enum sb_cursor_shape shape = sb_view_cursor_shape(view);
@@ -889,7 +896,8 @@ static void pointer_motion_handler(void *data,
                     app->wp_cursor_shape_manager_v1,
                     wl_pointer
                 );
-            wp_cursor_shape_device_v1_set_shape(device, app->enter.serial,
+            wp_cursor_shape_device_v1_set_shape(device,
+                app->pointer.enter_serial,
                 _to_wp_cursor_shape(shape));
             wp_cursor_shape_device_v1_destroy(device);
         }
@@ -908,13 +916,13 @@ static void pointer_button_handler(void *data,
 {
     sb_application_t *app = (sb_application_t*)data;
 
-    app->pointer_button_serial = serial;
+    app->pointer.button_serial = serial;
 
-    float x = app->_pointer_pos.x;
-    float y = app->_pointer_pos.y;
+    float x = app->pointer.pos.x;
+    float y = app->pointer.pos.y;
 
     // Find the surface.
-    sb_surface_t *surface = _find_surface(app, app->_pointer_surface);
+    sb_surface_t *surface = _find_surface(app, app->pointer.wl_surface);
 
     // Find most child view.
     sb_point_t pos = { .x = x, .y = y };
