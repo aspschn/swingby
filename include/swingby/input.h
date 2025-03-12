@@ -31,6 +31,18 @@ enum sb_keyboard_modifier {
 
 typedef enum sb_keyboard_modifier sb_keyboard_modifier_flags;
 
+enum sb_pointer_scroll_source {
+    SB_POINTER_SCROLL_SOURCE_WHEEL      = 0,
+    SB_POINTER_SCROLL_SOURCE_FINGER     = 1,
+    SB_POINTER_SCROLL_SOURCE_CONTINUOUS = 2,
+    SB_POINTER_SCROLL_SOURCE_WHEEL_TILT = 3,
+};
+
+enum sb_pointer_scroll_axis {
+    SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL      = 0,
+    SB_POINTER_SCROLL_AXIS_HORIZONTAL_SCROLL    = 1,
+};
+
 #ifdef __cplusplus
 }
 #endif
