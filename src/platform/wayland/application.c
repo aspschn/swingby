@@ -81,6 +81,11 @@ struct sb_application_t {
         enum sb_pointer_scroll_axis axis;
         enum sb_pointer_scroll_source source;
         float value;
+        /// \brief Vertical stop.
+        bool ver_stop;
+        /// \brief Horizontal stop.
+        bool hor_stop;
+        enum sb_pointer_scroll_axis stop_axis;
         bool frame;
     } scroll;
     struct {
@@ -458,6 +463,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     // Init scroll info.
     app->scroll.value = 0.0f;
+    app->scroll.ver_stop = false;
+    app->scroll.hor_stop = false;
     app->scroll.frame = false;
 
     // Init xkb context as NULL.
@@ -1065,8 +1072,23 @@ static void pointer_frame_handler(void *data,
     // sb_log_debug("pointer_frame_handler()\n");
     if (app->scroll.frame == false && app->scroll.value > 0.0f) {
         sb_log_debug(" = Pointer frame for scroll.\n");
+        // Post scroll event.
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+            app->pointer.view, SB_EVENT_TYPE_POINTER_SCROLL);
+        event->scroll.axis = app->scroll.axis;
+        event->scroll.source = app->scroll.source;
+        event->scroll.value = app->scroll.value;
+
+        sb_application_post_event(app, event);
+
+        // Reset scroll info.
         app->scroll.frame = true;
         app->scroll.value = 0.0f;
+    }
+    if (app->scroll.ver_stop == true || app->scroll.hor_stop == true) {
+        sb_log_debug(" == Pointer frame for stop!\n");
+        app->scroll.ver_stop = false;
+        app->scroll.hor_stop = false;
     }
     // sb_log_debug("pointer_frame_handler()\n");
 }
@@ -1111,8 +1133,25 @@ static void pointer_axis_stop_handler(void *data,
 {
     sb_application_t *app = (sb_application_t*)data;
 
+    enum sb_pointer_scroll_axis sb_axis =
+        SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
+    switch (axis) {
+    case WL_POINTER_AXIS_VERTICAL_SCROLL:
+        app->scroll.ver_stop = true;
+        sb_axis = SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
+        break;
+    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+        app->scroll.hor_stop = true;
+        sb_axis = SB_POINTER_SCROLL_AXIS_HORIZONTAL_SCROLL;
+        break;
+    default:
+        break;
+    }
+
+    app->scroll.stop_axis = sb_axis;
     app->scroll.frame = false;
     sb_log_debug("pointer_axis_stop_handler() - axis: %d\n", axis);
+
 }
 
 static void pointer_axis_discrete_handler(void *data,
