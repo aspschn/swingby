@@ -363,12 +363,16 @@ void _draw_frame(sb_surface_t *surface)
         surface->gl.frag_shader = _load_shader(canvas_frag_shader,
             GL_FRAGMENT_SHADER);
     }
-    surface->gl.program = glCreateProgram();
-    glAttachShader(surface->gl.program, surface->gl.vert_shader);
-    glAttachShader(surface->gl.program, surface->gl.frag_shader);
+    // Create the program if not exist.
+    if (surface->gl.program == 0) {
+        surface->gl.program = glCreateProgram();
+        glAttachShader(surface->gl.program, surface->gl.vert_shader);
+        glAttachShader(surface->gl.program, surface->gl.frag_shader);
 
-    // Link and use the program.
-    glLinkProgram(surface->gl.program);
+        // Link the program.
+        glLinkProgram(surface->gl.program);
+    }
+    // Use the program.
     glUseProgram(surface->gl.program);
 
     // GL draw.
@@ -442,8 +446,8 @@ void _draw_frame(sb_surface_t *surface)
     glDeleteTextures(1, &texture);
 
     // Delete program.
-    glDeleteProgram(surface->gl.program);
-    surface->gl.program = 0;
+    // glDeleteProgram(surface->gl.program);
+    // surface->gl.program = 0;
 }
 
 static void _event_listener_filter_for_each(sb_list_t *listeners,
