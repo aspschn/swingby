@@ -99,7 +99,7 @@ typedef struct sb_timer_event_t {
 typedef struct sb_scroll_event_t {
     enum sb_pointer_scroll_source source;
     enum sb_pointer_scroll_axis axis;
-    uint32_t value;
+    float value;
     bool momentum;
 } sb_scroll_event_t;
 

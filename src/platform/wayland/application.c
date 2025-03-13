@@ -1070,7 +1070,7 @@ static void pointer_frame_handler(void *data,
     sb_application_t *app = (sb_application_t*)data;
 
     // sb_log_debug("pointer_frame_handler()\n");
-    if (app->scroll.frame == false && app->scroll.value > 0.0f) {
+    if (app->scroll.frame == false && app->scroll.value != 0.0f) {
         sb_log_debug(" = Pointer frame for scroll.\n");
         // Post scroll event.
         sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
