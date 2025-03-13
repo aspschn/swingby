@@ -155,6 +155,8 @@ void sb_view_on_pointer_double_click(sb_view_t *view, sb_event_t *event);
 
 void sb_view_on_pointer_release(sb_view_t *view, sb_event_t *event);
 
+void sb_view_on_pointer_scroll(sb_view_t *view, sb_event_t *event);
+
 #ifdef __cplusplus
 }
 #endif

@@ -317,3 +317,9 @@ void sb_view_on_pointer_double_click(sb_view_t *view, sb_event_t *event)
         SB_EVENT_TYPE_POINTER_DOUBLE_CLICK, event);
 }
 
+void sb_view_on_pointer_scroll(sb_view_t *view, sb_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        SB_EVENT_TYPE_POINTER_SCROLL, event);
+}
+

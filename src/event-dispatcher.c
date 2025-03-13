@@ -93,6 +93,8 @@ void _propagate_pointer_event(sb_view_t *view, sb_event_t *event)
             sb_view_on_pointer_release(parent, event);
         } else if (event->type == SB_EVENT_TYPE_POINTER_CLICK) {
             sb_view_on_pointer_click(parent, event);
+        } else if (event->type == SB_EVENT_TYPE_POINTER_SCROLL) {
+            sb_view_on_pointer_scroll(parent, event);
         }
 
         x = event->pointer.position.x + sb_view_geometry(parent)->pos.x;
@@ -268,6 +270,12 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
             case SB_EVENT_TYPE_POINTER_DOUBLE_CLICK:
                 sb_view_on_pointer_double_click(event->target, event);
                 _propagate_pointer_event(event->target, event);
+                break;
+            case SB_EVENT_TYPE_POINTER_SCROLL:
+                sb_view_on_pointer_scroll(event->target, event);
+                _propagate_pointer_event(event->target, event);
+                sb_event_free(event);
+                break;
             default:
                 break;
             }
