@@ -78,6 +78,17 @@ struct sb_application_t {
         sb_pointer_button button;
     } double_click;
     struct {
+        enum sb_pointer_scroll_axis axis;
+        enum sb_pointer_scroll_source source;
+        float value;
+        /// \brief Vertical stop.
+        bool ver_stop;
+        /// \brief Horizontal stop.
+        bool hor_stop;
+        enum sb_pointer_scroll_axis stop_axis;
+        bool frame;
+    } scroll;
+    struct {
         /// \brief Current keyboard surface.
         sb_surface_t *surface;
     } keyboard;
@@ -211,12 +222,33 @@ static void pointer_axis_handler(void *data,
                                  uint32_t axis,
                                  wl_fixed_t value);
 
+static void pointer_frame_handler(void *data,
+                                  struct wl_pointer *wl_pointer);
+
+static void pointer_axis_source_handler(void *data,
+                                        struct wl_pointer *wl_pointer,
+                                        uint32_t axis_source);
+
+static void pointer_axis_stop_handler(void *data,
+                                      struct wl_pointer *wl_pointer,
+                                      uint32_t time,
+                                      uint32_t axis);
+
+static void pointer_axis_discrete_handler(void *data,
+                                          struct wl_pointer *wl_pointer,
+                                          uint32_t axis,
+                                          int32_t discrete);
+
 static const struct wl_pointer_listener pointer_listener = {
     .enter = pointer_enter_handler,
     .leave = pointer_leave_handler,
     .motion = pointer_motion_handler,
     .button = pointer_button_handler,
     .axis = pointer_axis_handler,
+    .frame = pointer_frame_handler,
+    .axis_source = pointer_axis_source_handler,
+    .axis_stop = pointer_axis_stop_handler,
+    .axis_discrete = pointer_axis_discrete_handler, // Deprecated since 8.
 };
 
 //!<============
@@ -428,6 +460,12 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->outputs = sb_list_new();
 
     _reset_double_click(app);
+
+    // Init scroll info.
+    app->scroll.value = 0.0f;
+    app->scroll.ver_stop = false;
+    app->scroll.hor_stop = false;
+    app->scroll.frame = false;
 
     // Init xkb context as NULL.
     app->xkb_context = NULL;
@@ -650,7 +688,7 @@ static void app_global_handler(void *data,
             name, &xdg_wm_base_interface, 1);
     } else if (strcmp(interface, "wl_seat") == 0) {
         app->_wl_seat = wl_registry_bind(wl_registry,
-            name, &wl_seat_interface, 4);
+            name, &wl_seat_interface, 5);
         wl_seat_add_listener(app->_wl_seat, &seat_listener, (void*)app);
     } else if (strcmp(interface, "wl_output") == 0) {
         sb_log_debug("wl_output - name: %d\n", name);
@@ -1003,7 +1041,125 @@ static void pointer_axis_handler(void *data,
                                  uint32_t axis,
                                  wl_fixed_t value)
 {
-    //
+    sb_application_t *app = (sb_application_t*)data;
+
+    float val = wl_fixed_to_double(value);
+    sb_log_debug("pointer_axis_handler() - value: %.2f, axis: %d\n", val, axis);
+
+    enum sb_pointer_scroll_axis sb_axis =
+        SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
+    switch (axis) {
+    case WL_POINTER_AXIS_VERTICAL_SCROLL:
+        sb_axis = SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
+        break;
+    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+        sb_axis = SB_POINTER_SCROLL_AXIS_HORIZONTAL_SCROLL;
+        break;
+    default:
+        break;
+    }
+
+    app->scroll.frame = false;
+    app->scroll.axis = sb_axis;
+    app->scroll.value = val;
+}
+
+static void pointer_frame_handler(void *data,
+                                  struct wl_pointer *wl_pointer)
+{
+    sb_application_t *app = (sb_application_t*)data;
+
+    // sb_log_debug("pointer_frame_handler()\n");
+    if (app->scroll.frame == false && app->scroll.value != 0.0f) {
+        sb_log_debug(" = Pointer frame for scroll.\n");
+        // Post scroll event.
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+            app->pointer.view, SB_EVENT_TYPE_POINTER_SCROLL);
+        event->scroll.axis = app->scroll.axis;
+        event->scroll.source = app->scroll.source;
+        event->scroll.value = app->scroll.value;
+
+        sb_application_post_event(app, event);
+
+        // Reset scroll info.
+        app->scroll.frame = true;
+        app->scroll.value = 0.0f;
+    }
+    if (app->scroll.ver_stop == true || app->scroll.hor_stop == true) {
+        sb_log_debug(" == Pointer frame for stop!\n");
+        app->scroll.ver_stop = false;
+        app->scroll.hor_stop = false;
+    }
+    // sb_log_debug("pointer_frame_handler()\n");
+}
+
+static void pointer_axis_source_handler(void *data,
+                                        struct wl_pointer *wl_pointer,
+                                        uint32_t axis_source)
+{
+    sb_application_t *app = (sb_application_t*)data;
+
+    enum sb_pointer_scroll_source source;
+    switch (axis_source) {
+    case WL_POINTER_AXIS_SOURCE_WHEEL:
+        source = SB_POINTER_SCROLL_SOURCE_WHEEL;
+        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_WHEEL\n");
+        break;
+    case WL_POINTER_AXIS_SOURCE_FINGER:
+        source = SB_POINTER_SCROLL_SOURCE_FINGER;
+        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_FINGER\n");
+        break;
+    case WL_POINTER_AXIS_SOURCE_CONTINUOUS:
+        source = SB_POINTER_SCROLL_SOURCE_CONTINUOUS;
+        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_CONTINUOUS\n");
+        break;
+    case WL_POINTER_AXIS_SOURCE_WHEEL_TILT:
+        source = SB_POINTER_SCROLL_SOURCE_WHEEL_TILT;
+        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_WHEEL_TILT\n");
+        break;
+    default:
+        source = SB_POINTER_SCROLL_SOURCE_WHEEL;
+        break;
+    }
+
+    app->scroll.frame = false;
+    app->scroll.source = source;
+}
+
+static void pointer_axis_stop_handler(void *data,
+                                      struct wl_pointer *wl_pointer,
+                                      uint32_t time,
+                                      uint32_t axis)
+{
+    sb_application_t *app = (sb_application_t*)data;
+
+    enum sb_pointer_scroll_axis sb_axis =
+        SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
+    switch (axis) {
+    case WL_POINTER_AXIS_VERTICAL_SCROLL:
+        app->scroll.ver_stop = true;
+        sb_axis = SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
+        break;
+    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+        app->scroll.hor_stop = true;
+        sb_axis = SB_POINTER_SCROLL_AXIS_HORIZONTAL_SCROLL;
+        break;
+    default:
+        break;
+    }
+
+    app->scroll.stop_axis = sb_axis;
+    app->scroll.frame = false;
+    sb_log_debug("pointer_axis_stop_handler() - axis: %d\n", axis);
+
+}
+
+static void pointer_axis_discrete_handler(void *data,
+                                          struct wl_pointer *wl_pointer,
+                                          uint32_t axis,
+                                          int32_t discrete)
+{
+    // Deprecated.
 }
 
 //!<============

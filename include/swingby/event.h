@@ -26,6 +26,7 @@ enum sb_event_type {
     SB_EVENT_TYPE_POINTER_RELEASE           = 14,
     SB_EVENT_TYPE_POINTER_CLICK             = 15,
     SB_EVENT_TYPE_POINTER_DOUBLE_CLICK      = 16,
+    SB_EVENT_TYPE_POINTER_SCROLL            = 20,
     SB_EVENT_TYPE_KEYBOARD_ENTER            = 30,
     SB_EVENT_TYPE_KEYBOARD_LEAVE            = 31,
     SB_EVENT_TYPE_KEYBOARD_KEY_PRESS        = 32,
@@ -95,6 +96,13 @@ typedef struct sb_timer_event_t {
     uint64_t time;
 } sb_timer_event_t;
 
+typedef struct sb_scroll_event_t {
+    enum sb_pointer_scroll_source source;
+    enum sb_pointer_scroll_axis axis;
+    float value;
+    bool momentum;
+} sb_scroll_event_t;
+
 struct sb_event_t {
     enum sb_event_target_type target_type;
     void *target;
@@ -108,6 +116,7 @@ struct sb_event_t {
         sb_state_change_event_t state_change;
         sb_scale_event_t scale;
         sb_timer_event_t timer;
+        sb_scroll_event_t scroll;
     };
 };
 
