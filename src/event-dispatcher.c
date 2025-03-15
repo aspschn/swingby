@@ -222,6 +222,7 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 break;
             case SB_EVENT_TYPE_REQUEST_UPDATE:
                 sb_surface_on_request_update(event->target);
+                sb_event_free(event);
                 break;
             case SB_EVENT_TYPE_RESIZE:
                 sb_surface_on_resize(event->target, event);
