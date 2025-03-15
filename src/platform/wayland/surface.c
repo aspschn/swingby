@@ -110,7 +110,7 @@ void _gl_init(sb_surface_t *surface)
         surface->_size.width * surface->scale,
         surface->_size.height * surface->scale);
 
-    glClearColor(0.5, 0.5, 0.5, 0.5);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glEnable(GL_BLEND);
