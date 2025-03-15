@@ -1,18 +1,10 @@
 # Swingby
 
-A thin wrapper library for building Wayland client GUI programs.
+A minimal GUI library written in C, rendered with [Skia](https://skia.org/).
 
-It is derived from [Blusher](https://github.com/orbitrc/blusher2/tree/scroll-view) the
-Wayland GUI framework. These two projects share much of the codebase,
-however, this is not a direct fork.
+Swingby is the first cross-platform GUI library that prioritizes Wayland first.
 
-Originally, Blusher has too high-level APIs while Wayland protocol is low-level.
-This gap finally made development more difficult.
-
-So, I decided to make a less abstracted library that works as a middle-ware.
-
-Swingby uses [Skia](https://skia.org/) the 2D graphics library
-as a rendering engine.
+Swingby is not a full-featured framework. It is a library for minimal GUI.
 
 
 ## Features
@@ -100,8 +92,8 @@ $ cmake .. -DSWINGBY_DEBUG=ON
 
 ### Application
 
-An application is a global object that manage the event loop, Wayland global objects
-and an application's lifecycle.
+An application is a global object that manage the event loop, the platform
+dependent global objects and an application's lifecycle.
 
 ### Surface
 
