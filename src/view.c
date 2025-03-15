@@ -9,6 +9,8 @@
 #include <swingby/list.h>
 #include <swingby/event.h>
 
+#include "helpers/shared.h"
+
 struct sb_view_t {
     sb_surface_t *_surface;
     sb_rect_t _geometry;
@@ -24,6 +26,7 @@ struct sb_view_t {
     sb_list_t *filters;
     /// \brief Clip child views. Default is false.
     bool clip;
+    enum sb_cursor_shape cursor_shape;
     sb_list_t *event_listeners;
 };
 
@@ -31,18 +34,6 @@ struct sb_view_t {
 //!< Helper Functions
 //!<====================
 
-static void _event_listener_filter_for_each(sb_list_t *listeners,
-                                            enum sb_event_type type,
-                                            sb_event_t *event)
-{
-    uint64_t length = sb_list_length(listeners);
-    for (uint64_t i = 0; i < length; ++i) {
-        sb_event_listener_tuple_t *tuple = sb_list_at(listeners, i);
-        if (tuple->type == type) {
-            tuple->listener(event);
-        }
-    }
-}
 
 //!<===========
 //!< View
@@ -54,6 +45,7 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 
     view->_surface = NULL;
     view->_parent = parent;
+    sb_log_debug("sb_view_new() - view: %p, parent: %p\n", view, parent);
     view->_geometry.pos = geometry->pos;
     view->_geometry.size = geometry->size;
     view->_color.r = 255;
@@ -75,6 +67,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     view->event_listeners = sb_list_new();
 
     view->clip = false;
+
+    view->cursor_shape = SB_CURSOR_SHAPE_DEFAULT;
 
     if (parent != NULL) {
         // Append the new view to the child list of the parent view.
@@ -124,43 +118,17 @@ enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view)
 
 void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type)
 {
-    // From single color to single color. Do nothing.
-    if (view->fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR &&
-        fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
-        return;
-    }
-
-    // From single color to image.
-    if (view->fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR &&
-        fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
-        view->fill_type = SB_VIEW_FILL_TYPE_IMAGE;
-
-        sb_size_i_t size;
-        size.width = view->_geometry.size.width;
-        size.height = view->_geometry.size.height;
-        view->image = sb_image_new(&size, SB_IMAGE_FORMAT_RGBA32);
-
-        return;
-    }
-
-    // From image to image. Do nothing.
-    if (view->fill_type == SB_VIEW_FILL_TYPE_IMAGE &&
-        fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
-        return;
-    }
-
-    // From image to single color.
-    if (view->fill_type == SB_VIEW_FILL_TYPE_IMAGE &&
-        fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
-        view->fill_type = SB_VIEW_FILL_TYPE_SINGLE_COLOR;
-
-        return;
-    }
+    view->fill_type = fill_type;
 }
 
 sb_image_t* sb_view_image(sb_view_t *view)
 {
     return view->image;
+}
+
+void sb_view_set_image(sb_view_t *view, sb_image_t *image)
+{
+    view->image = image;
 }
 
 const sb_view_radius_t* sb_view_radius(const sb_view_t *view)
@@ -240,6 +208,16 @@ void sb_view_set_clip(sb_view_t *view, bool clip)
     view->clip = clip;
 }
 
+enum sb_cursor_shape sb_view_cursor_shape(const sb_view_t *view)
+{
+    return view->cursor_shape;
+}
+
+void sb_view_set_cursor_shape(sb_view_t *view, enum sb_cursor_shape shape)
+{
+    view->cursor_shape = shape;
+}
+
 void sb_view_add_event_listener(sb_view_t *view,
                                 enum sb_event_type event_type,
                                 void (*listener)(sb_event_t*))
@@ -309,7 +287,9 @@ void sb_view_on_pointer_move(sb_view_t *view, sb_event_t *event)
 
 void sb_view_on_pointer_press(sb_view_t *view, sb_event_t *event)
 {
-    sb_log_debug("sb_view_on_pointer_press() - (%.2f, %.2f)\n", event->pointer.position.x, event->pointer.position.y);
+    sb_log_debug("sb_view_on_pointer_press() - (%.2f, %.2f) view: %p\n",
+        event->pointer.position.x, event->pointer.position.y,
+        event->target);
 
     _event_listener_filter_for_each(view->event_listeners,
         SB_EVENT_TYPE_POINTER_PRESS, event);
@@ -323,7 +303,9 @@ void sb_view_on_pointer_release(sb_view_t *view, sb_event_t *event)
 
 void sb_view_on_pointer_click(sb_view_t *view, sb_event_t *event)
 {
-    sb_log_debug("sb_view_on_pointer_click()\n");
+    sb_log_debug("sb_view_on_pointer_click() - (%.2f, %.2f) view: %p\n",
+        event->pointer.position.x, event->pointer.position.y,
+        event->target);
 
     _event_listener_filter_for_each(view->event_listeners,
         SB_EVENT_TYPE_POINTER_CLICK, event);
@@ -333,5 +315,11 @@ void sb_view_on_pointer_double_click(sb_view_t *view, sb_event_t *event)
 {
     _event_listener_filter_for_each(view->event_listeners,
         SB_EVENT_TYPE_POINTER_DOUBLE_CLICK, event);
+}
+
+void sb_view_on_pointer_scroll(sb_view_t *view, sb_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        SB_EVENT_TYPE_POINTER_SCROLL, event);
 }
 

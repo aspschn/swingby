@@ -5,11 +5,8 @@ project(swingby
     LANGUAGES C CXX
 )
 
-set(WAYLAND_PROTOCOLS_SOURCES
-    include/wayland-protocols/stable/xdg-shell.c
-)
-
 set(SWINGBY_HEADERS
+    include/swingby/common.h
     include/swingby/log.h
     include/swingby/bench.h
     include/swingby/list.h
@@ -24,7 +21,6 @@ set(SWINGBY_HEADERS
     include/swingby/desktop-surface.h
     include/swingby/view.h
     include/swingby/image.h
-    include/swingby/egl-context.h
     include/swingby/input.h
     include/swingby/cursor.h
     include/swingby/event.h
@@ -32,8 +28,21 @@ set(SWINGBY_HEADERS
     include/swingby/swingby.h
 )
 
+set(SWINGBY_SKIA_STATIC_DIR ${CMAKE_SOURCE_DIR}/skia/out/Static)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_subdirectory(cmake/wayland)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+    set(CMAKE_CXX_FLAGS_DEBUG "/MT")
+    add_subdirectory(cmake/win32)
+endif()
+
 set(SWINGBY_SOURCES
     ${SWINGBY_HEADERS}
+    ${SWINGBY_PLATFORM_SOURCES}
+    src/common.c
     src/log.c
     src/bench.c
     src/list.c
@@ -41,31 +50,28 @@ set(SWINGBY_SOURCES
     src/rect.c
     src/color.c
     src/filter.c
-    src/application.c
     src/output.c
-    src/surface.c
-    src/desktop-surface.c
     src/view.c
     src/image.c
-    src/egl-context.c
     src/cursor.c
     src/event.c
     src/event-dispatcher.c
-    src/skia/gl-context.h
-    src/skia/gl-context.cpp
     src/skia/raster-context.h
     src/skia/raster-context.cpp
     src/skia/context.h
     src/skia/context.cpp
+    src/skia/gl-context.h
+    src/skia/gl-context.cpp
     src/skia/draw.h
     src/skia/draw.cpp
+    src/skia/load-image.h
+    src/skia/load-image.cpp
     src/skia/backend/gl.h
     src/skia/backend/gl.cpp
     src/skia/backend/raster.h
     src/skia/backend/raster.cpp
-    src/xkb/xkb-context.h
-    src/xkb/xkb-context.c
-    ${WAYLAND_PROTOCOLS_SOURCES}
+    src/helpers/shared.h
+    src/helpers/shared.c
 )
 
 add_library(swingby SHARED
@@ -79,6 +85,8 @@ target_include_directories(swingby
     PRIVATE ./skia
 )
 
+target_compile_options(swingby PRIVATE -Wall)
+
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
 if(SWINGBY_DEBUG)
@@ -86,23 +94,23 @@ if(SWINGBY_DEBUG)
 endif()
 
 target_link_options(swingby
-    PRIVATE -lwayland-client
-    PRIVATE -lwayland-egl
-    PRIVATE -lEGL
-    PRIVATE -lGL
-    PRIVATE -lxkbcommon
-    # Skia
-    PRIVATE -lfreetype
-    PRIVATE -lz
-    PRIVATE -lpng16
-    PRIVATE -ljpeg
+    ${SWINGBY_PLATFORM_LINK_OPTIONS}
 )
-
-set(SWINGBY_SKIA_STATIC_DIR ${CMAKE_SOURCE_DIR}/skia/out/Static)
 
 target_link_libraries(swingby
-    PRIVATE ${SWINGBY_SKIA_STATIC_DIR}/libskia.a
+    ${SWINGBY_PLATFORM_LINK_LIBRARIES}
 )
+
+target_compile_definitions(swingby
+    PRIVATE SB_BUILDING_SHARED_LIBRARY
+)
+
+# Platform macros.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_compile_definitions(SB_PLATFORM_WAYLAND)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    add_compile_definitions(SB_PLATFORM_WIN32)
+endif()
 
 # Version info.
 set_target_properties(swingby PROPERTIES

@@ -69,6 +69,8 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     button_color.a = 255;
     sb_view_set_color(title_bar->maximize_restore_button, &button_color);
 
+    title_bar->pressed = false;
+
     return title_bar;
 }
 

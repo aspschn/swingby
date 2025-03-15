@@ -3,9 +3,11 @@
 
 #include <stdbool.h>
 
+#include <swingby/common.h>
 #include <swingby/rect.h>
 #include <swingby/surface.h>
 #include <swingby/color.h>
+#include <swingby/cursor.h>
 #include <swingby/event.h>
 
 #ifdef __cplusplus
@@ -35,51 +37,77 @@ typedef struct sb_view_t sb_view_t;
 ///
 /// The parent must not be NULL. Pass a surface's root view for top level view.
 /// Pass parent as NULL used in creation surface's root view.
+SB_EXPORT
 sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry);
 
+SB_EXPORT
 void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface);
 
 /// \brief Get the surface which the view rely on.
+SB_EXPORT
 sb_surface_t* sb_view_surface(const sb_view_t *view);
 
 /// \brief Get the geometry of the view.
+SB_EXPORT
 const sb_rect_t* sb_view_geometry(const sb_view_t *view);
 
 /// \brief Set the geometry of the view.
+SB_EXPORT
 void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry);
 
 /// \brief Get the color of the view if view's fill type is single color.
+SB_EXPORT
 const sb_color_t* sb_view_color(const sb_view_t *view);
 
 /// \brief Set the color of the view. Only for single color fill type view.
+SB_EXPORT
 void sb_view_set_color(sb_view_t *view, const sb_color_t *color);
 
 /// \brief Get the fill type of the view.
+SB_EXPORT
 enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view);
 
 /// \brief Set the fill type of the view.
+SB_EXPORT
 void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type);
 
-/// \brief Get the image of the view. Valid if only fill type is image.
+/// \brief Get the image of the view. Returns NULL if there is no image.
+SB_EXPORT
 sb_image_t* sb_view_image(sb_view_t *view);
 
+/// \brief Set the image of the view. Pass NULL to unset.
+SB_EXPORT
+void sb_view_set_image(sb_view_t *view, sb_image_t *image);
+
 /// \brief Get the radius of the view.
+SB_EXPORT
 const sb_view_radius_t* sb_view_radius(const sb_view_t *view);
 
 /// \brief Set the radius of the view.
+SB_EXPORT
 void sb_view_set_radius(sb_view_t *view, const sb_view_radius_t *radius);
 
 /// \brief Add a filter to the view.
+SB_EXPORT
 void sb_view_add_filter(sb_view_t *view, const sb_filter_t *filter);
 
 /// \brief Get the list of filters of the view.
+SB_EXPORT
 const sb_list_t* sb_view_filters(const sb_view_t *view);
 
 /// \brief Get the clip property of the view.
+SB_EXPORT
 bool sb_view_clip(const sb_view_t *view);
 
 /// \brief Set the clip property of the view.
+SB_EXPORT
 void sb_view_set_clip(sb_view_t *view, bool clip);
+
+SB_EXPORT
+enum sb_cursor_shape sb_view_cursor_shape(const sb_view_t *view);
+
+SB_EXPORT
+void sb_view_set_cursor_shape(sb_view_t *view, enum sb_cursor_shape shape);
 
 /// \brief Get the list of the view's children.
 sb_list_t* sb_view_children(sb_view_t *view);
@@ -90,6 +118,7 @@ sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position);
 /// \brief Returns the parent view.
 sb_view_t* sb_view_parent(sb_view_t *view);
 
+SB_EXPORT
 void sb_view_add_event_listener(sb_view_t *view,
                                 enum sb_event_type event_type,
                                 void (*listener)(sb_event_t*));
@@ -125,6 +154,8 @@ void sb_view_on_pointer_click(sb_view_t *view, sb_event_t *event);
 void sb_view_on_pointer_double_click(sb_view_t *view, sb_event_t *event);
 
 void sb_view_on_pointer_release(sb_view_t *view, sb_event_t *event);
+
+void sb_view_on_pointer_scroll(sb_view_t *view, sb_event_t *event);
 
 #ifdef __cplusplus
 }

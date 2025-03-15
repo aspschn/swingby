@@ -17,16 +17,17 @@
 #include <swingby/log.h>
 #include <swingby/bench.h>
 #include <swingby/application.h>
-#include <swingby/egl-context.h>
 #include <swingby/view.h>
 #include <swingby/image.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
 
-#include "./skia/context.h"
-#include "./skia/draw.h"
+#include "egl-context/egl-context.h"
 
-#include "shaders.h"
+#include "../../skia/context.h"
+#include "../../skia/draw.h"
+
+#include "../../shaders.h"
 
 #define SWINGBY_BACKEND_DEFAULT "raster"
 
@@ -38,6 +39,7 @@ struct sb_surface_t {
     sb_skia_context_t *skia_context;
     sb_size_t _size;
     sb_view_t *_root_view;
+    uint32_t scale;
     bool frame_ready;
     bool update_pending;
     /// \brief Program objects for OpenGL.
@@ -66,6 +68,33 @@ static const struct wl_callback_listener callback_listener = {
     .done = callback_done_handler,
 };
 
+//!<===================
+//!< Wayland Surface
+//!<===================
+
+static void enter_handler(void *data,
+                          struct wl_surface *wl_surface,
+                          struct wl_output *wl_output);
+
+static void leave_handler(void *data,
+                          struct wl_surface *wl_surface,
+                          struct wl_output *wl_output);
+
+static void preferred_buffer_scale_handler(void *data,
+                                           struct wl_surface *wl_surface,
+                                           int32_t factor);
+
+static void preferred_buffer_transform_handler(void *data,
+                                               struct wl_surface *wl_surface,
+                                               uint32_t transform);
+
+static const struct wl_surface_listener surface_listener = {
+    .enter = enter_handler,
+    .leave = leave_handler,
+    .preferred_buffer_scale = preferred_buffer_scale_handler,
+    .preferred_buffer_transform = preferred_buffer_transform_handler,
+};
+
 //!<======================
 //!< Helper Functions
 //!<======================
@@ -77,7 +106,9 @@ void _gl_init(sb_surface_t *surface)
         surface->_egl_surface,
         surface->_egl_context->egl_context);
 
-    glViewport(0, 0, surface->_size.width, surface->_size.height);
+    glViewport(0, 0,
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale);
 
     glClearColor(0.5, 0.5, 0.5, 0.5);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -221,8 +252,8 @@ static GLuint _set_texture(sb_surface_t *surface)
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        surface->_size.width,
-        surface->_size.height,
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -255,6 +286,7 @@ static void _draw_recursive(sb_surface_t *surface,
         sb_skia_draw_rect2(
             surface->skia_context,
             sb_view_geometry(view),
+            surface->scale,
             sb_view_color(view),
             radius,
             filters,
@@ -302,9 +334,11 @@ void _draw_frame(sb_surface_t *surface)
 
     // Skia context begin.
     sb_skia_context_set_buffer_size(surface->skia_context,
-        surface->_size.width, surface->_size.height);
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale);
     sb_skia_context_begin(surface->skia_context,
-        surface->_size.width, surface->_size.height);
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale);
 
     // Clear color.
     sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
@@ -329,12 +363,16 @@ void _draw_frame(sb_surface_t *surface)
         surface->gl.frag_shader = _load_shader(canvas_frag_shader,
             GL_FRAGMENT_SHADER);
     }
-    surface->gl.program = glCreateProgram();
-    glAttachShader(surface->gl.program, surface->gl.vert_shader);
-    glAttachShader(surface->gl.program, surface->gl.frag_shader);
+    // Create the program if not exist.
+    if (surface->gl.program == 0) {
+        surface->gl.program = glCreateProgram();
+        glAttachShader(surface->gl.program, surface->gl.vert_shader);
+        glAttachShader(surface->gl.program, surface->gl.frag_shader);
 
-    // Link and use the program.
-    glLinkProgram(surface->gl.program);
+        // Link the program.
+        glLinkProgram(surface->gl.program);
+    }
+    // Use the program.
     glUseProgram(surface->gl.program);
 
     // GL draw.
@@ -408,8 +446,8 @@ void _draw_frame(sb_surface_t *surface)
     glDeleteTextures(1, &texture);
 
     // Delete program.
-    glDeleteProgram(surface->gl.program);
-    surface->gl.program = 0;
+    // glDeleteProgram(surface->gl.program);
+    // surface->gl.program = 0;
 }
 
 static void _event_listener_filter_for_each(sb_list_t *listeners,
@@ -447,6 +485,10 @@ sb_surface_t* sb_surface_new()
     // Frame callback.
     surface->frame_callback = wl_surface_frame(surface->_wl_surface);
     wl_callback_add_listener(surface->frame_callback, &callback_listener,
+        (void*)surface);
+
+    // Add surface listener.
+    wl_surface_add_listener(surface->_wl_surface, &surface_listener,
         (void*)surface);
 
     // Initialize EGL context.
@@ -494,6 +536,9 @@ sb_surface_t* sb_surface_new()
     geo.size.height = surface->_size.height;
     surface->_root_view = sb_view_new(NULL, &geo);
     sb_view_set_surface(surface->_root_view, surface);
+
+    // Scale.
+    surface->scale = 1;
 
     // Event listeners.
     surface->event_listeners = sb_list_new();
@@ -592,6 +637,24 @@ void sb_surface_update(sb_surface_t *surface)
     }
 }
 
+uint32_t sb_surface_scale(const sb_surface_t *surface)
+{
+    return surface->scale;
+}
+
+void sb_surface_set_scale(sb_surface_t *surface, uint32_t scale)
+{
+    surface->scale = scale;
+    wl_surface_set_buffer_scale(surface->_wl_surface, scale);
+
+    wl_egl_window_resize(surface->_wl_egl_window,
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale,
+        0, 0);
+
+    sb_surface_update(surface);
+}
+
 void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry)
 {
     sb_application_t *app = sb_application_instance();
@@ -657,6 +720,20 @@ void sb_surface_on_keyboard_key_release(sb_surface_t *surface,
         SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE, event);
 }
 
+void sb_surface_on_preferred_scale(sb_surface_t *surface,
+                                   sb_event_t *event)
+{
+    _event_listener_filter_for_each(surface->event_listeners,
+        SB_EVENT_TYPE_PREFERRED_SCALE, event);
+}
+
+void sb_surface_on_timeout(sb_surface_t *surface,
+                           sb_event_t *event)
+{
+    _event_listener_filter_for_each(surface->event_listeners,
+        SB_EVENT_TYPE_TIMEOUT, event);
+}
+
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface)
 {
     return surface->_wl_surface;
@@ -684,4 +761,41 @@ static void callback_done_handler(void *data,
         surface->update_pending = false;
         surface->frame_ready = false;
     }
+}
+
+//!<====================
+//!< Wayland Surface
+//!<====================
+
+static void enter_handler(void *data,
+                          struct wl_surface *wl_surface,
+                          struct wl_output *wl_output)
+{
+}
+
+static void leave_handler(void *data,
+                          struct wl_surface *wl_surface,
+                          struct wl_output *wl_output)
+{
+}
+
+static void preferred_buffer_scale_handler(void *data,
+                                           struct wl_surface *wl_surface,
+                                           int32_t factor)
+{
+    sb_surface_t *surface = (sb_surface_t*)data;
+    sb_log_debug("preferred_buffer_scale_handler - factor: %d\n", factor);
+
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE, surface,
+        SB_EVENT_TYPE_PREFERRED_SCALE);
+    event->scale.scale = factor;
+
+    sb_application_t *app = sb_application_instance();
+    sb_application_post_event(app, event);
+}
+
+static void preferred_buffer_transform_handler(void *data,
+                                               struct wl_surface *wl_surface,
+                                               uint32_t transform)
+{
 }

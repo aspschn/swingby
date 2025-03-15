@@ -35,6 +35,7 @@ void sb_skia_draw_rect_with_radius(sb_skia_context_t *context,
 /// \param filters  The filter list of this rectangle. Can be NULL.
 void sb_skia_draw_rect2(sb_skia_context_t *context,
                         const sb_rect_t *rect,
+                        uint32_t scale,
                         const sb_color_t *color,
                         const sb_view_radius_t *radius,
                         const sb_list_t *filters,

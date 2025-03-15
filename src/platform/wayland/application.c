@@ -12,6 +12,7 @@
 
 #include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
+#include <wayland-protocols/staging/cursor-shape-v1.h>
 
 #include <swingby/log.h>
 #include <swingby/surface.h>
@@ -25,6 +26,10 @@
 #include <swingby/event-dispatcher.h>
 
 #include "xkb/xkb-context.h"
+#include "xcursor/xcursor.h"
+
+#include "../../helpers/shared.h"
+#include "helpers/application.h"
 
 struct sb_application_t {
     /// `struct wl_display`.
@@ -37,26 +42,30 @@ struct sb_application_t {
     struct wl_pointer *_wl_pointer;
     struct wl_keyboard *_wl_keyboard;
     struct wl_touch *_wl_touch;
-    /// \brief Current pointer surface.
-    ///
-    /// Pointer motion handler not pass `struct wl_surface` object.
-    /// Store this information when pointer entered to the surface.
-    struct wl_surface *_pointer_surface;
-    /// \brief Current pointer view.
-    ///
-    /// Store the position of the view under the pointer.
-    sb_view_t *_pointer_view;
-    /// \brief Pointer event position.
-    ///
-    /// Pointer button and axis event not pass the position.
-    /// Store this information when pointer moved.
-    sb_point_t _pointer_pos;
-    /// \brief Pointer button event serial.
-    uint32_t pointer_button_serial;
-    /// \brief Pointer enter event information.
+    struct wp_cursor_shape_manager_v1 *wp_cursor_shape_manager_v1;
     struct {
-        uint32_t serial;
-    } enter;
+        /// \brief Current pointer surface.
+        ///
+        /// Pointer motion handler not pass `struct wl_surface` object.
+        /// Store this information when pointer entered to the surface.
+        struct wl_surface *wl_surface;
+        /// \brief Current pointer view.
+        ///
+        /// Store the position of the view under the pointer.
+        /// Usefull when check differences in motion event.
+        sb_view_t *view;
+        /// \brief Pointer event position.
+        ///
+        /// Pointer button and axis event not pass the position.
+        /// Store this information when pointer moved.
+        sb_point_t pos;
+        /// \brief Pointer button event serial.
+        uint32_t button_serial;
+        /// \brief Pointer enter event information.
+        ///
+        /// Currently used only when change cursor shape.
+        uint32_t enter_serial;
+    } pointer;
     /// \brief Click event information.
     struct {
         sb_view_t *view;
@@ -69,18 +78,33 @@ struct sb_application_t {
         sb_pointer_button button;
     } double_click;
     struct {
+        enum sb_pointer_scroll_axis axis;
+        enum sb_pointer_scroll_source source;
+        float value;
+        /// \brief Vertical stop.
+        bool ver_stop;
+        /// \brief Horizontal stop.
+        bool hor_stop;
+        enum sb_pointer_scroll_axis stop_axis;
+        bool frame;
+    } scroll;
+    struct {
         /// \brief Current keyboard surface.
         sb_surface_t *surface;
     } keyboard;
     struct sb_xkb_context_t *xkb_context;
     /// \brief List of the desktop surfaces.
-    sb_list_t *_desktop_surfaces;
+    sb_list_t *desktop_surfaces;
+    struct {
+        sb_xcursor_theme_manager_t *manager;
+        char current[256];
+    } xcursor;
     /// \brief Default cursor when view not set cursor.
     sb_cursor_t *cursor;
     /// \brief Output list.
     sb_list_t *outputs;
     /// \brief An event dispatcher.
-    sb_event_dispatcher_t *_event_dispatcher;
+    sb_event_dispatcher_t *event_dispatcher;
 };
 
 // Singleton object.
@@ -198,12 +222,33 @@ static void pointer_axis_handler(void *data,
                                  uint32_t axis,
                                  wl_fixed_t value);
 
+static void pointer_frame_handler(void *data,
+                                  struct wl_pointer *wl_pointer);
+
+static void pointer_axis_source_handler(void *data,
+                                        struct wl_pointer *wl_pointer,
+                                        uint32_t axis_source);
+
+static void pointer_axis_stop_handler(void *data,
+                                      struct wl_pointer *wl_pointer,
+                                      uint32_t time,
+                                      uint32_t axis);
+
+static void pointer_axis_discrete_handler(void *data,
+                                          struct wl_pointer *wl_pointer,
+                                          uint32_t axis,
+                                          int32_t discrete);
+
 static const struct wl_pointer_listener pointer_listener = {
     .enter = pointer_enter_handler,
     .leave = pointer_leave_handler,
     .motion = pointer_motion_handler,
     .button = pointer_button_handler,
     .axis = pointer_axis_handler,
+    .frame = pointer_frame_handler,
+    .axis_source = pointer_axis_source_handler,
+    .axis_stop = pointer_axis_stop_handler,
+    .axis_discrete = pointer_axis_discrete_handler, // Deprecated since 8.
 };
 
 //!<============
@@ -282,7 +327,7 @@ static sb_surface_t* _find_surface(sb_application_t *app,
                                    struct wl_surface *wl_surface)
 {
     sb_surface_t *found = NULL;
-    sb_list_t *list = app->_desktop_surfaces;
+    sb_list_t *list = app->desktop_surfaces;
     for (int i = 0; i < sb_list_length(list); ++i) {
         sb_desktop_surface_t *desktop_surface = sb_list_at(list, i);
         sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
@@ -293,27 +338,6 @@ static sb_surface_t* _find_surface(sb_application_t *app,
     }
 
     return found;
-}
-
-/// \brief Find most child view of the root view.
-static sb_view_t* _find_most_child(sb_view_t *view,
-                                   sb_point_t *position)
-{
-    sb_list_t *children = sb_view_children(view);
-
-    if (sb_list_length(children) == 0) {
-        return view;
-    }
-    sb_view_t *child = sb_view_child_at(view, position);
-
-    if (child == NULL) {
-        return view;
-    }
-
-    position->x = position->x - sb_view_geometry(child)->pos.x;
-    position->y = position->y - sb_view_geometry(child)->pos.y;
-
-    return _find_most_child(child, position);
 }
 
 /// \brief Linux button to Foundation pointer button.
@@ -422,8 +446,13 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->_wl_pointer = NULL;
     app->_wl_keyboard = NULL;
     app->_wl_touch = NULL;
-    app->_pointer_surface = NULL;
-    app->_pointer_view = NULL;
+    app->wp_cursor_shape_manager_v1 = NULL;
+
+    app->pointer.wl_surface = NULL;
+    app->pointer.view = NULL;
+    app->pointer.pos.x = 0;
+    app->pointer.pos.y = 0;
+
     app->click.view = NULL;
     app->click.button = SB_POINTER_BUTTON_NONE;
 
@@ -431,6 +460,12 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->outputs = sb_list_new();
 
     _reset_double_click(app);
+
+    // Init scroll info.
+    app->scroll.value = 0.0f;
+    app->scroll.ver_stop = false;
+    app->scroll.hor_stop = false;
+    app->scroll.frame = false;
 
     // Init xkb context as NULL.
     app->xkb_context = NULL;
@@ -446,11 +481,13 @@ sb_application_t* sb_application_new(int argc, char *argv[])
         NULL);
 
     // Desktop surface list.
-    app->_desktop_surfaces = sb_list_new();
+    app->desktop_surfaces = sb_list_new();
 
     // Event dispatcher.
-    app->_event_dispatcher = sb_event_dispatcher_new();
+    app->event_dispatcher = sb_event_dispatcher_new();
 
+    app->xcursor.manager = NULL;
+    app->xcursor.current[0] = '\0';
     app->cursor = NULL;
 
     _sb_application_instance = app;
@@ -465,26 +502,93 @@ sb_application_t* sb_application_instance()
 
 uint32_t sb_application_pointer_button_serial(sb_application_t *application)
 {
-    return application->pointer_button_serial;
+    return application->pointer.button_serial;
+}
+
+void sb_application_load_cursor_themes(sb_application_t *application)
+{
+    if (application->xcursor.manager != NULL) {
+        sb_xcursor_theme_manager_free(application->xcursor.manager);
+    }
+    // Load.
+    application->xcursor.manager = sb_xcursor_theme_manager_load();
+}
+
+const sb_list_t* sb_application_cursor_theme_ids(sb_application_t *application)
+{
+    return application->xcursor.manager->ids;
+}
+
+void sb_application_set_cursor_theme(sb_application_t *application,
+                                     const char *id)
+{
+    bool found = false;
+    sb_list_t *ids = application->xcursor.manager->ids;
+    for (uint64_t i = 0; i < sb_list_length(ids); ++i) {
+        const char *it = sb_list_at(ids, i);
+        if (strcmp(it, id) == 0) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        sb_log_warn("No such cursor theme %s\n", id);
+        return;
+    }
+
+    strcpy(application->xcursor.current, id);
+}
+
+const char* sb_application_cursor_theme(sb_application_t *application)
+{
+    if (strlen(application->xcursor.current) == 0) {
+        return NULL;
+    }
+    return application->xcursor.current;
+}
+
+uint32_t sb_application_add_timer(sb_application_t *application,
+                                  sb_surface_t *target,
+                                  uint32_t interval,
+                                  bool repeat)
+{
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
+        target, SB_EVENT_TYPE_TIMEOUT);
+
+    event->timer.id = 0;
+    event->timer.interval = interval;
+    event->timer.repeat = repeat;
+    event->timer.time = 0;
+
+    // Add new timer event to the event dispatcher.
+    uint32_t new_id = sb_event_dispatcher_timer_add_event(
+        application->event_dispatcher, event);
+
+    return new_id;
+}
+
+void sb_application_remove_timer(sb_application_t *application, uint32_t id)
+{
+    sb_event_dispatcher_timer_remove_event(application->event_dispatcher, id);
 }
 
 void sb_application_post_event(sb_application_t *application,
                                sb_event_t *event)
 {
-    sb_event_dispatcher_post_event(application->_event_dispatcher, event);
+    sb_event_dispatcher_post_event(application->event_dispatcher, event);
 }
 
 void sb_application_register_desktop_surface(sb_application_t *application,
     sb_desktop_surface_t *desktop_surface)
 {
-    sb_list_push(application->_desktop_surfaces, (void*)desktop_surface);
+    sb_list_push(application->desktop_surfaces, (void*)desktop_surface);
 }
 
 void sb_application_unregister_desktop_surface(sb_application_t *application,
     sb_desktop_surface_t *desktop_surface)
 {
     // TODO: Implementation.
-    sb_list_t *list = application->_desktop_surfaces;
+    sb_list_t *list = application->desktop_surfaces;
     uint64_t length = sb_list_length(list);
     int64_t index = -1;
     for (uint64_t i = 0; i < length; ++i) {
@@ -524,10 +628,10 @@ int sb_application_exec(sb_application_t *application)
 {
     int err = wl_display_dispatch(application->_wl_display);
     while (err != -1) {
-        sb_event_dispatcher_process_events(application->_event_dispatcher);
+        sb_event_dispatcher_process_events(application->event_dispatcher);
 
         // Exit event loop when last desktop surface closed.
-        if (sb_list_length(application->_desktop_surfaces) == 0) {
+        if (sb_list_length(application->desktop_surfaces) == 0) {
             sb_log_debug("Last desktop surface closed.\n");
             break;
         }
@@ -536,7 +640,9 @@ int sb_application_exec(sb_application_t *application)
 
         // Keyboard key repeat.
         bool has_event = sb_event_dispatcher_keyboard_key_repeat_has_event(
-            application->_event_dispatcher);
+            application->event_dispatcher);
+        has_event = has_event || sb_event_dispatcher_timer_has_event(
+            application->event_dispatcher);
         if (has_event != true) {
             err = wl_display_dispatch(application->_wl_display);
         } else {
@@ -582,7 +688,7 @@ static void app_global_handler(void *data,
             name, &xdg_wm_base_interface, 1);
     } else if (strcmp(interface, "wl_seat") == 0) {
         app->_wl_seat = wl_registry_bind(wl_registry,
-            name, &wl_seat_interface, 4);
+            name, &wl_seat_interface, 5);
         wl_seat_add_listener(app->_wl_seat, &seat_listener, (void*)app);
     } else if (strcmp(interface, "wl_output") == 0) {
         sb_log_debug("wl_output - name: %d\n", name);
@@ -594,6 +700,9 @@ static void app_global_handler(void *data,
             sb_list_push(app->outputs, output);
         }
         wl_output_add_listener(wl_output, &output_listener, (void*)app);
+    } else if (strcmp(interface, "wp_cursor_shape_manager_v1") == 0) {
+        app->wp_cursor_shape_manager_v1 = wl_registry_bind(wl_registry,
+            name, &wp_cursor_shape_manager_v1_interface, 1);
     }
 }
 
@@ -703,23 +812,36 @@ static void pointer_enter_handler(void *data,
 {
     sb_application_t *app = (sb_application_t*)data;
 
-    app->_pointer_surface = wl_surface;
+    app->pointer.wl_surface = wl_surface;
 
     // Set the serial.
-    app->enter.serial = serial;
+    app->pointer.enter_serial = serial;
 
-    // TEST cursor.
-    // Set default cursor.
-    if (app->cursor == NULL) {
-        sb_point_t hot_spot;
-        hot_spot.x = 0;
-        hot_spot.y = 0;
-        app->cursor = sb_cursor_new(SB_CURSOR_SHAPE_ARROW, &hot_spot);
+    // Cursor shape.
+    if (app->wp_cursor_shape_manager_v1 != NULL) {
+        struct wp_cursor_shape_device_v1 *device =
+            wp_cursor_shape_manager_v1_get_pointer(
+                app->wp_cursor_shape_manager_v1,
+                wl_pointer
+            );
+        wp_cursor_shape_device_v1_set_shape(device, serial,
+            WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT);
+
+        wp_cursor_shape_device_v1_destroy(device);
+    } else {
+        // TEST cursor.
+        // Set default cursor.
+        if (app->cursor == NULL) {
+            sb_point_t hot_spot;
+            hot_spot.x = 0;
+            hot_spot.y = 0;
+            app->cursor = sb_cursor_new(SB_CURSOR_SHAPE_DEFAULT, &hot_spot);
+        }
+
+        sb_surface_t *cursor_surface = sb_cursor_surface(app->cursor);
+        wl_pointer_set_cursor(wl_pointer,
+            serial, sb_surface_wl_surface(cursor_surface), 0, 0);
     }
-
-    sb_surface_t *cursor_surface = sb_cursor_surface(app->cursor);
-    wl_pointer_set_cursor(wl_pointer,
-        serial, sb_surface_wl_surface(cursor_surface), 0, 0);
 
     float x = wl_fixed_to_double(sx);
     float y = wl_fixed_to_double(sy);
@@ -746,7 +868,7 @@ static void pointer_enter_handler(void *data,
     sb_log_debug(" == root view: %p ==\n", root_view);
     sb_view_t *view = _find_most_child(root_view, &position);
 
-    app->_pointer_view = view;
+    app->pointer.view = view;
 
     // Post the event (view).
     _post_pointer_enter_event(view, position.x, position.y);
@@ -772,11 +894,11 @@ static void pointer_motion_handler(void *data,
     float y = wl_fixed_to_double(sy);
 
     // Store the position.
-    app->_pointer_pos.x = x;
-    app->_pointer_pos.y = y;
+    app->pointer.pos.x = x;
+    app->pointer.pos.y = y;
 
     // Find the surface.
-    sb_surface_t *surface = _find_surface(app, app->_pointer_surface);
+    sb_surface_t *surface = _find_surface(app, app->pointer.wl_surface);
 
     // Find most child view.
     sb_point_t pos;
@@ -797,12 +919,26 @@ static void pointer_motion_handler(void *data,
     }
 
     // Check difference.
-    if (view != app->_pointer_view) {
+    if (view != app->pointer.view) {
         // Post the leave event for the previous view.
         // TODO: Leave position.
-        _post_pointer_leave_event(app->_pointer_view, 0.0f, 0.0f);
+        _post_pointer_leave_event(app->pointer.view, 0.0f, 0.0f);
 
-        app->_pointer_view = view;
+        app->pointer.view = view;
+
+        // Cursor shape.
+        enum sb_cursor_shape shape = sb_view_cursor_shape(view);
+        if (app->wp_cursor_shape_manager_v1 != NULL) {
+            struct wp_cursor_shape_device_v1 *device =
+                wp_cursor_shape_manager_v1_get_pointer(
+                    app->wp_cursor_shape_manager_v1,
+                    wl_pointer
+                );
+            wp_cursor_shape_device_v1_set_shape(device,
+                app->pointer.enter_serial,
+                _to_wp_cursor_shape(shape));
+            wp_cursor_shape_device_v1_destroy(device);
+        }
 
         // Post the event.
         _post_pointer_enter_event(view, pos.x, pos.y);
@@ -818,13 +954,13 @@ static void pointer_button_handler(void *data,
 {
     sb_application_t *app = (sb_application_t*)data;
 
-    app->pointer_button_serial = serial;
+    app->pointer.button_serial = serial;
 
-    float x = app->_pointer_pos.x;
-    float y = app->_pointer_pos.y;
+    float x = app->pointer.pos.x;
+    float y = app->pointer.pos.y;
 
     // Find the surface.
-    sb_surface_t *surface = _find_surface(app, app->_pointer_surface);
+    sb_surface_t *surface = _find_surface(app, app->pointer.wl_surface);
 
     // Find most child view.
     sb_point_t pos = { .x = x, .y = y };
@@ -905,7 +1041,125 @@ static void pointer_axis_handler(void *data,
                                  uint32_t axis,
                                  wl_fixed_t value)
 {
-    //
+    sb_application_t *app = (sb_application_t*)data;
+
+    float val = wl_fixed_to_double(value);
+    sb_log_debug("pointer_axis_handler() - value: %.2f, axis: %d\n", val, axis);
+
+    enum sb_pointer_scroll_axis sb_axis =
+        SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
+    switch (axis) {
+    case WL_POINTER_AXIS_VERTICAL_SCROLL:
+        sb_axis = SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
+        break;
+    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+        sb_axis = SB_POINTER_SCROLL_AXIS_HORIZONTAL_SCROLL;
+        break;
+    default:
+        break;
+    }
+
+    app->scroll.frame = false;
+    app->scroll.axis = sb_axis;
+    app->scroll.value = val;
+}
+
+static void pointer_frame_handler(void *data,
+                                  struct wl_pointer *wl_pointer)
+{
+    sb_application_t *app = (sb_application_t*)data;
+
+    // sb_log_debug("pointer_frame_handler()\n");
+    if (app->scroll.frame == false && app->scroll.value != 0.0f) {
+        sb_log_debug(" = Pointer frame for scroll.\n");
+        // Post scroll event.
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+            app->pointer.view, SB_EVENT_TYPE_POINTER_SCROLL);
+        event->scroll.axis = app->scroll.axis;
+        event->scroll.source = app->scroll.source;
+        event->scroll.value = app->scroll.value;
+
+        sb_application_post_event(app, event);
+
+        // Reset scroll info.
+        app->scroll.frame = true;
+        app->scroll.value = 0.0f;
+    }
+    if (app->scroll.ver_stop == true || app->scroll.hor_stop == true) {
+        sb_log_debug(" == Pointer frame for stop!\n");
+        app->scroll.ver_stop = false;
+        app->scroll.hor_stop = false;
+    }
+    // sb_log_debug("pointer_frame_handler()\n");
+}
+
+static void pointer_axis_source_handler(void *data,
+                                        struct wl_pointer *wl_pointer,
+                                        uint32_t axis_source)
+{
+    sb_application_t *app = (sb_application_t*)data;
+
+    enum sb_pointer_scroll_source source;
+    switch (axis_source) {
+    case WL_POINTER_AXIS_SOURCE_WHEEL:
+        source = SB_POINTER_SCROLL_SOURCE_WHEEL;
+        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_WHEEL\n");
+        break;
+    case WL_POINTER_AXIS_SOURCE_FINGER:
+        source = SB_POINTER_SCROLL_SOURCE_FINGER;
+        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_FINGER\n");
+        break;
+    case WL_POINTER_AXIS_SOURCE_CONTINUOUS:
+        source = SB_POINTER_SCROLL_SOURCE_CONTINUOUS;
+        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_CONTINUOUS\n");
+        break;
+    case WL_POINTER_AXIS_SOURCE_WHEEL_TILT:
+        source = SB_POINTER_SCROLL_SOURCE_WHEEL_TILT;
+        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_WHEEL_TILT\n");
+        break;
+    default:
+        source = SB_POINTER_SCROLL_SOURCE_WHEEL;
+        break;
+    }
+
+    app->scroll.frame = false;
+    app->scroll.source = source;
+}
+
+static void pointer_axis_stop_handler(void *data,
+                                      struct wl_pointer *wl_pointer,
+                                      uint32_t time,
+                                      uint32_t axis)
+{
+    sb_application_t *app = (sb_application_t*)data;
+
+    enum sb_pointer_scroll_axis sb_axis =
+        SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
+    switch (axis) {
+    case WL_POINTER_AXIS_VERTICAL_SCROLL:
+        app->scroll.ver_stop = true;
+        sb_axis = SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
+        break;
+    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+        app->scroll.hor_stop = true;
+        sb_axis = SB_POINTER_SCROLL_AXIS_HORIZONTAL_SCROLL;
+        break;
+    default:
+        break;
+    }
+
+    app->scroll.stop_axis = sb_axis;
+    app->scroll.frame = false;
+    sb_log_debug("pointer_axis_stop_handler() - axis: %d\n", axis);
+
+}
+
+static void pointer_axis_discrete_handler(void *data,
+                                          struct wl_pointer *wl_pointer,
+                                          uint32_t axis,
+                                          int32_t discrete)
+{
+    // Deprecated.
 }
 
 //!<============
@@ -958,6 +1212,7 @@ static void keyboard_leave_handler(void *data,
                                    struct wl_surface *wl_surface)
 {
     sb_application_t *application = (sb_application_t*)data;
+    (void)application;
 
     sb_log_debug("keyboard_leave_handler - serial: %d\n", serial);
 }
@@ -1007,10 +1262,10 @@ static void keyboard_key_handler(void *data,
     // Pass event to the event dispatcher to repeat.
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         sb_event_dispatcher_keyboard_key_repeat_add_event(
-            application->_event_dispatcher, event);
+            application->event_dispatcher, event);
     } else if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
         sb_event_dispatcher_keyboard_key_repeat_remove_event(
-            application->_event_dispatcher, event);
+            application->event_dispatcher, event);
     }
 }
 
@@ -1050,9 +1305,9 @@ static void keyboard_repeat_info_handler(void *data,
     sb_log_debug("Keyboard repeat - rate: %d, delay: %d\n", rate, delay);
 
     sb_event_dispatcher_keyboard_key_repeat_set_delay(
-        application->_event_dispatcher, delay);
+        application->event_dispatcher, delay);
     sb_event_dispatcher_keyboard_key_repeat_set_rate(
-        application->_event_dispatcher, rate);
+        application->event_dispatcher, rate);
 }
 
 //!<=========

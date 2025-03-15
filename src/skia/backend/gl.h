@@ -1,7 +1,9 @@
 #ifndef _SWINGBY_BACKEND_GL_H
 #define _SWINGBY_BACKEND_GL_H
 
-#include "../gl-context.h"
+#include <stdint.h>
+
+typedef struct sb_skia_gl_context_t sb_skia_gl_context_t;
 
 #ifdef __cplusplus
 extern "C" {

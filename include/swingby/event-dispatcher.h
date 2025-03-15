@@ -57,6 +57,16 @@ void sb_event_dispatcher_keyboard_key_repeat_add_event(
 void sb_event_dispatcher_keyboard_key_repeat_remove_event(
     sb_event_dispatcher_t *event_dispatcher, sb_event_t *event);
 
+bool sb_event_dispatcher_timer_has_event(
+    sb_event_dispatcher_t *event_dispatcher);
+
+/// \brief Add timer event and set id and return.
+uint32_t sb_event_dispatcher_timer_add_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event);
+
+void sb_event_dispatcher_timer_remove_event(
+    sb_event_dispatcher_t *event_dispatcher, uint32_t id);
+
 #ifdef __cplusplus
 }
 #endif

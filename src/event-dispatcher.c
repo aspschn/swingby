@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <sys/time.h>
-
+#include <swingby/common.h>
 #include <swingby/log.h>
 #include <swingby/bench.h>
 #include <swingby/event.h>
@@ -81,6 +80,8 @@ void _propagate_pointer_event(sb_view_t *view, sb_event_t *event)
             break;
         }
 
+        // Maybe next line required!
+        // event->target = parent;
         event->pointer.position.x = x;
         event->pointer.position.y = y;
 
@@ -92,6 +93,8 @@ void _propagate_pointer_event(sb_view_t *view, sb_event_t *event)
             sb_view_on_pointer_release(parent, event);
         } else if (event->type == SB_EVENT_TYPE_POINTER_CLICK) {
             sb_view_on_pointer_click(parent, event);
+        } else if (event->type == SB_EVENT_TYPE_POINTER_SCROLL) {
+            sb_view_on_pointer_scroll(parent, event);
         }
 
         x = event->pointer.position.x + sb_view_geometry(parent)->pos.x;
@@ -158,6 +161,10 @@ struct sb_event_dispatcher_t {
         /// \brief List for sb_repeat_event_t.
         sb_list_t *events;
     } keyboard_key_repeat;
+    struct {
+        /// \brief List for sb_event_t.
+        sb_list_t *events;
+    } timer;
 };
 
 sb_event_dispatcher_t* sb_event_dispatcher_new()
@@ -171,6 +178,8 @@ sb_event_dispatcher_t* sb_event_dispatcher_new()
     event_dispatcher->keyboard_key_repeat.delay = 100000;
     event_dispatcher->keyboard_key_repeat.rate = 0;
     event_dispatcher->keyboard_key_repeat.events = sb_list_new();
+
+    event_dispatcher->timer.events = sb_list_new();
 
     return event_dispatcher;
 }
@@ -225,6 +234,9 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 sb_surface_on_keyboard_key_release(event->target, event);
                 // sb_event_free(event);
                 break;
+            case SB_EVENT_TYPE_PREFERRED_SCALE:
+                sb_surface_on_preferred_scale(event->target, event);
+                break;
             default:
                 break;
             }
@@ -258,6 +270,12 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
             case SB_EVENT_TYPE_POINTER_DOUBLE_CLICK:
                 sb_view_on_pointer_double_click(event->target, event);
                 _propagate_pointer_event(event->target, event);
+                break;
+            case SB_EVENT_TYPE_POINTER_SCROLL:
+                sb_view_on_pointer_scroll(event->target, event);
+                _propagate_pointer_event(event->target, event);
+                sb_event_free(event);
+                break;
             default:
                 break;
             }
@@ -277,18 +295,14 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
 
             if (!repeat_event->repeating) {
                 // Not repeating, wait until the time hit.
-                struct timeval tv;
-                gettimeofday(&tv, NULL);
-                uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+                uint64_t now = sb_time_now_milliseconds();
                 if (now - time >= delay) {
                     repeat_event->repeating = true;
                     repeat_event->time = now;
                 }
             } else {
                 // If repeating, make an event for the repeat info.
-                struct timeval tv;
-                gettimeofday(&tv, NULL);
-                uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+                uint64_t now = sb_time_now_milliseconds();
                 if (now - time >= rate) {
                     repeat_event->time = now;
                     sb_log_debug("Key repeat: %d\n", evt->keyboard.keycode);
@@ -324,6 +338,24 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
         }
     }
 
+    // Process timer events.
+    sb_list_t *timer_event_list = event_dispatcher->timer.events;
+    for (uint64_t i = 0; i < sb_list_length(timer_event_list); ++i) {
+        sb_event_t *event = sb_list_at(timer_event_list, i);
+        uint64_t now = sb_time_now_milliseconds();
+        if (now - event->timer.time >= event->timer.interval) {
+            sb_log_debug("Timer triggered!\n");
+            // Call on_timeout method of the surface.
+            sb_surface_on_timeout(event->target, event);
+            // If no repeat, remove event.
+            if (event->timer.repeat == false) {
+                sb_event_dispatcher_timer_remove_event(event_dispatcher,
+                    event->timer.id);
+            }
+            event->timer.time = now;
+        }
+    }
+
     // sb_bench_end(bench);
 }
 
@@ -351,9 +383,7 @@ void sb_event_dispatcher_keyboard_key_repeat_add_event(
     sb_repeat_event_t *repeat_event = sb_repeat_event_new(event);
     sb_log_debug("_add_event - Add: %d\n", event->keyboard.keycode);
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    uint64_t now = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    uint64_t now = sb_time_now_milliseconds();
     repeat_event->time = now;
 
     {
@@ -392,6 +422,48 @@ void sb_event_dispatcher_keyboard_key_repeat_remove_event(
         }
     }
     sb_log_warn("Not removed!\n");
+}
+
+bool sb_event_dispatcher_timer_has_event(
+    sb_event_dispatcher_t *event_dispatcher)
+{
+    return sb_list_length(event_dispatcher->timer.events) > 0;
+}
+
+uint32_t sb_event_dispatcher_timer_add_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
+{
+    sb_list_t *timer_events = event_dispatcher->timer.events;
+    uint32_t new_id = 0;
+    for (uint64_t i = 0; i < sb_list_length(timer_events); ++i) {
+        sb_event_t *iter = sb_list_at(timer_events, i);
+        if (new_id < iter->timer.id) {
+            new_id = iter->timer.id + 1;
+        }
+    }
+    event->timer.id = new_id;
+
+    uint64_t now = sb_time_now_milliseconds();
+    event->timer.time = now;
+
+    sb_list_push(event_dispatcher->timer.events, event);
+
+    return new_id;
+}
+
+void sb_event_dispatcher_timer_remove_event(
+    sb_event_dispatcher_t *event_dispatcher, uint32_t id)
+{
+    sb_list_t *event_list = event_dispatcher->timer.events;
+
+    for (uint64_t i = 0; i < sb_list_length(event_list); ++i) {
+        sb_event_t *timer_event = sb_list_at(event_list, i);
+        if (timer_event->timer.id == id) {
+            sb_list_remove(event_list, i);
+            sb_event_free(timer_event);
+            break;
+        }
+    }
 }
 
 #ifdef __cplusplus
