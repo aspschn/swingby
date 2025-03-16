@@ -34,10 +34,12 @@ enum sb_event_type {
     SB_EVENT_TYPE_REQUEST_UPDATE            = 70,
     SB_EVENT_TYPE_SHOW                      = 80,
     SB_EVENT_TYPE_HIDE                      = 81,
+    /// \brief View position moved.
     SB_EVENT_TYPE_MOVE                      = 100,
+    /// \brief Desktop surface, surface and view size cahnged.
     SB_EVENT_TYPE_RESIZE                    = 101,
     SB_EVENT_TYPE_STATE_CHANGE              = 110,
-    /// Preferred buffer scale changed for surface.
+    /// \brief Preferred buffer scale changed for surface.
     SB_EVENT_TYPE_PREFERRED_SCALE           = 130,
     SB_EVENT_TYPE_TIMEOUT                   = 140,
 };

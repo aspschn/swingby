@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include <swingby/application.h>
 #include <swingby/log.h>
 #include <swingby/surface.h>
 #include <swingby/image.h>
@@ -97,8 +98,31 @@ const sb_rect_t* sb_view_geometry(const sb_view_t *view)
 
 void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
 {
-    // TODO: Equality check.
-    view->geometry = *geometry;
+    // Do nothing if equals.
+    if (sb_rect_equals(&view->geometry, geometry)) {
+        return;
+    }
+    sb_rect_t old_geo = view->geometry;
+    sb_rect_t new_geo = *geometry;
+    view->geometry = new_geo;
+
+    // Equality check and post events.
+    if (sb_size_equals(&old_geo.size, &new_geo.size)) {
+        sb_event_t *size_event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+            view, SB_EVENT_TYPE_RESIZE);
+        size_event->resize.old_size = old_geo.size;
+        size_event->resize.size = new_geo.size;
+
+        sb_application_post_event(sb_application_instance(), size_event);
+    }
+    if (sb_point_equals(&old_geo.pos, &new_geo.pos)) {
+        sb_event_t *move_event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+            view, SB_EVENT_TYPE_MOVE);
+        move_event->move.old_position = old_geo.pos;
+        move_event->move.position = new_geo.pos;
+
+        sb_application_post_event(sb_application_instance(), move_event);
+    }
 
     if (view->_surface == NULL) {
         sb_log_warn("sb_view_set_geometry() - surface is NULL\n");
