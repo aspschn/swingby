@@ -13,7 +13,7 @@
 
 struct sb_view_t {
     sb_surface_t *_surface;
-    sb_rect_t _geometry;
+    sb_rect_t geometry;
     sb_view_t *_parent;
     /// \brief View's color if the view fill type is single color.
     sb_color_t _color;
@@ -46,8 +46,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     view->_surface = NULL;
     view->_parent = parent;
     sb_log_debug("sb_view_new() - view: %p, parent: %p\n", view, parent);
-    view->_geometry.pos = geometry->pos;
-    view->_geometry.size = geometry->size;
+    view->geometry.pos = geometry->pos;
+    view->geometry.size = geometry->size;
     view->_color.r = 255;
     view->_color.g = 255;
     view->_color.b = 255;
@@ -92,13 +92,13 @@ sb_surface_t* sb_view_surface(const sb_view_t *view)
 
 const sb_rect_t* sb_view_geometry(const sb_view_t *view)
 {
-    return &view->_geometry;
+    return &view->geometry;
 }
 
 void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
 {
     // TODO: Equality check.
-    view->_geometry = *geometry;
+    view->geometry = *geometry;
 
     if (view->_surface == NULL) {
         sb_log_warn("sb_view_set_geometry() - surface is NULL\n");
