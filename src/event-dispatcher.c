@@ -288,6 +288,13 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 _propagate_pointer_event(event->target, event);
                 sb_event_free(event);
                 break;
+            case SB_EVENT_TYPE_MOVE:
+                sb_view_on_move(event->target, event);
+                sb_event_free(event);
+                break;
+            case SB_EVENT_TYPE_RESIZE:
+                sb_view_on_resize(event->target, event);
+                sb_event_free(event);
             default:
                 break;
             }

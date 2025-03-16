@@ -347,3 +347,14 @@ void sb_view_on_pointer_scroll(sb_view_t *view, sb_event_t *event)
         SB_EVENT_TYPE_POINTER_SCROLL, event);
 }
 
+void sb_view_on_move(sb_view_t *view, sb_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        SB_EVENT_TYPE_MOVE, event);
+}
+
+void sb_view_on_resize(sb_view_t *view, sb_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        SB_EVENT_TYPE_RESIZE, event);
+}
