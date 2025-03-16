@@ -156,6 +156,14 @@ sb_event_t* sb_pointer_event_new(enum sb_event_target_type target_type,
 
 sb_pointer_button sb_pointer_event_button(sb_pointer_event_t *event);
 
+//!<=================
+//!< Move Event
+//!<=================
+
+const sb_point_t* sb_event_move_old_position(sb_event_t *event);
+
+const sb_point_t* sb_event_move_position(sb_event_t *event);
+
 //!<=====================
 //!< Event Listener
 //!<=====================

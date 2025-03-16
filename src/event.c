@@ -92,6 +92,20 @@ sb_event_t* sb_pointer_event_new(enum sb_event_target_type target_type,
     return event;
 }
 
+//!<=================
+//!< Move Event
+//!<=================
+
+const sb_point_t* sb_event_move_old_position(sb_event_t *event)
+{
+    return &event->move.old_position;
+}
+
+const sb_point_t* sb_event_move_position(sb_event_t *event)
+{
+    return &event->move.position;
+}
+
 //!<=====================
 //!< Event Listener
 //!<=====================

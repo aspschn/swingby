@@ -21,6 +21,12 @@ typedef struct sb_point_i_t {
 } sb_point_i_t;
 
 SB_EXPORT
+float sb_point_x(const sb_point_t *point);
+
+SB_EXPORT
+float sb_point_y(const sb_point_t *point);
+
+SB_EXPORT
 bool sb_point_equals(const sb_point_t *point, const sb_point_t *other);
 
 #ifdef __cplusplus
