@@ -431,6 +431,23 @@ static sb_output_t* _get_output(sb_application_t *application,
     return ret;
 }
 
+static void _change_cursor_shape(sb_application_t *application,
+                                 struct wl_pointer *wl_pointer,
+                                 enum sb_cursor_shape shape)
+{
+    if (application->wp_cursor_shape_manager_v1 != NULL) {
+        struct wp_cursor_shape_device_v1 *device =
+            wp_cursor_shape_manager_v1_get_pointer(
+                application->wp_cursor_shape_manager_v1,
+                wl_pointer
+            );
+        wp_cursor_shape_device_v1_set_shape(device,
+            application->pointer.enter_serial,
+            _to_wp_cursor_shape(shape));
+        wp_cursor_shape_device_v1_destroy(device);
+    }
+}
+
 //!<===============
 //!< Application
 //!<===============
@@ -870,6 +887,9 @@ static void pointer_enter_handler(void *data,
 
     app->pointer.view = view;
 
+    // Change cursor shape.
+    _change_cursor_shape(app, wl_pointer, sb_view_cursor_shape(view));
+
     // Post the event (view).
     _post_pointer_enter_event(view, position.x, position.y);
 }
@@ -927,18 +947,7 @@ static void pointer_motion_handler(void *data,
         app->pointer.view = view;
 
         // Cursor shape.
-        enum sb_cursor_shape shape = sb_view_cursor_shape(view);
-        if (app->wp_cursor_shape_manager_v1 != NULL) {
-            struct wp_cursor_shape_device_v1 *device =
-                wp_cursor_shape_manager_v1_get_pointer(
-                    app->wp_cursor_shape_manager_v1,
-                    wl_pointer
-                );
-            wp_cursor_shape_device_v1_set_shape(device,
-                app->pointer.enter_serial,
-                _to_wp_cursor_shape(shape));
-            wp_cursor_shape_device_v1_destroy(device);
-        }
+        _change_cursor_shape(app, wl_pointer, sb_view_cursor_shape(view));
 
         // Post the event.
         _post_pointer_enter_event(view, pos.x, pos.y);
