@@ -107,7 +107,7 @@ void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
     view->geometry = new_geo;
 
     // Equality check and post events.
-    if (sb_size_equals(&old_geo.size, &new_geo.size)) {
+    if (!sb_size_equals(&old_geo.size, &new_geo.size)) {
         sb_event_t *size_event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
             view, SB_EVENT_TYPE_RESIZE);
         size_event->resize.old_size = old_geo.size;
@@ -115,7 +115,7 @@ void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
 
         sb_application_post_event(sb_application_instance(), size_event);
     }
-    if (sb_point_equals(&old_geo.pos, &new_geo.pos)) {
+    if (!sb_point_equals(&old_geo.pos, &new_geo.pos)) {
         sb_event_t *move_event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
             view, SB_EVENT_TYPE_MOVE);
         move_event->move.old_position = old_geo.pos;
