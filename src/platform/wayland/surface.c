@@ -589,7 +589,9 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
 
     sb_surface_update(surface);
 
-    wl_egl_window_resize(surface->_wl_egl_window, size->width, size->height,
+    wl_egl_window_resize(surface->_wl_egl_window,
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale,
         0, 0);
 }
 
