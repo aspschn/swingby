@@ -863,6 +863,16 @@ static void pointer_enter_handler(void *data,
     float x = wl_fixed_to_double(sx);
     float y = wl_fixed_to_double(sy);
 
+    // Store the pointer position.
+    // Since while resizing the desktop surface, there is no motion event.
+    // Instead the surface enter event is fired. So this is important to
+    // re-assign pointer position when enter event.
+    //
+    // Remember: The pointer enter event could be fired even mouse pointer is
+    // already in the surface area.
+    app->pointer.pos.x = x;
+    app->pointer.pos.y = y;
+
     // Find the surface.
     sb_surface_t *found = _find_surface(app, wl_surface);
 

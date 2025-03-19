@@ -2,6 +2,43 @@
 
 #include <swingby/swingby.h>
 
+static void rect_contains_point()
+{
+    // Test case 1.
+    {
+        sb_rect_t r1;
+        r1.pos.x = 0.0f;
+        r1.pos.y = 0.0f;
+        r1.size.width = 100.0f;
+        r1.size.height = 100.0f;
+        sb_point_t p1;
+        p1.x = 100.0f;
+        p1.y = 100.0f;
+
+        bool res = sb_rect_contains_point(&r1, &p1);
+        if (res != true) {
+            exit(1);
+        }
+    }
+
+    // Test case 2.
+    {
+        sb_rect_t r1;
+        r1.pos.x = 0.0f;
+        r1.pos.y = 0.0f;
+        r1.size.width = 100.0f;
+        r1.size.height = 100.0f;
+        sb_point_t p1;
+        p1.x = 100.1f;
+        p1.y = 100.1f;
+
+        bool res = sb_rect_contains_point(&r1, &p1);
+        if (res == true) {
+            exit(1);
+        }
+    }
+}
+
 static void rect_intersects()
 {
     // Test case 1.
@@ -111,6 +148,8 @@ static void rect_intersects()
 
 int main(int argc, char *argv[])
 {
+    rect_contains_point();
+
     rect_intersects();
 
     return 0;
