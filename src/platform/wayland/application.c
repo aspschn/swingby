@@ -361,6 +361,28 @@ static const struct wl_data_device_listener data_device_listener = {
     .selection = data_device_selection_handler,
 };
 
+//!<=================
+//!< Data Offer
+//!<=================
+
+static void data_offer_offer_handler(void *data,
+                                     struct wl_data_offer *wl_data_offer,
+                                     const char *mime_type);
+
+static void data_offer_source_actions_handler(void *data,
+    struct wl_data_offer *wl_data_offer,
+    uint32_t source_actions);
+
+static void data_offer_action_handler(void *data,
+                                      struct wl_data_offer *wl_data_offer,
+                                      uint32_t dnd_action);
+
+static const struct wl_data_offer_listener data_offer_listener = {
+    .offer = data_offer_offer_handler,
+    .source_actions = data_offer_source_actions_handler,
+    .action = data_offer_action_handler,
+};
+
 //!<====================
 //!< Helper Functions
 //!<====================
@@ -1431,24 +1453,29 @@ static void data_device_data_offer_handler(void *data,
     struct wl_data_device *wl_data_device,
     struct wl_data_offer *wl_data_offer)
 {
-    //
+    sb_log_warn(" ** data_device_data_offer_handler %p **\n", wl_data_offer);
+    wl_data_offer_add_listener(wl_data_offer, &data_offer_listener, data);
 }
 
 static void data_device_enter_handler(void *data,
                                       struct wl_data_device *wl_data_device,
                                       uint32_t serial,
-                                      struct wl_surface *surface,
+                                      struct wl_surface *wl_surface,
                                       wl_fixed_t x,
                                       wl_fixed_t y,
                                       struct wl_data_offer *wl_data_offer)
 {
-    sb_log_debug("data_device_enter_handler\n");
+    sb_application_t *app = (sb_application_t*)data;
+
+    sb_log_warn("data_device_enter_handler %p\n", wl_data_offer);
+
+    sb_surface_t *surface = _find_surface(app, wl_surface);
 }
 
 static void data_device_leave_handler(void *data,
                                       struct wl_data_device *wl_data_device)
 {
-    sb_log_debug("data_device_leave_handler\n");
+    sb_log_warn("data_device_leave_handler\n");
 }
 
 static void data_device_motion_handler(void *data,
@@ -1457,18 +1484,44 @@ static void data_device_motion_handler(void *data,
                                        wl_fixed_t x,
                                        wl_fixed_t y)
 {
-    sb_log_debug("data_device_motion_handler\n");
+    //
 }
 
 static void data_device_drop_handler(void *data,
                                      struct wl_data_device *wl_data_device)
 {
-    sb_log_debug("data_device_drop_handler\n");
+    sb_log_warn("data_device_drop_handler\n");
 }
 
 static void data_device_selection_handler(void *data,
                                           struct wl_data_device *wl_data_device,
                                           struct wl_data_offer *wl_data_offer)
 {
-    sb_log_debug("data_device_selection_handler\n");
+    sb_log_warn("data_device_selection_handler %p\n", wl_data_offer);
+}
+
+//!<=================
+//!< Data Offer
+//!<=================
+
+static void data_offer_offer_handler(void *data,
+                                     struct wl_data_offer *wl_data_offer,
+                                     const char *mime_type)
+{
+    sb_log_warn("offer_offer_handler() - mime_type: %s\n", mime_type);
+}
+
+static void data_offer_source_actions_handler(void *data,
+    struct wl_data_offer *wl_data_offer,
+    uint32_t source_actions)
+{
+    sb_log_warn("offer_source_actions_handler() - actions: %d\n",
+        source_actions);
+}
+
+static void data_offer_action_handler(void *data,
+                                      struct wl_data_offer *wl_data_offer,
+                                      uint32_t dnd_action)
+{
+    sb_log_warn("offer_action_handler() - dnd_action: %d\n", dnd_action);
 }

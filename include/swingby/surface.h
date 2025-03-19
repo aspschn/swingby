@@ -10,6 +10,7 @@ typedef struct sb_view_t sb_view_t;
 typedef struct sb_event_t sb_event_t;
 
 struct wl_surface;
+struct wl_data_offer;
 
 struct HWND__;
 typedef struct HWND__* HWND;
