@@ -187,6 +187,7 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
 
 void sb_skia_draw_image(sb_skia_context_t *context,
                         const sb_rect_t *rect,
+                        uint32_t scale,
                         const sb_image_t *image)
 {
     SkCanvas *canvas = _get_canvas(context);
@@ -208,8 +209,10 @@ void sb_skia_draw_image(sb_skia_context_t *context,
     sk_sp<SkImage> sk_image = SkImages::RasterFromBitmap(bitmap);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x, rect->pos.y,
-        rect->size.width, rect->size.height);
+        rect->pos.x * scale,
+        rect->pos.y * scale,
+        rect->size.width * scale,
+        rect->size.height * scale);
 
     SkSamplingOptions sampling;
 
