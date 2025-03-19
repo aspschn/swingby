@@ -42,6 +42,8 @@ struct sb_application_t {
     struct wl_pointer *_wl_pointer;
     struct wl_keyboard *_wl_keyboard;
     struct wl_touch *_wl_touch;
+    struct wl_data_device_manager *wl_data_device_manager;
+    struct wl_data_device *wl_data_device;
     struct wp_cursor_shape_manager_v1 *wp_cursor_shape_manager_v1;
     struct {
         /// \brief Current pointer surface.
@@ -319,6 +321,47 @@ static const struct wl_seat_listener seat_listener = {
 };
 
 //!<====================
+//!< Data Device
+//!<====================
+
+static void data_device_data_offer_handler(void *data,
+    struct wl_data_device *wl_data_device,
+    struct wl_data_offer *id);
+
+static void data_device_enter_handler(void *data,
+                                      struct wl_data_device *wl_data_device,
+                                      uint32_t serial,
+                                      struct wl_surface *surface,
+                                      wl_fixed_t x,
+                                      wl_fixed_t y,
+                                      struct wl_data_offer *id);
+
+static void data_device_leave_handler(void *data,
+                                      struct wl_data_device *wl_data_device);
+
+static void data_device_motion_handler(void *data,
+                                       struct wl_data_device *wl_data_device,
+                                       uint32_t time,
+                                       wl_fixed_t x,
+                                       wl_fixed_t y);
+
+static void data_device_drop_handler(void *data,
+                                     struct wl_data_device *wl_data_device);
+
+static void data_device_selection_handler(void *data,
+                                          struct wl_data_device *wl_data_device,
+                                          struct wl_data_offer *id);
+
+static const struct wl_data_device_listener data_device_listener = {
+    .data_offer = data_device_data_offer_handler,
+    .enter = data_device_enter_handler,
+    .leave = data_device_leave_handler,
+    .motion = data_device_motion_handler,
+    .drop = data_device_drop_handler,
+    .selection = data_device_selection_handler,
+};
+
+//!<====================
 //!< Helper Functions
 //!<====================
 
@@ -463,6 +506,7 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->_wl_pointer = NULL;
     app->_wl_keyboard = NULL;
     app->_wl_touch = NULL;
+    app->wl_data_device_manager = NULL;
     app->wp_cursor_shape_manager_v1 = NULL;
 
     app->pointer.wl_surface = NULL;
@@ -496,6 +540,18 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     xdg_wm_base_add_listener(app->_xdg_wm_base, &app_xdg_wm_base_listener,
         NULL);
+
+    // Data device.
+    if (app->wl_data_device_manager == NULL) {
+        sb_log_error("wl_data_device_manager is NULL!\n");
+    }
+    if (app->_wl_seat == NULL) {
+        sb_log_error("wl_seat is NULL!\n");
+    }
+    app->wl_data_device = wl_data_device_manager_get_data_device(
+        app->wl_data_device_manager, app->_wl_seat);
+    wl_data_device_add_listener(app->wl_data_device, &data_device_listener,
+        (void*)app);
 
     // Desktop surface list.
     app->desktop_surfaces = sb_list_new();
@@ -641,6 +697,12 @@ struct wl_seat* sb_application_wl_seat(sb_application_t *application)
     return application->_wl_seat;
 }
 
+struct wl_data_device_manager* sb_application_wl_data_device_manager(
+    sb_application_t *application)
+{
+    return application->wl_data_device_manager;
+}
+
 int sb_application_exec(sb_application_t *application)
 {
     int err = wl_display_dispatch(application->_wl_display);
@@ -717,6 +779,9 @@ static void app_global_handler(void *data,
             sb_list_push(app->outputs, output);
         }
         wl_output_add_listener(wl_output, &output_listener, (void*)app);
+    } else if (strcmp(interface, "wl_data_device_manager") == 0) {
+        app->wl_data_device_manager = wl_registry_bind(wl_registry,
+            name, &wl_data_device_manager_interface, 3);
     } else if (strcmp(interface, "wp_cursor_shape_manager_v1") == 0) {
         app->wp_cursor_shape_manager_v1 = wl_registry_bind(wl_registry,
             name, &wp_cursor_shape_manager_v1_interface, 1);
@@ -1356,4 +1421,54 @@ static void seat_name_handler(void *data,
                               const char *name)
 {
     sb_log_debug("Seat name: %s\n", name);
+}
+
+//!<====================
+//!< Data Device
+//!<====================
+
+static void data_device_data_offer_handler(void *data,
+    struct wl_data_device *wl_data_device,
+    struct wl_data_offer *wl_data_offer)
+{
+    //
+}
+
+static void data_device_enter_handler(void *data,
+                                      struct wl_data_device *wl_data_device,
+                                      uint32_t serial,
+                                      struct wl_surface *surface,
+                                      wl_fixed_t x,
+                                      wl_fixed_t y,
+                                      struct wl_data_offer *wl_data_offer)
+{
+    sb_log_debug("data_device_enter_handler\n");
+}
+
+static void data_device_leave_handler(void *data,
+                                      struct wl_data_device *wl_data_device)
+{
+    sb_log_debug("data_device_leave_handler\n");
+}
+
+static void data_device_motion_handler(void *data,
+                                       struct wl_data_device *wl_data_device,
+                                       uint32_t time,
+                                       wl_fixed_t x,
+                                       wl_fixed_t y)
+{
+    sb_log_debug("data_device_motion_handler\n");
+}
+
+static void data_device_drop_handler(void *data,
+                                     struct wl_data_device *wl_data_device)
+{
+    sb_log_debug("data_device_drop_handler\n");
+}
+
+static void data_device_selection_handler(void *data,
+                                          struct wl_data_device *wl_data_device,
+                                          struct wl_data_offer *wl_data_offer)
+{
+    sb_log_debug("data_device_selection_handler\n");
 }
