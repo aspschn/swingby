@@ -16,8 +16,8 @@ typedef struct sb_point_t {
 } sb_point_t;
 
 typedef struct sb_point_i_t {
-    uint64_t x;
-    uint64_t y;
+    int64_t x;
+    int64_t y;
 } sb_point_i_t;
 
 SB_EXPORT

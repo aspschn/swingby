@@ -43,6 +43,7 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
 
 void sb_skia_draw_image(sb_skia_context_t *context,
                         const sb_rect_t *rect,
+                        uint32_t scale,
                         const sb_image_t *image);
 
 void sb_skia_save_pos(sb_skia_context_t *context,

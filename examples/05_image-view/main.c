@@ -6,6 +6,15 @@
 
 sb_view_t *image_view = NULL;
 
+static void on_preferred_scale(sb_event_t *event)
+{
+    sb_surface_t *surface = event->target;
+
+    fprintf(stderr, "on_preferred_scale.\n");
+
+    sb_surface_set_scale(surface, event->scale.scale);
+}
+
 void on_resize(sb_event_t *event)
 {
     fprintf(stderr, "on_resize\n");
@@ -27,6 +36,11 @@ int main(int argc, char *argv[])
         SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
     sb_size_t init_size = { 300.0f, 300.0f };
     sb_surface_set_size(sb_desktop_surface_surface(surface), &init_size);
+
+    sb_surface_add_event_listener(
+        sb_desktop_surface_surface(surface),
+        SB_EVENT_TYPE_PREFERRED_SCALE,
+        on_preferred_scale);
 
     sb_rect_t geometry = { { 10.0f, 10.0f }, { 256.0f, 256.0f } };
     sb_view_t *view = sb_view_new(
