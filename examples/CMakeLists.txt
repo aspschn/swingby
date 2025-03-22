@@ -13,6 +13,7 @@ add_subdirectory(11_clip)
 add_subdirectory(12_parent)
 add_subdirectory(13_timer)
 add_subdirectory(14_scroll)
+add_subdirectory(15_app-registry)
 
 add_custom_target(example)
 
@@ -32,4 +33,5 @@ add_dependencies(example
     example_parent
     example_timer
     example_scroll
+    example_app-registry
 )

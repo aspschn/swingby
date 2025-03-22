@@ -16,14 +16,21 @@ typedef struct sb_surface_t sb_surface_t;
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
 typedef struct sb_event_t sb_event_t;
 typedef struct sb_list_t sb_list_t;
+enum sb_event_type;
 
 typedef struct sb_d3d_global_context_t sb_d3d_global_context_t;
 
 /// \brief A global application object.
 typedef struct sb_application_t sb_application_t;
 
+/// \brief Create a new global application instance.
 SB_EXPORT
 sb_application_t* sb_application_new(int argc, char *argv[]);
+
+sb_application_t* sb_application_new_with_registry_listener(int argc,
+    char *argv[],
+    void (*registry)(sb_event_t*),
+    void (*registry_remove)(sb_event_t*));
 
 SB_EXPORT
 sb_application_t* sb_application_instance();
@@ -91,6 +98,11 @@ sb_d3d_global_context_t* sb_application_d3d_context(
 
 void sb_application_set_nchittest_return(sb_application_t *application,
                                          int value);
+
+SB_EXPORT
+void sb_application_add_event_listener(sb_application_t *application,
+                                       enum sb_event_type event_type,
+                                       void (*listener)(sb_event_t*));
 
 SB_EXPORT
 int sb_application_exec(sb_application_t *application);

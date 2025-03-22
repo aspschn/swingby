@@ -19,6 +19,8 @@ enum sb_event_target_type {
 };
 
 enum sb_event_type {
+    SB_EVENT_TYPE_REGISTRY                  = 0,
+    SB_EVENT_TYPE_REGISTRY_REMOVE           = 1,
     SB_EVENT_TYPE_POINTER_ENTER             = 10,
     SB_EVENT_TYPE_POINTER_LEAVE             = 11,
     SB_EVENT_TYPE_POINTER_MOVE              = 12,
@@ -105,6 +107,14 @@ typedef struct sb_scroll_event_t {
     bool momentum;
 } sb_scroll_event_t;
 
+typedef struct sb_registry_event_t {
+    uint32_t name;
+    /// \brief This is NULL when SB_EVENT_TYPE_REGISTRY_REMOVE.
+    const char *interface;
+    /// \brief This is 0 when SB_EVENT_TYPE_REGISTRY_REMOVE.
+    uint32_t version;
+} sb_registry_event_t;
+
 struct sb_event_t {
     enum sb_event_target_type target_type;
     void *target;
@@ -119,6 +129,7 @@ struct sb_event_t {
         sb_scale_event_t scale;
         sb_timer_event_t timer;
         sb_scroll_event_t scroll;
+        sb_registry_event_t registry;
     };
 };
 

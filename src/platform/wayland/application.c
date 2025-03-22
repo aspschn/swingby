@@ -103,6 +103,9 @@ struct sb_application_t {
     sb_cursor_t *cursor;
     /// \brief Output list.
     sb_list_t *outputs;
+    /// \brief Used when `sb_application_new_with_registry_listener`.
+    void (*registry_listener)(sb_event_t*);
+    void (*registry_remove_listener)(sb_event_t*);
     /// \brief An event dispatcher.
     sb_event_dispatcher_t *event_dispatcher;
 };
@@ -448,13 +451,11 @@ static void _change_cursor_shape(sb_application_t *application,
     }
 }
 
-//!<===============
-//!< Application
-//!<===============
-
-sb_application_t* sb_application_new(int argc, char *argv[])
+static void _init_app(sb_application_t *application,
+                      void (*listener)(sb_event_t*),
+                      void (*remove_listner)(sb_event_t*))
 {
-    sb_application_t *app = malloc(sizeof(sb_application_t));
+    sb_application_t *app = application;
 
     app->_wl_display = wl_display_connect(NULL);
 
@@ -487,6 +488,10 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     // Init xkb context as NULL.
     app->xkb_context = NULL;
 
+    // Registry listener.
+    app->registry_listener = listener;
+    app->registry_remove_listener = remove_listner;
+
     app->_wl_registry = wl_display_get_registry(app->_wl_display);
     wl_registry_add_listener(app->_wl_registry, &app_registry_listener,
         (void*)app);
@@ -508,6 +513,29 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->cursor = NULL;
 
     _sb_application_instance = app;
+}
+
+//!<===============
+//!< Application
+//!<===============
+
+sb_application_t* sb_application_new(int argc, char *argv[])
+{
+    sb_application_t *app = malloc(sizeof(sb_application_t));
+
+    _init_app(app, NULL, NULL);
+
+    return app;
+}
+
+sb_application_t* sb_application_new_with_registry_listener(int argc,
+    char *argv[],
+    void (*registry)(sb_event_t*),
+    void (*registry_remove)(sb_event_t*))
+{
+    sb_application_t *app = malloc(sizeof(sb_application_t));
+
+    _init_app(app, registry, registry_remove);
 
     return app;
 }
@@ -721,13 +749,29 @@ static void app_global_handler(void *data,
         app->wp_cursor_shape_manager_v1 = wl_registry_bind(wl_registry,
             name, &wp_cursor_shape_manager_v1_interface, 1);
     }
+
+    if (app->registry_listener != NULL) {
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_APPLICATION,
+            app, SB_EVENT_TYPE_REGISTRY);
+        event->registry.name = name;
+        event->registry.interface = interface;
+        event->registry.version = version;
+        app->registry_listener(event);
+        sb_event_free(event);
+    }
 }
 
 static void app_global_remove_handler(void *data,
                                       struct wl_registry *wl_registry,
                                       uint32_t name)
 {
+    sb_application_t *app = (sb_application_t*)data;
+
     sb_log_debug("global_remove_handler() - name: %d\n", name);
+
+    if (app->registry_remove_listener != NULL) {
+        //
+    }
 }
 
 //!<===========
