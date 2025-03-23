@@ -164,6 +164,14 @@ const sb_point_t* sb_event_move_old_position(sb_event_t *event);
 
 const sb_point_t* sb_event_move_position(sb_event_t *event);
 
+//!<======================
+//!< State Change Event
+//!<======================
+
+int sb_event_state_change_state(sb_event_t *event);
+
+bool sb_event_state_change_value(sb_event_t *event);
+
 //!<=====================
 //!< Event Listener
 //!<=====================

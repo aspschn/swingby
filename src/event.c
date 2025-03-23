@@ -106,6 +106,20 @@ const sb_point_t* sb_event_move_position(sb_event_t *event)
     return &event->move.position;
 }
 
+//!<======================
+//!< State Change Event
+//!<======================
+
+int sb_event_state_change_state(sb_event_t *event)
+{
+    return event->state_change.state;
+}
+
+bool sb_event_state_change_value(sb_event_t *event)
+{
+    return event->state_change.value;
+}
+
 //!<=====================
 //!< Event Listener
 //!<=====================
