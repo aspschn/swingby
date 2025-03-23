@@ -77,6 +77,8 @@ bool sb_image_load_from_file(sb_image_t *image,
     if (image->data != NULL) {
         free(image->data);
         image->data = data;
+        image->size.width = width;
+        image->size.height = height;
     }
 
     return true;
