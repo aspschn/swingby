@@ -33,12 +33,12 @@ sb_image_t* sb_image_new(const sb_size_i_t *size, enum sb_image_format format)
     return image;
 }
 
-const sb_size_i_t* sb_image_size(sb_image_t *image)
+const sb_size_i_t* sb_image_size(const sb_image_t *image)
 {
     return &image->size;
 }
 
-enum sb_image_format sb_image_image_format(sb_image_t *image)
+enum sb_image_format sb_image_format(const sb_image_t *image)
 {
     return image->format;
 }
@@ -48,13 +48,26 @@ uint8_t* sb_image_data(sb_image_t *image)
     return image->data;
 }
 
+void sb_image_fill(sb_image_t *image, const sb_color_t *color)
+{
+    sb_skia_image_fill(image, color);
+}
+
+void sb_image_draw_image(sb_image_t *image,
+                         const sb_image_t *src,
+                         const sb_point_i_t *pos,
+                         enum sb_blend_mode blend_mode)
+{
+    sb_skia_image_draw_image(image, src, pos, blend_mode);
+}
+
 bool sb_image_load_from_file(sb_image_t *image,
                              const char *filename,
                              enum sb_image_file_format format)
 {
     uint64_t width, height;
 
-    uint8_t *data = sb_skia_load_image_from_file(filename, format,
+    uint8_t *data = sb_skia_load_image_from_file(filename, NULL, 0, format,
         &width, &height);
 
     if (data == NULL) {
@@ -64,6 +77,32 @@ bool sb_image_load_from_file(sb_image_t *image,
     if (image->data != NULL) {
         free(image->data);
         image->data = data;
+        image->size.width = width;
+        image->size.height = height;
+    }
+
+    return true;
+}
+
+bool sb_image_load_from_data(sb_image_t *image,
+                             const uint8_t *data,
+                             uint64_t data_len,
+                             enum sb_image_file_format format)
+{
+    uint64_t width, height;
+
+    uint8_t *ret_data = sb_skia_load_image_from_file(NULL, data, data_len,
+        format, &width, &height);
+
+    if (ret_data == NULL) {
+        return false;
+    }
+
+    if (image->data != NULL) {
+        free(image->data);
+        image->data = ret_data;
+        image->size.width = width;
+        image->size.height = height;
     }
 
     return true;
