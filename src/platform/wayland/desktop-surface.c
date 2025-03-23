@@ -409,28 +409,16 @@ static void xdg_toplevel_configure_handler(void *data,
             maximized = true;
             curr_states |= SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
 
-            /*
-            int state = desktop_surface->toplevel.states;
-
-            if (state | SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
-                desktop_surface->toplevel.states |=
-                    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
-
-                sb_event_t *event = sb_event_new(
-                    SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
-                    desktop_surface,
-                    SB_EVENT_TYPE_STATE_CHANGE);
-                event->state_change.state =
-                    SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED;
-                event->state_change.size.width = width;
-                event->state_change.size.height = height;
-
-                sb_application_post_event(sb_application_instance(), event);
-            }
-            */
-
             break;
         }
+        case XDG_TOPLEVEL_STATE_FULLSCREEN:
+            curr_states |= SB_DESKTOP_SURFACE_TOPLEVEL_STATE_FULLSCREEN;
+
+            break;
+        case XDG_TOPLEVEL_STATE_ACTIVATED:
+            curr_states |= SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED;
+
+            break;
         case XDG_TOPLEVEL_STATE_RESIZING:
         {
             sb_log_debug("Resize %dx%d\n", width, height);
@@ -488,6 +476,27 @@ static void xdg_toplevel_configure_handler(void *data,
             sb_event_t *event = _state_change_event_new(desktop_surface,
                 SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED, false,
                 width, height);
+
+            sb_application_post_event(sb_application_instance(), event);
+        }
+
+        // Activated.
+        if (!(states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED) &&
+            curr_states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED) {
+            desktop_surface->toplevel.states
+                |= SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED;
+
+            sb_event_t *event = _state_change_event_new(desktop_surface,
+                SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED, true, 0, 0);
+
+            sb_application_post_event(sb_application_instance(), event);
+        } else if (states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED &&
+            !(curr_states & SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED)) {
+            desktop_surface->toplevel.states
+                &= ~SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED;
+
+            sb_event_t *event = _state_change_event_new(desktop_surface,
+                SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED, false, 0, 0);
 
             sb_application_post_event(sb_application_instance(), event);
         }

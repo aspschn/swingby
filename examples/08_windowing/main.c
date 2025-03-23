@@ -107,6 +107,16 @@ static void on_window_state_change(sb_event_t *event)
         geometry.pos.x = window_decoration_border_offset(window);
         geometry.pos.y = window_decoration_border_offset(window);
         sb_desktop_surface_set_wm_geometry(window->desktop_surface, &geometry);
+    } else if (state == SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED &&
+        value == true) {
+        // Activated.
+
+        fprintf(stderr, " == Toplevel activated! ==\n");
+    } else if (state == SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED &&
+        value == false) {
+        // Inactivated.
+
+        fprintf(stderr, " == Toplevel inactivated! ==\n");
     }
 }
 
