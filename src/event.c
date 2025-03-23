@@ -120,6 +120,15 @@ bool sb_event_state_change_value(sb_event_t *event)
     return event->state_change.value;
 }
 
+//!<================
+//!< Scale Event
+//!<================
+
+int32_t sb_event_scale_scale(sb_event_t *event)
+{
+    return event->scale.scale;
+}
+
 //!<=====================
 //!< Event Listener
 //!<=====================
