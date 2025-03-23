@@ -15,8 +15,8 @@ extern "C" {
 typedef struct sb_color_t sb_color_t;
 
 enum sb_image_format {
-    SB_IMAGE_FORMAT_RGBA32,
-    SB_IMAGE_FORMAT_ARGB32,
+    SB_IMAGE_FORMAT_RGBA32  = 0,
+    SB_IMAGE_FORMAT_ARGB32  = 1,
 };
 
 enum sb_image_file_format {
