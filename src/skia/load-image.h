@@ -10,7 +10,15 @@
 extern "C" {
 #endif
 
+/// \brief Load image from file or data.
+///
+/// It is changed to function that load image file or data.
+/// IT WAS only for loading image from file.
+/// Because i'm lazy, not changed it's function name.
+/// If `filename` NULL, try read from `data` with `data_len`.
 uint8_t* sb_skia_load_image_from_file(const char *filename,
+                                      const uint8_t *data,
+                                      uint64_t data_len,
                                       enum sb_image_file_format format,
                                       uint64_t *width,
                                       uint64_t *height);

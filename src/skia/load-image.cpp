@@ -20,6 +20,8 @@ extern "C" {
 #endif
 
 uint8_t* sb_skia_load_image_from_file(const char *filename,
+                                      const uint8_t *data,
+                                      uint64_t data_len,
                                       enum sb_image_file_format format,
                                       uint64_t *width,
                                       uint64_t *height)
@@ -27,12 +29,17 @@ uint8_t* sb_skia_load_image_from_file(const char *filename,
     SkBitmap bitmap;
 
     // Load data.
-    sk_sp<SkData> data = SkData::MakeFromFileName(filename);
-    if (!data) {
+    sk_sp<SkData> sk_data;
+    if (filename != NULL) {
+        sk_data = SkData::MakeFromFileName(filename);
+    } else {
+        sk_data = SkData::MakeWithCopy(data, data_len);
+    }
+    if (!sk_data) {
         return NULL;
     }
 
-    std::unique_ptr<SkCodec> codec = SkCodec::MakeFromData(data);
+    std::unique_ptr<SkCodec> codec = SkCodec::MakeFromData(sk_data);
     if (!codec) {
         return NULL;
     }

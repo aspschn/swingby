@@ -67,7 +67,7 @@ bool sb_image_load_from_file(sb_image_t *image,
 {
     uint64_t width, height;
 
-    uint8_t *data = sb_skia_load_image_from_file(filename, format,
+    uint8_t *data = sb_skia_load_image_from_file(filename, NULL, 0, format,
         &width, &height);
 
     if (data == NULL) {
@@ -77,6 +77,30 @@ bool sb_image_load_from_file(sb_image_t *image,
     if (image->data != NULL) {
         free(image->data);
         image->data = data;
+    }
+
+    return true;
+}
+
+bool sb_image_load_from_data(sb_image_t *image,
+                             const uint8_t *data,
+                             uint64_t data_len,
+                             enum sb_image_file_format format)
+{
+    uint64_t width, height;
+
+    uint8_t *ret_data = sb_skia_load_image_from_file(NULL, data, data_len,
+        format, &width, &height);
+
+    if (ret_data == NULL) {
+        return false;
+    }
+
+    if (image->data != NULL) {
+        free(image->data);
+        image->data = ret_data;
+        image->size.width = width;
+        image->size.height = height;
     }
 
     return true;

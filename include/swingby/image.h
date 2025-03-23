@@ -60,8 +60,9 @@ bool sb_image_load_from_file(sb_image_t *image,
                              enum sb_image_file_format format);
 
 SB_EXPORT
-void sb_image_load_from_data(sb_image_t *image,
+bool sb_image_load_from_data(sb_image_t *image,
                              const uint8_t *data,
+                             uint64_t data_len,
                              enum sb_image_file_format format);
 
 SB_EXPORT

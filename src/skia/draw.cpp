@@ -198,7 +198,7 @@ void sb_skia_draw_image(sb_skia_context_t *context,
         image_size->width,
         image_size->height,
         kRGBA_8888_SkColorType,
-        kPremul_SkAlphaType
+        kUnpremul_SkAlphaType
     );
 
     SkBitmap bitmap;
