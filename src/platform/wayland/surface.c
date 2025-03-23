@@ -301,7 +301,11 @@ static void _draw_recursive(sb_surface_t *surface,
     sb_list_t *children = sb_view_children(view);
     for (int i = 0; i < sb_list_length(children); ++i) {
         if (sb_view_parent(view) != NULL) {
-            sb_skia_save_pos(surface->skia_context, &sb_view_geometry(view)->pos);
+            const sb_point_t view_pos = sb_view_geometry(view)->pos;
+            sb_point_t scaled_pos;
+            scaled_pos.x = view_pos.x * surface->scale;
+            scaled_pos.y = view_pos.y * surface->scale;
+            sb_skia_save_pos(surface->skia_context, &scaled_pos);
         }
 
         sb_view_t *child = sb_list_at(children, i);

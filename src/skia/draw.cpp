@@ -96,7 +96,8 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
     SkCanvas *canvas = _get_canvas(context);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x, rect->pos.y,
+        rect->pos.x * scale,
+        rect->pos.y * scale,
         rect->size.width * scale,
         rect->size.height * scale);
 
