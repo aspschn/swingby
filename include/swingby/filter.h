@@ -12,8 +12,8 @@ extern "C" {
 #endif // __cplusplus
 
 enum sb_filter_type {
-    SB_FILTER_TYPE_BLUR,
-    SB_FILTER_TYPE_DROP_SHADOW,
+    SB_FILTER_TYPE_BLUR         = 0,
+    SB_FILTER_TYPE_DROP_SHADOW  = 1,
 };
 
 typedef struct sb_filter_t sb_filter_t;

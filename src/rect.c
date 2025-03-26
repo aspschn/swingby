@@ -44,6 +44,17 @@ bool sb_rect_intersects(const sb_rect_t *rect, const sb_rect_t *other)
     return true;
 }
 
+bool sb_rect_equals(const sb_rect_t *rect, const sb_rect_t *other)
+{
+    if (rect->pos.x == other->pos.x && rect->pos.y == other->pos.y &&
+        rect->size.width == other->size.width &&
+        rect->size.height == other->size.height) {
+        return true;
+    }
+
+    return false;
+}
+
 #ifdef __cplusplus
 }
 #endif

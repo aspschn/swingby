@@ -40,6 +40,17 @@ sb_queue_t* sb_queue_new()
 
 void sb_queue_enqueue(sb_queue_t *queue, void *data)
 {
+    if (queue->capacity == queue->length) {
+        // Increase capacity.
+        void **old_data = queue->data;
+        queue->capacity = queue->capacity * 2;
+        void **new_data = malloc(sizeof(void**) * queue->capacity);
+        for (int i = 0; i < queue->length; ++i) {
+            new_data[i] = old_data[i];
+        }
+        free(old_data);
+        queue->data = new_data;
+    }
     queue->data[queue->length] = data;
 
     queue->length += 1;
@@ -222,6 +233,7 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 break;
             case SB_EVENT_TYPE_REQUEST_UPDATE:
                 sb_surface_on_request_update(event->target);
+                sb_event_free(event);
                 break;
             case SB_EVENT_TYPE_RESIZE:
                 sb_surface_on_resize(event->target, event);
@@ -276,6 +288,13 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 _propagate_pointer_event(event->target, event);
                 sb_event_free(event);
                 break;
+            case SB_EVENT_TYPE_MOVE:
+                sb_view_on_move(event->target, event);
+                sb_event_free(event);
+                break;
+            case SB_EVENT_TYPE_RESIZE:
+                sb_view_on_resize(event->target, event);
+                sb_event_free(event);
             default:
                 break;
             }

@@ -34,10 +34,12 @@ enum sb_event_type {
     SB_EVENT_TYPE_REQUEST_UPDATE            = 70,
     SB_EVENT_TYPE_SHOW                      = 80,
     SB_EVENT_TYPE_HIDE                      = 81,
+    /// \brief View position moved.
     SB_EVENT_TYPE_MOVE                      = 100,
+    /// \brief Desktop surface, surface and view size cahnged.
     SB_EVENT_TYPE_RESIZE                    = 101,
     SB_EVENT_TYPE_STATE_CHANGE              = 110,
-    /// Preferred buffer scale changed for surface.
+    /// \brief Preferred buffer scale changed for surface.
     SB_EVENT_TYPE_PREFERRED_SCALE           = 130,
     SB_EVENT_TYPE_TIMEOUT                   = 140,
 };
@@ -153,6 +155,28 @@ sb_event_t* sb_pointer_event_new(enum sb_event_target_type target_type,
                                  const sb_point_t *position);
 
 sb_pointer_button sb_pointer_event_button(sb_pointer_event_t *event);
+
+//!<=================
+//!< Move Event
+//!<=================
+
+const sb_point_t* sb_event_move_old_position(sb_event_t *event);
+
+const sb_point_t* sb_event_move_position(sb_event_t *event);
+
+//!<======================
+//!< State Change Event
+//!<======================
+
+int sb_event_state_change_state(sb_event_t *event);
+
+bool sb_event_state_change_value(sb_event_t *event);
+
+//!<================
+//!< Scale Event
+//!<================
+
+int32_t sb_event_scale_scale(sb_event_t *event);
 
 //!<=====================
 //!< Event Listener

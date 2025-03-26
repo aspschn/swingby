@@ -46,6 +46,7 @@ set(SWINGBY_SOURCES
     src/log.c
     src/bench.c
     src/list.c
+    src/point.c
     src/size.c
     src/rect.c
     src/color.c

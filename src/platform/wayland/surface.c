@@ -110,7 +110,7 @@ void _gl_init(sb_surface_t *surface)
         surface->_size.width * surface->scale,
         surface->_size.height * surface->scale);
 
-    glClearColor(0.5, 0.5, 0.5, 0.5);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glEnable(GL_BLEND);
@@ -294,14 +294,18 @@ static void _draw_recursive(sb_surface_t *surface,
         );
     } else if (fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
         sb_skia_draw_image(surface->skia_context,
-            sb_view_geometry(view), sb_view_image(view));
+            sb_view_geometry(view), surface->scale, sb_view_image(view));
     }
 
     // Child views.
     sb_list_t *children = sb_view_children(view);
     for (int i = 0; i < sb_list_length(children); ++i) {
         if (sb_view_parent(view) != NULL) {
-            sb_skia_save_pos(surface->skia_context, &sb_view_geometry(view)->pos);
+            const sb_point_t view_pos = sb_view_geometry(view)->pos;
+            sb_point_t scaled_pos;
+            scaled_pos.x = view_pos.x * surface->scale;
+            scaled_pos.y = view_pos.y * surface->scale;
+            sb_skia_save_pos(surface->skia_context, &scaled_pos);
         }
 
         sb_view_t *child = sb_list_at(children, i);
@@ -589,7 +593,9 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
 
     sb_surface_update(surface);
 
-    wl_egl_window_resize(surface->_wl_egl_window, size->width, size->height,
+    wl_egl_window_resize(surface->_wl_egl_window,
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale,
         0, 0);
 }
 

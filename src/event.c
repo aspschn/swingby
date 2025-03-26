@@ -92,6 +92,43 @@ sb_event_t* sb_pointer_event_new(enum sb_event_target_type target_type,
     return event;
 }
 
+//!<=================
+//!< Move Event
+//!<=================
+
+const sb_point_t* sb_event_move_old_position(sb_event_t *event)
+{
+    return &event->move.old_position;
+}
+
+const sb_point_t* sb_event_move_position(sb_event_t *event)
+{
+    return &event->move.position;
+}
+
+//!<======================
+//!< State Change Event
+//!<======================
+
+int sb_event_state_change_state(sb_event_t *event)
+{
+    return event->state_change.state;
+}
+
+bool sb_event_state_change_value(sb_event_t *event)
+{
+    return event->state_change.value;
+}
+
+//!<================
+//!< Scale Event
+//!<================
+
+int32_t sb_event_scale_scale(sb_event_t *event)
+{
+    return event->scale.scale;
+}
+
 //!<=====================
 //!< Event Listener
 //!<=====================
