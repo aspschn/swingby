@@ -20,7 +20,7 @@ struct sb_desktop_surface_t {
     sb_desktop_surface_t *parent;
     struct xdg_surface *_xdg_surface;
     struct xdg_toplevel *_xdg_toplevel;
-    struct xdg_popup *_xdg_popup;
+    struct xdg_popup *xdg_popup;
     sb_rect_t wm_geometry;
     struct {
         sb_size_t minimum_size;
@@ -62,6 +62,30 @@ static void xdg_toplevel_close_handler(void *data,
 static struct xdg_toplevel_listener xdg_toplevel_listener = {
     .configure = xdg_toplevel_configure_handler,
     .close = xdg_toplevel_close_handler,
+};
+
+//!<================
+//!< XDG Popup
+//!<================
+
+static void xdg_popup_configure_handler(void *data,
+                                        struct xdg_popup *xdg_popup,
+                                        int32_t x,
+                                        int32_t y,
+                                        int32_t width,
+                                        int32_t height);
+
+static void xdg_popup_popup_done_handler(void *data,
+                                         struct xdg_popup *xdg_popup);
+
+static void xdg_popup_repositioned_handler(void *data,
+                                           struct xdg_popup *xdg_popup,
+                                           uint32_t token);
+
+static struct xdg_popup_listener xdg_popup_listener = {
+    .configure = xdg_popup_configure_handler,
+    .popup_done = xdg_popup_popup_done_handler,
+    .repositioned = xdg_popup_repositioned_handler,
 };
 
 //!<=====================
@@ -119,7 +143,7 @@ sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
     d_surface->parent = NULL;
     d_surface->_xdg_surface = NULL;
     d_surface->_xdg_toplevel = NULL;
-    d_surface->_xdg_popup = NULL;
+    d_surface->xdg_popup = NULL;
 
     d_surface->wm_geometry.pos.x = 0;
     d_surface->wm_geometry.pos.y = 0;
@@ -189,7 +213,22 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         sb_desktop_surface_toplevel_set_minimum_size(desktop_surface,
             &min_size);
     } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
-        //
+        struct xdg_positioner *positioner = xdg_wm_base_create_positioner(
+            xdg_wm_base);
+        const sb_size_t *surface_size = sb_surface_size(
+            desktop_surface->_surface);
+        xdg_positioner_set_size(positioner,
+            surface_size->width, surface_size->height);
+        xdg_positioner_set_anchor(positioner, XDG_POSITIONER_ANCHOR_BOTTOM);
+        xdg_positioner_set_anchor_rect(positioner, 0, 0,
+            surface_size->width, surface_size->height);
+        xdg_positioner_set_gravity(positioner, XDG_POSITIONER_GRAVITY_BOTTOM);
+
+        desktop_surface->xdg_popup = xdg_surface_get_popup(xdg_surface,
+            desktop_surface->parent->_xdg_surface, positioner);
+
+        xdg_popup_add_listener(desktop_surface->xdg_popup, &xdg_popup_listener,
+            (void*)desktop_surface);
     }
 
     // Commit.
@@ -209,7 +248,8 @@ void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface)
         xdg_toplevel_destroy(desktop_surface->_xdg_toplevel);
         desktop_surface->_xdg_toplevel = NULL;
     } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
-        //
+        xdg_popup_destroy(desktop_surface->xdg_popup);
+        desktop_surface->xdg_popup = NULL;
     }
 
     xdg_surface_destroy(desktop_surface->_xdg_surface);
@@ -509,4 +549,31 @@ static void xdg_toplevel_close_handler(void *data,
     sb_desktop_surface_t *desktop_surface = (sb_desktop_surface_t*)data;
 
     sb_desktop_surface_toplevel_close(desktop_surface);
+}
+
+//!<================
+//!< XDG Popup
+//!<================
+
+static void xdg_popup_configure_handler(void *data,
+                                        struct xdg_popup *xdg_popup,
+                                        int32_t x,
+                                        int32_t y,
+                                        int32_t width,
+                                        int32_t height)
+{
+    sb_log_debug("xdg_popup_configure_handler\n");
+}
+
+static void xdg_popup_popup_done_handler(void *data,
+                                         struct xdg_popup *xdg_popup)
+{
+    sb_log_debug("xdg_popup_popup_done_handler()\n");
+}
+
+static void xdg_popup_repositioned_handler(void *data,
+                                           struct xdg_popup *xdg_popup,
+                                           uint32_t token)
+{
+    sb_log_debug("xdg_popup_repositioned_handler() - token: %d\n", token);
 }
