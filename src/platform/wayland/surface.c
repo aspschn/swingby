@@ -675,6 +675,16 @@ void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry)
     wl_region_destroy(region);
 }
 
+void sb_surface_free(sb_surface_t *surface)
+{
+    wl_egl_window_destroy(surface->_wl_egl_window);
+    wl_surface_destroy(surface->_wl_surface);
+
+    // TODO: Free the views.
+
+    free(surface);
+}
+
 void sb_surface_add_event_listener(sb_surface_t *surface,
                                    enum sb_event_type event_type,
                                    void (*listener)(sb_event_t*))

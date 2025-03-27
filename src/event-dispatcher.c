@@ -221,6 +221,14 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 sb_desktop_surface_on_state_change(event->target,
                     event);
                 break;
+            case SB_EVENT_TYPE_SHOW:
+                sb_desktop_surface_on_show(event->target, event);
+                sb_event_free(event);
+                break;
+            case SB_EVENT_TYPE_HIDE:
+                sb_desktop_surface_on_hide(event->target, event);
+                sb_event_free(event);
+                break;
             default:
                 break;
             }
