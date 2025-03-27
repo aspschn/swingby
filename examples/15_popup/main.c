@@ -7,19 +7,32 @@ sb_view_t *item = NULL;
 
 bool popup_on = false;
 sb_desktop_surface_t *toplevel;
-sb_desktop_surface_t *popup;
+sb_desktop_surface_t *popup = NULL;
+
+static void on_hide(sb_event_t *event)
+{
+    if (popup != NULL) {
+        sb_desktop_surface_free(popup);
+        popup_on = false;
+        popup = NULL;
+    }
+}
 
 static void on_click(sb_event_t *event)
 {
-    if (popup_on == true) {
+    if (popup_on == true && popup != NULL) {
         sb_desktop_surface_hide(popup);
         sb_desktop_surface_free(popup);
+        popup = NULL;
         popup_on = false;
         return;
     }
     popup = sb_desktop_surface_new(
         SB_DESKTOP_SURFACE_ROLE_POPUP);
     sb_desktop_surface_set_parent(popup, toplevel);
+
+    sb_desktop_surface_add_event_listener(popup,
+        SB_EVENT_TYPE_HIDE, on_hide);
 
     sb_color_t color;
     color.r = 255;

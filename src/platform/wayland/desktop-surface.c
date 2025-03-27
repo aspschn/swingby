@@ -217,11 +217,13 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
             xdg_wm_base);
         const sb_size_t *surface_size = sb_surface_size(
             desktop_surface->_surface);
+        const sb_size_t *parent_size = sb_surface_size(
+            desktop_surface->parent->_surface);
         xdg_positioner_set_size(positioner,
             surface_size->width, surface_size->height);
         xdg_positioner_set_anchor(positioner, XDG_POSITIONER_ANCHOR_BOTTOM);
         xdg_positioner_set_anchor_rect(positioner, 0, 0,
-            surface_size->width, surface_size->height);
+            parent_size->width, parent_size->height);
         xdg_positioner_set_gravity(positioner, XDG_POSITIONER_GRAVITY_BOTTOM);
 
         desktop_surface->xdg_popup = xdg_surface_get_popup(xdg_surface,
@@ -229,6 +231,8 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
 
         xdg_popup_add_listener(desktop_surface->xdg_popup, &xdg_popup_listener,
             (void*)desktop_surface);
+
+        xdg_positioner_destroy(positioner);
     }
 
     // Commit.
