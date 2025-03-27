@@ -240,6 +240,10 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         sb_surface_update(desktop_surface->_surface);
     }
 
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
+        desktop_surface, SB_EVENT_TYPE_SHOW);
+    sb_application_post_event(sb_application_instance(), event);
+
     // TEST
     // sb_surface_on_request_update(desktop_surface->_surface);
 }
@@ -252,12 +256,19 @@ void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface)
     } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
         xdg_popup_destroy(desktop_surface->xdg_popup);
         desktop_surface->xdg_popup = NULL;
+
+        sb_application_unregister_desktop_surface(sb_application_instance(),
+            desktop_surface);
     }
 
     xdg_surface_destroy(desktop_surface->_xdg_surface);
     desktop_surface->_xdg_surface = NULL;
 
     sb_surface_detach(desktop_surface->_surface);
+
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
+        desktop_surface, SB_EVENT_TYPE_HIDE);
+    sb_application_post_event(sb_application_instance(), event);
 }
 
 sb_desktop_surface_toplevel_state_flags
@@ -436,6 +447,22 @@ void sb_desktop_surface_on_state_change(sb_desktop_surface_t *desktop_surface,
 {
     _event_listener_filter_for_each(desktop_surface->event_listeners,
         SB_EVENT_TYPE_STATE_CHANGE,
+        event);
+}
+
+void sb_desktop_surface_on_show(sb_desktop_surface_t *desktop_surface,
+                                sb_event_t *event)
+{
+    _event_listener_filter_for_each(desktop_surface->event_listeners,
+        SB_EVENT_TYPE_SHOW,
+        event);
+}
+
+void sb_desktop_surface_on_hide(sb_desktop_surface_t *desktop_surface,
+                                sb_event_t *event)
+{
+    _event_listener_filter_for_each(desktop_surface->event_listeners,
+        SB_EVENT_TYPE_HIDE,
         event);
 }
 

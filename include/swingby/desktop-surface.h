@@ -139,4 +139,10 @@ void sb_desktop_surface_on_resize(sb_desktop_surface_t *desktop_surface,
 void sb_desktop_surface_on_state_change(sb_desktop_surface_t *desktop_surface,
                                         sb_event_t *event);
 
+void sb_desktop_surface_on_show(sb_desktop_surface_t *desktop_surface,
+                                sb_event_t *event);
+
+void sb_desktop_surface_on_hide(sb_desktop_surface_t *desktop_surface,
+                                sb_event_t *event);
+
 #endif /* _FOUNDATION_DESKTOP_SURFACE_H */
