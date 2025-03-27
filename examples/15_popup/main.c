@@ -34,6 +34,11 @@ static void on_click(sb_event_t *event)
     sb_desktop_surface_add_event_listener(popup,
         SB_EVENT_TYPE_HIDE, on_hide);
 
+    sb_point_t pos;
+    pos.x = 30;
+    pos.y = 30;
+    sb_desktop_surface_popup_set_position(popup, &pos);
+
     sb_color_t color;
     color.r = 255;
     color.g = 255;

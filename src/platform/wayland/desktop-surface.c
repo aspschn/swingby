@@ -31,6 +31,9 @@ struct sb_desktop_surface_t {
         /// The reason why is IDK. However ignore this and it will works anyway.
         bool initial_resizing;
     } toplevel;
+    struct {
+        sb_point_t position;
+    } popup;
     sb_list_t *event_listeners;
 };
 
@@ -153,6 +156,9 @@ sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
     d_surface->toplevel.states = SB_DESKTOP_SURFACE_TOPLEVEL_STATE_NORMAL;
     d_surface->toplevel.initial_resizing = true;
 
+    d_surface->popup.position.x = 0;
+    d_surface->popup.position.y = 0;
+
     d_surface->event_listeners = sb_list_new();
 
     // Create a surface.
@@ -221,10 +227,17 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
             desktop_surface->parent->_surface);
         xdg_positioner_set_size(positioner,
             surface_size->width, surface_size->height);
-        xdg_positioner_set_anchor(positioner, XDG_POSITIONER_ANCHOR_BOTTOM);
-        xdg_positioner_set_anchor_rect(positioner, 0, 0,
+        xdg_positioner_set_anchor(positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
+        int32_t x;
+        int32_t y;
+        {
+            x = desktop_surface->popup.position.x;
+            y = desktop_surface->popup.position.y;
+        }
+        xdg_positioner_set_anchor_rect(positioner, x, y,
             parent_size->width, parent_size->height);
-        xdg_positioner_set_gravity(positioner, XDG_POSITIONER_GRAVITY_BOTTOM);
+        xdg_positioner_set_gravity(positioner,
+            XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
 
         desktop_surface->xdg_popup = xdg_surface_get_popup(xdg_surface,
             desktop_surface->parent->_xdg_surface, positioner);
@@ -398,6 +411,12 @@ void sb_desktop_surface_toplevel_set_minimized(
         return;
     }
     xdg_toplevel_set_minimized(desktop_surface->_xdg_toplevel);
+}
+
+void sb_desktop_surface_popup_set_position(
+    sb_desktop_surface_t *desktop_surface, const sb_point_t *position)
+{
+    desktop_surface->popup.position = *position;
 }
 
 void sb_desktop_surface_popup_grab_for_button(
