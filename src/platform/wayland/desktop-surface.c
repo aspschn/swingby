@@ -232,11 +232,13 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
     }
 
     // Commit.
-    wl_surface_commit(wl_surface);
+    if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
+        wl_surface_commit(wl_surface);
 
-    sb_surface_attach(desktop_surface->_surface);
+        sb_surface_attach(desktop_surface->_surface);
 
-    sb_surface_update(desktop_surface->_surface);
+        sb_surface_update(desktop_surface->_surface);
+    }
 
     // TEST
     // sb_surface_on_request_update(desktop_surface->_surface);
@@ -381,6 +383,35 @@ void sb_desktop_surface_toplevel_set_minimized(
         return;
     }
     xdg_toplevel_set_minimized(desktop_surface->_xdg_toplevel);
+}
+
+void sb_desktop_surface_popup_grab_for_button(
+    sb_desktop_surface_t *desktop_surface)
+{
+    if (desktop_surface->xdg_popup == NULL) {
+        return;
+    }
+    xdg_popup_grab(desktop_surface->xdg_popup,
+        sb_application_wl_seat(sb_application_instance()),
+        sb_application_pointer_button_serial(sb_application_instance()));
+
+    sb_surface_attach(desktop_surface->_surface);
+}
+
+void sb_desktop_surface_popup_grab_for_key(
+    sb_desktop_surface_t *desktop_surface)
+{
+    if (desktop_surface->xdg_popup == NULL) {
+        return;
+    }
+    // TODO.
+}
+
+void sb_desktop_surface_free(sb_desktop_surface_t *desktop_surface)
+{
+    sb_surface_free(desktop_surface->_surface);
+
+    free(desktop_surface);
 }
 
 void sb_desktop_surface_add_event_listener(
@@ -568,7 +599,9 @@ static void xdg_popup_configure_handler(void *data,
 static void xdg_popup_popup_done_handler(void *data,
                                          struct xdg_popup *xdg_popup)
 {
+    sb_desktop_surface_t *desktop_surface = (sb_desktop_surface_t*)data;
     sb_log_debug("xdg_popup_popup_done_handler()\n");
+    sb_desktop_surface_hide(desktop_surface);
 }
 
 static void xdg_popup_repositioned_handler(void *data,

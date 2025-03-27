@@ -119,6 +119,14 @@ SB_EXPORT
 void sb_desktop_surface_toplevel_set_minimized(
     sb_desktop_surface_t *desktop_surface);
 
+void sb_desktop_surface_popup_grab_for_button(
+    sb_desktop_surface_t *desktop_surface);
+
+void sb_desktop_surface_popup_grab_for_key(
+    sb_desktop_surface_t *desktop_surface);
+
+void sb_desktop_surface_free(sb_desktop_surface_t *desktop_surface);
+
 SB_EXPORT
 void sb_desktop_surface_add_event_listener(
     sb_desktop_surface_t *desktop_surface,
