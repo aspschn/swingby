@@ -48,6 +48,17 @@ uint8_t* sb_image_data(sb_image_t *image)
     return image->data;
 }
 
+void sb_image_set_data(sb_image_t *image,
+                       const uint8_t *data,
+                       const sb_size_i_t *size)
+{
+    if (image->data != NULL) {
+        free(image->data);
+    }
+    image->data = (void*)data;
+    image->size = *size;
+}
+
 void sb_image_fill(sb_image_t *image, const sb_color_t *color)
 {
     sb_skia_image_fill(image, color);

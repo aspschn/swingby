@@ -46,6 +46,11 @@ SB_EXPORT
 uint8_t* sb_image_data(sb_image_t *image);
 
 SB_EXPORT
+void sb_image_set_data(sb_image_t *image,
+                       const uint8_t *data,
+                       const sb_size_i_t *size);
+
+SB_EXPORT
 void sb_image_fill(sb_image_t *image, const sb_color_t *color);
 
 SB_EXPORT
