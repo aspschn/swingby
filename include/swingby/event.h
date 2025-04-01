@@ -148,13 +148,7 @@ void sb_event_free(sb_event_t *event);
 //!< Pointer Event
 //!<=================
 
-sb_event_t* sb_pointer_event_new(enum sb_event_target_type target_type,
-                                 void *target,
-                                 enum sb_event_type type,
-                                 sb_pointer_button button,
-                                 const sb_point_t *position);
-
-sb_pointer_button sb_pointer_event_button(sb_pointer_event_t *event);
+enum sb_pointer_button sb_event_pointer_button(sb_event_t *event);
 
 //!<=================
 //!< Move Event
