@@ -161,6 +161,7 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
 
         // Clip rrect.
         if (clip == true) {
+            canvas->save();
             canvas->clipRRect(rrect);
         }
 
@@ -173,6 +174,7 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
 
     // Clip normal rect.
     if (clip == true) {
+        canvas->save();
         canvas->clipRect(sk_rect);
     }
     canvas->drawRect(sk_rect, paint);
