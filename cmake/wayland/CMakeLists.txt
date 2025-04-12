@@ -2,6 +2,7 @@ set(WAYLAND_PROTOCOLS_SOURCES
     include/wayland-protocols/stable/xdg-shell.c
     include/wayland-protocols/stable/tablet-v2.c
     include/wayland-protocols/staging/cursor-shape-v1.c
+    include/wayland-protocols/unstable/text-input-unstable-v3.c
 )
 
 set(SWINGBY_PLATFORM_SOURCES

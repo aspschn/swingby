@@ -150,6 +150,14 @@ void sb_event_free(sb_event_t *event);
 
 enum sb_pointer_button sb_event_pointer_button(sb_event_t *event);
 
+//!<===================
+//!< Keyboard Event
+//!<===================
+
+int32_t sb_event_keyboard_keycode(sb_event_t *event);
+
+bool sb_event_keyboard_repeated(sb_event_t *event);
+
 //!<=================
 //!< Move Event
 //!<=================

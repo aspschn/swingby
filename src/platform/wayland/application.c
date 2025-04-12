@@ -13,6 +13,7 @@
 #include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
 #include <wayland-protocols/staging/cursor-shape-v1.h>
+#include <wayland-protocols/unstable/text-input-unstable-v3.h>
 
 #include <swingby/log.h>
 #include <swingby/surface.h>
@@ -43,6 +44,8 @@ struct sb_application_t {
     struct wl_keyboard *_wl_keyboard;
     struct wl_touch *_wl_touch;
     struct wp_cursor_shape_manager_v1 *wp_cursor_shape_manager_v1;
+    struct zwp_text_input_manager_v3 *zwp_text_input_manager_v3;
+    struct zwp_text_input_v3 *zwp_text_input_v3;
     struct {
         /// \brief Current pointer surface.
         ///
@@ -319,6 +322,46 @@ static const struct wl_seat_listener seat_listener = {
 };
 
 //!<====================
+//!< Text Input
+//!<====================
+
+static void text_input_enter_handler(void *data,
+                                     struct zwp_text_input_v3 *text_input,
+                                     struct wl_surface *wl_surface);
+
+static void text_input_leave_handler(void *data,
+                                     struct zwp_text_input_v3 *text_input,
+                                     struct wl_surface *wl_surface);
+
+static void text_input_preedit_string_handler(void *data,
+    struct zwp_text_input_v3 *text_input,
+    const char *text,
+    int32_t cursor_begin,
+    int32_t cursor_end);
+
+static void text_input_commit_string_handler(void *data,
+    struct zwp_text_input_v3 *text_input,
+    const char *text);
+
+static void text_input_delete_surrounding_text_handler(void *data,
+    struct zwp_text_input_v3 *zwp_text_input_v3,
+    uint32_t before_length,
+    uint32_t after_length);
+
+static void text_input_done_handler(void *data,
+                                    struct zwp_text_input_v3 *text_input,
+                                    uint32_t serial);
+
+static const struct zwp_text_input_v3_listener text_input_listener = {
+    .enter = text_input_enter_handler,
+    .leave = text_input_leave_handler,
+    .preedit_string = text_input_preedit_string_handler,
+    .commit_string = text_input_commit_string_handler,
+    .delete_surrounding_text = text_input_delete_surrounding_text_handler,
+    .done = text_input_done_handler,
+};
+
+//!<====================
 //!< Helper Functions
 //!<====================
 
@@ -464,6 +507,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->_wl_keyboard = NULL;
     app->_wl_touch = NULL;
     app->wp_cursor_shape_manager_v1 = NULL;
+    app->zwp_text_input_manager_v3 = NULL;
+    app->zwp_text_input_v3 = NULL;
 
     app->pointer.wl_surface = NULL;
     app->pointer.view = NULL;
@@ -641,6 +686,12 @@ struct wl_seat* sb_application_wl_seat(sb_application_t *application)
     return application->_wl_seat;
 }
 
+struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
+    sb_application_t *application)
+{
+    return application->zwp_text_input_v3;
+}
+
 int sb_application_exec(sb_application_t *application)
 {
     int err = wl_display_dispatch(application->_wl_display);
@@ -720,6 +771,9 @@ static void app_global_handler(void *data,
     } else if (strcmp(interface, "wp_cursor_shape_manager_v1") == 0) {
         app->wp_cursor_shape_manager_v1 = wl_registry_bind(wl_registry,
             name, &wp_cursor_shape_manager_v1_interface, 1);
+    } else if (strcmp(interface, "zwp_text_input_manager_v3") == 0) {
+        app->zwp_text_input_manager_v3 = wl_registry_bind(wl_registry,
+            name, &zwp_text_input_manager_v3_interface, 1);
     }
 }
 
@@ -1348,6 +1402,9 @@ static void seat_capabilities_handler(void *data,
         app->_wl_keyboard = wl_seat_get_keyboard(wl_seat);
         wl_keyboard_add_listener(app->_wl_keyboard, &keyboard_listener,
             (void*)app);
+
+        app->zwp_text_input_v3 = zwp_text_input_manager_v3_get_text_input(
+            app->zwp_text_input_manager_v3, wl_seat);
     }
 }
 
@@ -1356,4 +1413,47 @@ static void seat_name_handler(void *data,
                               const char *name)
 {
     sb_log_debug("Seat name: %s\n", name);
+}
+
+//!<====================
+//!< Text Input
+//!<====================
+
+static void text_input_enter_handler(void *data,
+                                     struct zwp_text_input_v3 *text_input,
+                                     struct wl_surface *wl_surface)
+{
+}
+
+static void text_input_leave_handler(void *data,
+                                     struct zwp_text_input_v3 *text_input,
+                                     struct wl_surface *wl_surface)
+{
+}
+
+static void text_input_preedit_string_handler(void *data,
+    struct zwp_text_input_v3 *text_input,
+    const char *text,
+    int32_t cursor_begin,
+    int32_t cursor_end)
+{
+}
+
+static void text_input_commit_string_handler(void *data,
+    struct zwp_text_input_v3 *text_input,
+    const char *text)
+{
+}
+
+static void text_input_delete_surrounding_text_handler(void *data,
+    struct zwp_text_input_v3 *zwp_text_input_v3,
+    uint32_t before_length,
+    uint32_t after_length)
+{
+}
+
+static void text_input_done_handler(void *data,
+                                    struct zwp_text_input_v3 *text_input,
+                                    uint32_t serial)
+{
 }
