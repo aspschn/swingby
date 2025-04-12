@@ -301,6 +301,20 @@ static void _draw_recursive(sb_surface_t *surface,
     // Child views.
     sb_list_t *children = sb_view_children(view);
     for (int i = 0; i < sb_list_length(children); ++i) {
+        const sb_view_radius_t *radius = NULL;
+        if (!sb_view_radius_is_zero(sb_view_radius(view))) {
+            radius = sb_view_radius(view);
+        }
+
+        if (sb_view_clip(view)) {
+            // Clip parent view.
+            sb_skia_clip_rect(surface->skia_context,
+                sb_view_geometry(view),
+                radius,
+                surface->scale
+            );
+        }
+
         if (sb_view_parent(view) != NULL) {
             const sb_point_t view_pos = sb_view_geometry(view)->pos;
             sb_point_t scaled_pos;
@@ -311,6 +325,11 @@ static void _draw_recursive(sb_surface_t *surface,
 
         sb_view_t *child = sb_list_at(children, i);
         _draw_recursive(surface, child);
+
+        if (sb_view_clip(view)) {
+            // Restore parent view clip.
+            sb_skia_clip_restore(surface->skia_context);
+        }
 
         if (sb_view_parent(view) != NULL) {
             sb_skia_restore_pos(surface->skia_context);

@@ -46,6 +46,13 @@ void sb_skia_draw_image(sb_skia_context_t *context,
                         uint32_t scale,
                         const sb_image_t *image);
 
+void sb_skia_clip_rect(sb_skia_context_t *context,
+                       const sb_rect_t *rect,
+                       const sb_view_radius_t *radius,
+                       uint32_t scale);
+
+void sb_skia_clip_restore(sb_skia_context_t *context);
+
 void sb_skia_save_pos(sb_skia_context_t *context,
                       const sb_point_t *pos);
 
