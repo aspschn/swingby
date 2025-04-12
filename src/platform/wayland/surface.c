@@ -8,6 +8,7 @@
 
 #include <wayland-client.h>
 #include <wayland-egl.h>
+#include <wayland-protocols/unstable/text-input-unstable-v3.h>
 
 #include <EGL/egl.h>
 #define GL_GLEXT_PROTOTYPES
@@ -673,6 +674,32 @@ void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry)
         geometry->size.width, geometry->size.height);
     wl_surface_set_input_region(wl_surface, region);
     wl_region_destroy(region);
+}
+
+void sb_surface_enable_text_input(sb_surface_t *surface,
+                                  const sb_rect_t *rect)
+{
+    sb_application_t *app = sb_application_instance();
+
+    struct zwp_text_input_v3 *text_input =
+        sb_application_zwp_text_input_v3(app);
+
+    zwp_text_input_v3_enable(text_input);
+    zwp_text_input_v3_set_cursor_rectangle(text_input,
+        rect->pos.x, rect->pos.y,
+        rect->size.width, rect->size.height);
+    zwp_text_input_v3_commit(text_input);
+}
+
+void sb_surface_disable_text_input(sb_surface_t *surface)
+{
+    sb_application_t *app = sb_application_instance();
+
+    struct zwp_text_input_v3 *text_input =
+        sb_application_zwp_text_input_v3(app);
+
+    zwp_text_input_v3_disable(text_input);
+    zwp_text_input_v3_commit(text_input);
 }
 
 void sb_surface_free(sb_surface_t *surface)

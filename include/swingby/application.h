@@ -79,6 +79,9 @@ struct xdg_wm_base* sb_application_xdg_wm_base(
 /// \brief Get the `struct wl_seat` of the application.
 struct wl_seat* sb_application_wl_seat(sb_application_t *application);
 
+struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
+    sb_application_t *application);
+
 /// \brief Get the `WNDCLASS` of the application.
 ///
 /// This method is available only on win32 platform.

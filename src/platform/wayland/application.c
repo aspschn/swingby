@@ -508,6 +508,7 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->_wl_touch = NULL;
     app->wp_cursor_shape_manager_v1 = NULL;
     app->zwp_text_input_manager_v3 = NULL;
+    app->zwp_text_input_v3 = NULL;
 
     app->pointer.wl_surface = NULL;
     app->pointer.view = NULL;
@@ -683,6 +684,12 @@ struct xdg_wm_base* sb_application_xdg_wm_base(sb_application_t *application)
 struct wl_seat* sb_application_wl_seat(sb_application_t *application)
 {
     return application->_wl_seat;
+}
+
+struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
+    sb_application_t *application)
+{
+    return application->zwp_text_input_v3;
 }
 
 int sb_application_exec(sb_application_t *application)
