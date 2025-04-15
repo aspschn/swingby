@@ -83,6 +83,7 @@ typedef struct sb_state_change_event_t {
 typedef struct sb_keyboard_event_t {
     int key;
     uint32_t keycode;
+    char text[16];
     bool repeated;
 } sb_keyboard_event_t;
 
@@ -155,6 +156,8 @@ enum sb_pointer_button sb_event_pointer_button(sb_event_t *event);
 //!<===================
 
 int32_t sb_event_keyboard_keycode(sb_event_t *event);
+
+const char* sb_event_keyboard_text(sb_event_t *event);
 
 bool sb_event_keyboard_repeated(sb_event_t *event);
 

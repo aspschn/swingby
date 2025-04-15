@@ -92,6 +92,11 @@ int32_t sb_event_keyboard_keycode(sb_event_t *event)
     return event->keyboard.keycode;
 }
 
+const char* sb_event_keyboard_text(sb_event_t *event)
+{
+    return event->keyboard.text;
+}
+
 bool sb_event_keyboard_repeated(sb_event_t *event)
 {
     return event->keyboard.repeated;
