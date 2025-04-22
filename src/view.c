@@ -211,6 +211,21 @@ sb_view_t* sb_view_parent(sb_view_t *view)
     return view->_parent;
 }
 
+sb_view_t* sb_view_remove_child(sb_view_t *view, sb_view_t *child)
+{
+    sb_view_t *found = NULL;
+
+    for (uint64_t i = 0; i < sb_list_length(view->_children); ++i) {
+        sb_view_t *curr = sb_list_at(view->_children, i);
+        if (curr == child) {
+            found = sb_list_remove(view->_children, i);
+            break;
+        }
+    }
+
+    return found;
+}
+
 void sb_view_set_color(sb_view_t *view, const sb_color_t *color)
 {
     // TODO: Equality check.

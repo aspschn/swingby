@@ -118,6 +118,8 @@ sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position);
 /// \brief Returns the parent view.
 sb_view_t* sb_view_parent(sb_view_t *view);
 
+sb_view_t* sb_view_remove_child(sb_view_t *view, sb_view_t *child);
+
 SB_EXPORT
 void sb_view_add_event_listener(sb_view_t *view,
                                 enum sb_event_type event_type,
