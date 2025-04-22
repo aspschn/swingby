@@ -226,6 +226,23 @@ sb_view_t* sb_view_remove_child(sb_view_t *view, sb_view_t *child)
     return found;
 }
 
+sb_point_t sb_view_absolute_position(const sb_view_t *view)
+{
+    sb_point_t pos;
+    pos.x = view->geometry.pos.x;
+    pos.y = view->geometry.pos.y;
+
+    const sb_view_t *it = view->_parent;
+    while (it != NULL) {
+        pos.x += it->geometry.pos.x;
+        pos.y += it->geometry.pos.y;
+
+        it = it->_parent;
+    }
+
+    return pos;
+}
+
 void sb_view_set_color(sb_view_t *view, const sb_color_t *color)
 {
     // TODO: Equality check.
