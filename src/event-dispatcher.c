@@ -248,10 +248,20 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 break;
             case SB_EVENT_TYPE_KEYBOARD_KEY_PRESS:
                 sb_surface_on_keyboard_key_press(event->target, event);
+                {
+                    sb_view_t *view = sb_surface_focused_view(event->target);
+                    if (view != NULL) {
+                        sb_view_on_keyboard_key_press(view, event);
+                    }
+                }
                 // sb_event_free(event);
                 break;
             case SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE:
                 sb_surface_on_keyboard_key_release(event->target, event);
+                sb_view_t *view = sb_surface_focused_view(event->target);
+                if (view != NULL) {
+                    sb_view_on_keyboard_key_release(view, event);
+                }
                 // sb_event_free(event);
                 break;
             case SB_EVENT_TYPE_PREFERRED_SCALE:

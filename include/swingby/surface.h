@@ -65,6 +65,10 @@ void sb_surface_enable_text_input(sb_surface_t *surface,
 
 void sb_surface_disable_text_input(sb_surface_t *surface);
 
+sb_view_t* sb_surface_focused_view(const sb_surface_t *surface);
+
+void sb_surface_set_focused_view(sb_surface_t *surface, sb_view_t *view);
+
 SB_EXPORT
 void sb_surface_free(sb_surface_t *surface);
 

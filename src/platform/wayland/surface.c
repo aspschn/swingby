@@ -41,6 +41,7 @@ struct sb_surface_t {
     sb_size_t _size;
     sb_view_t *_root_view;
     uint32_t scale;
+    sb_view_t *focused_view;
     bool frame_ready;
     bool update_pending;
     /// \brief Program objects for OpenGL.
@@ -564,6 +565,9 @@ sb_surface_t* sb_surface_new()
     // Scale.
     surface->scale = 1;
 
+    // Focused view.
+    surface->focused_view = NULL;
+
     // Event listeners.
     surface->event_listeners = sb_list_new();
 
@@ -719,6 +723,16 @@ void sb_surface_disable_text_input(sb_surface_t *surface)
 
     zwp_text_input_v3_disable(text_input);
     zwp_text_input_v3_commit(text_input);
+}
+
+sb_view_t* sb_surface_focused_view(const sb_surface_t *surface)
+{
+    return surface->focused_view;
+}
+
+void sb_surface_set_focused_view(sb_surface_t *surface, sb_view_t *view)
+{
+    surface->focused_view = view;
 }
 
 void sb_surface_free(sb_surface_t *surface)
