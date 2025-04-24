@@ -151,6 +151,8 @@ void sb_event_free(sb_event_t *event);
 
 enum sb_pointer_button sb_event_pointer_button(sb_event_t *event);
 
+const sb_point_t* sb_event_pointer_position(sb_event_t *event);
+
 //!<===================
 //!< Keyboard Event
 //!<===================

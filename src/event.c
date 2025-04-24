@@ -83,6 +83,11 @@ enum sb_pointer_button sb_event_pointer_button(sb_event_t *event)
     return event->pointer.button;
 }
 
+const sb_point_t* sb_event_pointer_position(sb_event_t *event)
+{
+    return &event->pointer.position;
+}
+
 //!<===================
 //!< Keyboard Event
 //!<===================
