@@ -31,6 +31,7 @@ enum sb_event_type {
     SB_EVENT_TYPE_KEYBOARD_LEAVE            = 31,
     SB_EVENT_TYPE_KEYBOARD_KEY_PRESS        = 32,
     SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE      = 33,
+    SB_EVENT_TYPE_TEXT_INPUT                = 40,
     SB_EVENT_TYPE_REQUEST_UPDATE            = 70,
     SB_EVENT_TYPE_SHOW                      = 80,
     SB_EVENT_TYPE_HIDE                      = 81,
@@ -106,6 +107,12 @@ typedef struct sb_scroll_event_t {
     bool momentum;
 } sb_scroll_event_t;
 
+typedef struct sb_text_input_event_t {
+    const char *preedit_string;
+    const char *commit_string;
+    int32_t index;
+} sb_text_input_event_t;
+
 struct sb_event_t {
     enum sb_event_target_type target_type;
     void *target;
@@ -120,6 +127,7 @@ struct sb_event_t {
         sb_scale_event_t scale;
         sb_timer_event_t timer;
         sb_scroll_event_t scroll;
+        sb_text_input_event_t text_input;
     };
 };
 
@@ -184,6 +192,14 @@ bool sb_event_state_change_value(sb_event_t *event);
 //!<================
 
 int32_t sb_event_scale_scale(sb_event_t *event);
+
+//!<===================
+//!< Text Input Event
+//!<===================
+
+const char* sb_event_text_input_preedit_string(sb_event_t *event);
+
+const char* sb_event_text_input_commit_string(sb_event_t *event);
 
 //!<=====================
 //!< Event Listener

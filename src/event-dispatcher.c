@@ -313,6 +313,11 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
             case SB_EVENT_TYPE_RESIZE:
                 sb_view_on_resize(event->target, event);
                 sb_event_free(event);
+                break;
+            case SB_EVENT_TYPE_TEXT_INPUT:
+                sb_view_on_text_input(event->target, event);
+                sb_event_free(event);
+                break;
             default:
                 break;
             }

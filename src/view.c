@@ -402,3 +402,9 @@ void sb_view_on_keyboard_key_release(sb_view_t *view, sb_event_t *event)
     _event_listener_filter_for_each(view->event_listeners,
         SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE, event);
 }
+
+void sb_view_on_text_input(sb_view_t *view, sb_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        SB_EVENT_TYPE_TEXT_INPUT, event);
+}

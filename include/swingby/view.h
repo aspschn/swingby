@@ -169,6 +169,8 @@ void sb_view_on_keyboard_key_press(sb_view_t *view, sb_event_t *event);
 
 void sb_view_on_keyboard_key_release(sb_view_t *view, sb_event_t *event);
 
+void sb_view_on_text_input(sb_view_t *view, sb_event_t *event);
+
 #ifdef __cplusplus
 }
 #endif

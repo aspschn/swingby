@@ -97,6 +97,8 @@ struct sb_application_t {
     } keyboard;
     struct {
         struct wl_surface *wl_surface;
+        const char *preedit_text;
+        const char *commit_text;
     } text_input;
     struct sb_xkb_context_t *xkb_context;
     /// \brief List of the desktop surfaces.
@@ -533,6 +535,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->scroll.frame = false;
 
     app->text_input.wl_surface = NULL;
+    app->text_input.preedit_text = NULL;
+    app->text_input.commit_text = NULL;
 
     // Init xkb context as NULL.
     app->xkb_context = NULL;
@@ -1460,8 +1464,19 @@ static void text_input_preedit_string_handler(void *data,
 
     if (surface != NULL) {
         sb_view_t *view = sb_surface_focused_view(surface);
-        (void)view;
         sb_log_debug("text_input_preedit_string_handler - %s\n", text);
+        sb_log_debug(" |- cursor begin/end: %d %d\n", cursor_begin, cursor_end);
+        app->text_input.preedit_text = text;
+
+        if (view != NULL) {
+            sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW, view,
+                SB_EVENT_TYPE_TEXT_INPUT);
+            event->text_input.preedit_string = text;
+            event->text_input.commit_string = NULL;
+            event->text_input.index = cursor_begin;
+
+            sb_application_post_event(app, event);
+        }
     }
 }
 
@@ -1473,7 +1488,19 @@ static void text_input_commit_string_handler(void *data,
     sb_surface_t *surface = _find_surface(app, app->text_input.wl_surface);
 
     if (surface != NULL) {
+        sb_view_t *view = sb_surface_focused_view(surface);
         sb_log_debug("text_input_commit_string_handler - %s\n", text);
+        app->text_input.commit_text = text;
+
+        if (view != NULL) {
+            sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW, view,
+                SB_EVENT_TYPE_TEXT_INPUT);
+            event->text_input.preedit_string = NULL;
+            event->text_input.commit_string = text;
+            event->text_input.index = 0;
+
+            sb_application_post_event(app, event);
+        }
     }
 }
 
@@ -1489,5 +1516,9 @@ static void text_input_done_handler(void *data,
                                     struct zwp_text_input_v3 *text_input,
                                     uint32_t serial)
 {
+    // sb_application_t *app = (sb_application_t*)data;
+
     sb_log_debug("text_input_done_handler\n");
+    // sb_log_debug(" |- preedit: %s\n", app->text_input.preedit_text);
+    // sb_log_debug(" |- commit:  %s\n", app->text_input.commit_text);
 }

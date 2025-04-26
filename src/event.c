@@ -144,6 +144,20 @@ int32_t sb_event_scale_scale(sb_event_t *event)
     return event->scale.scale;
 }
 
+//!<===================
+//!< Text Input Event
+//!<===================
+
+const char* sb_event_text_input_preedit_string(sb_event_t *event)
+{
+    return event->text_input.preedit_string;
+}
+
+const char* sb_event_text_input_commit_string(sb_event_t *event)
+{
+    return event->text_input.commit_string;
+}
+
 //!<=====================
 //!< Event Listener
 //!<=====================
