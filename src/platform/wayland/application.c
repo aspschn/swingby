@@ -95,6 +95,9 @@ struct sb_application_t {
         /// \brief Current keyboard surface.
         sb_surface_t *surface;
     } keyboard;
+    struct {
+        struct wl_surface *wl_surface;
+    } text_input;
     struct sb_xkb_context_t *xkb_context;
     /// \brief List of the desktop surfaces.
     sb_list_t *desktop_surfaces;
@@ -528,6 +531,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->scroll.ver_stop = false;
     app->scroll.hor_stop = false;
     app->scroll.frame = false;
+
+    app->text_input.wl_surface = NULL;
 
     // Init xkb context as NULL.
     app->xkb_context = NULL;
@@ -1410,6 +1415,8 @@ static void seat_capabilities_handler(void *data,
 
         app->zwp_text_input_v3 = zwp_text_input_manager_v3_get_text_input(
             app->zwp_text_input_manager_v3, wl_seat);
+        zwp_text_input_v3_add_listener(app->zwp_text_input_v3,
+            &text_input_listener, (void*)app);
     }
 }
 
@@ -1428,12 +1435,18 @@ static void text_input_enter_handler(void *data,
                                      struct zwp_text_input_v3 *text_input,
                                      struct wl_surface *wl_surface)
 {
+    sb_application_t *app = (sb_application_t*)data;
+
+    app->text_input.wl_surface = wl_surface;
 }
 
 static void text_input_leave_handler(void *data,
                                      struct zwp_text_input_v3 *text_input,
                                      struct wl_surface *wl_surface)
 {
+    sb_application_t *app = (sb_application_t*)data;
+
+    app->text_input.wl_surface = NULL;
 }
 
 static void text_input_preedit_string_handler(void *data,
@@ -1442,12 +1455,26 @@ static void text_input_preedit_string_handler(void *data,
     int32_t cursor_begin,
     int32_t cursor_end)
 {
+    sb_application_t *app = (sb_application_t*)data;
+    sb_surface_t *surface = _find_surface(app, app->text_input.wl_surface);
+
+    if (surface != NULL) {
+        sb_view_t *view = sb_surface_focused_view(surface);
+        (void)view;
+        sb_log_debug("text_input_preedit_string_handler - %s\n", text);
+    }
 }
 
 static void text_input_commit_string_handler(void *data,
     struct zwp_text_input_v3 *text_input,
     const char *text)
 {
+    sb_application_t *app = (sb_application_t*)data;
+    sb_surface_t *surface = _find_surface(app, app->text_input.wl_surface);
+
+    if (surface != NULL) {
+        sb_log_debug("text_input_commit_string_handler - %s\n", text);
+    }
 }
 
 static void text_input_delete_surrounding_text_handler(void *data,
@@ -1455,10 +1482,12 @@ static void text_input_delete_surrounding_text_handler(void *data,
     uint32_t before_length,
     uint32_t after_length)
 {
+    sb_log_debug("text_input_delete_surrounding_text_handler\n");
 }
 
 static void text_input_done_handler(void *data,
                                     struct zwp_text_input_v3 *text_input,
                                     uint32_t serial)
 {
+    sb_log_debug("text_input_done_handler\n");
 }
