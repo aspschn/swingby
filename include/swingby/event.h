@@ -82,8 +82,9 @@ typedef struct sb_state_change_event_t {
 
 /// \brief Keyboard enter, leave, key press and key release.
 typedef struct sb_keyboard_event_t {
-    int key;
+    enum sb_keyboard_key key;
     uint32_t keycode;
+    uint32_t keysym;
     char text[16];
     bool repeated;
 } sb_keyboard_event_t;
@@ -165,6 +166,8 @@ const sb_point_t* sb_event_pointer_position(sb_event_t *event);
 //!< Keyboard Event
 //!<===================
 
+enum sb_keyboard_key sb_event_keyboard_key(sb_event_t *event);
+
 int32_t sb_event_keyboard_keycode(sb_event_t *event);
 
 const char* sb_event_keyboard_text(sb_event_t *event);
@@ -192,6 +195,14 @@ bool sb_event_state_change_value(sb_event_t *event);
 //!<================
 
 int32_t sb_event_scale_scale(sb_event_t *event);
+
+//!<================
+//!< Scroll Event
+//!<================
+
+enum sb_pointer_scroll_axis sb_event_scroll_axis(sb_event_t *event);
+
+float sb_event_scroll_value(sb_event_t *event);
 
 //!<===================
 //!< Text Input Event

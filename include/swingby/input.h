@@ -31,6 +31,10 @@ enum sb_keyboard_modifier {
 
 typedef enum sb_keyboard_modifier sb_keyboard_modifier_flags;
 
+enum sb_keyboard_key {
+    SB_KEYBOARD_KEY_BACKSPACE           = 14,
+};
+
 enum sb_pointer_scroll_source {
     SB_POINTER_SCROLL_SOURCE_WHEEL      = 0,
     SB_POINTER_SCROLL_SOURCE_FINGER     = 1,

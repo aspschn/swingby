@@ -1327,15 +1327,16 @@ static void keyboard_key_handler(void *data,
         sb_log_debug("keyboard_key_handler - state: %d\n", state);
         sb_log_debug(" - Keysym: 0x%X\n", keysym);
         sb_log_debug(" - Keycode: %d\n", key);
-        sb_log_debug(" - serial: %d\n", serial);
-        sb_log_debug(" - event: %p\n", event);
+        // sb_log_debug(" - serial: %d\n", serial);
+        // sb_log_debug(" - event: %p\n", event);
 
         xkb_state_key_get_utf8(application->xkb_context->xkb_state, key + 8,
             event->keyboard.text, 16);
 
         sb_log_debug(" - text: %s\n", event->keyboard.text);
 
-        event->keyboard.key = keysym;
+        event->keyboard.key = key;
+        event->keyboard.keysym = keysym;
         event->keyboard.keycode = key;
         event->keyboard.repeated = false;
     } else {

@@ -92,6 +92,11 @@ const sb_point_t* sb_event_pointer_position(sb_event_t *event)
 //!< Keyboard Event
 //!<===================
 
+enum sb_keyboard_key sb_event_keyboard_key(sb_event_t *event)
+{
+    return event->keyboard.key;
+}
+
 int32_t sb_event_keyboard_keycode(sb_event_t *event)
 {
     return event->keyboard.keycode;
@@ -142,6 +147,20 @@ bool sb_event_state_change_value(sb_event_t *event)
 int32_t sb_event_scale_scale(sb_event_t *event)
 {
     return event->scale.scale;
+}
+
+//!<================
+//!< Scroll Event
+//!<================
+
+enum sb_pointer_scroll_axis sb_event_scroll_axis(sb_event_t *event)
+{
+    return event->scroll.axis;
+}
+
+float sb_event_scroll_value(sb_event_t *event)
+{
+    return event->scroll.value;
 }
 
 //!<===================
