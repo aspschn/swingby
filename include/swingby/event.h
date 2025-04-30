@@ -197,6 +197,14 @@ bool sb_event_state_change_value(sb_event_t *event);
 int32_t sb_event_scale_scale(sb_event_t *event);
 
 //!<================
+//!< Timer Event
+//!<================
+
+uint32_t sb_event_timer_id(sb_event_t *event);
+
+uint32_t sb_event_timer_interval(sb_event_t *event);
+
+//!<================
 //!< Scroll Event
 //!<================
 

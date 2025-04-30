@@ -150,6 +150,20 @@ int32_t sb_event_scale_scale(sb_event_t *event)
 }
 
 //!<================
+//!< Timer Event
+//!<================
+
+uint32_t sb_event_timer_id(sb_event_t *event)
+{
+    return event->timer.id;
+}
+
+uint32_t sb_event_timer_interval(sb_event_t *event)
+{
+    return event->timer.interval;
+}
+
+//!<================
 //!< Scroll Event
 //!<================
 
