@@ -211,6 +211,38 @@ sb_view_t* sb_view_parent(sb_view_t *view)
     return view->_parent;
 }
 
+sb_view_t* sb_view_remove_child(sb_view_t *view, sb_view_t *child)
+{
+    sb_view_t *found = NULL;
+
+    for (uint64_t i = 0; i < sb_list_length(view->_children); ++i) {
+        sb_view_t *curr = sb_list_at(view->_children, i);
+        if (curr == child) {
+            found = sb_list_remove(view->_children, i);
+            break;
+        }
+    }
+
+    return found;
+}
+
+sb_point_t sb_view_absolute_position(const sb_view_t *view)
+{
+    sb_point_t pos;
+    pos.x = view->geometry.pos.x;
+    pos.y = view->geometry.pos.y;
+
+    const sb_view_t *it = view->_parent;
+    while (it != NULL) {
+        pos.x += it->geometry.pos.x;
+        pos.y += it->geometry.pos.y;
+
+        it = it->_parent;
+    }
+
+    return pos;
+}
+
 void sb_view_set_color(sb_view_t *view, const sb_color_t *color)
 {
     // TODO: Equality check.
@@ -357,4 +389,22 @@ void sb_view_on_resize(sb_view_t *view, sb_event_t *event)
 {
     _event_listener_filter_for_each(view->event_listeners,
         SB_EVENT_TYPE_RESIZE, event);
+}
+
+void sb_view_on_keyboard_key_press(sb_view_t *view, sb_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        SB_EVENT_TYPE_KEYBOARD_KEY_PRESS, event);
+}
+
+void sb_view_on_keyboard_key_release(sb_view_t *view, sb_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE, event);
+}
+
+void sb_view_on_text_input(sb_view_t *view, sb_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        SB_EVENT_TYPE_TEXT_INPUT, event);
 }

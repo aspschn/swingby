@@ -78,18 +78,38 @@ void sb_event_free(sb_event_t *event)
 //!< Pointer Event
 //!<================
 
-sb_event_t* sb_pointer_event_new(enum sb_event_target_type target_type,
-                                 void *target,
-                                 enum sb_event_type type,
-                                 sb_pointer_button button,
-                                 const sb_point_t *position)
+enum sb_pointer_button sb_event_pointer_button(sb_event_t *event)
 {
-    sb_event_t *event = sb_event_new(target_type, target, type);
+    return event->pointer.button;
+}
 
-    event->pointer.button = button;
-    event->pointer.position = *position;
+const sb_point_t* sb_event_pointer_position(sb_event_t *event)
+{
+    return &event->pointer.position;
+}
 
-    return event;
+//!<===================
+//!< Keyboard Event
+//!<===================
+
+enum sb_keyboard_key sb_event_keyboard_key(sb_event_t *event)
+{
+    return event->keyboard.key;
+}
+
+int32_t sb_event_keyboard_keycode(sb_event_t *event)
+{
+    return event->keyboard.keycode;
+}
+
+const char* sb_event_keyboard_text(sb_event_t *event)
+{
+    return event->keyboard.text;
+}
+
+bool sb_event_keyboard_repeated(sb_event_t *event)
+{
+    return event->keyboard.repeated;
 }
 
 //!<=================
@@ -127,6 +147,48 @@ bool sb_event_state_change_value(sb_event_t *event)
 int32_t sb_event_scale_scale(sb_event_t *event)
 {
     return event->scale.scale;
+}
+
+//!<================
+//!< Timer Event
+//!<================
+
+uint32_t sb_event_timer_id(sb_event_t *event)
+{
+    return event->timer.id;
+}
+
+uint32_t sb_event_timer_interval(sb_event_t *event)
+{
+    return event->timer.interval;
+}
+
+//!<================
+//!< Scroll Event
+//!<================
+
+enum sb_pointer_scroll_axis sb_event_scroll_axis(sb_event_t *event)
+{
+    return event->scroll.axis;
+}
+
+float sb_event_scroll_value(sb_event_t *event)
+{
+    return event->scroll.value;
+}
+
+//!<===================
+//!< Text Input Event
+//!<===================
+
+const char* sb_event_text_input_preedit_string(sb_event_t *event)
+{
+    return event->text_input.preedit_string;
+}
+
+const char* sb_event_text_input_commit_string(sb_event_t *event)
+{
+    return event->text_input.commit_string;
 }
 
 //!<=====================

@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <swingby/log.h>
 
@@ -46,6 +47,19 @@ enum sb_image_format sb_image_format(const sb_image_t *image)
 uint8_t* sb_image_data(sb_image_t *image)
 {
     return image->data;
+}
+
+void sb_image_set_data(sb_image_t *image,
+                       const uint8_t *data,
+                       const sb_size_i_t *size)
+{
+    if (image->data != NULL) {
+        free(image->data);
+    }
+    uint64_t total_size = size->height * size->width * 4;
+    image->data = malloc(total_size);
+    memcpy(image->data, data, total_size);
+    image->size = *size;
 }
 
 void sb_image_fill(sb_image_t *image, const sb_color_t *color)

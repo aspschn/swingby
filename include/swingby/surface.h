@@ -60,6 +60,18 @@ void sb_surface_set_scale(sb_surface_t *surface, uint32_t scale);
 SB_EXPORT
 void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry);
 
+void sb_surface_enable_text_input(sb_surface_t *surface,
+                                  const sb_rect_t *rect);
+
+void sb_surface_disable_text_input(sb_surface_t *surface);
+
+sb_view_t* sb_surface_focused_view(const sb_surface_t *surface);
+
+void sb_surface_set_focused_view(sb_surface_t *surface, sb_view_t *view);
+
+SB_EXPORT
+void sb_surface_free(sb_surface_t *surface);
+
 SB_EXPORT
 void sb_surface_add_event_listener(sb_surface_t *surface,
                                    enum sb_event_type event_type,

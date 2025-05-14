@@ -8,6 +8,7 @@
 
 #include <wayland-client.h>
 #include <wayland-egl.h>
+#include <wayland-protocols/unstable/text-input-unstable-v3.h>
 
 #include <EGL/egl.h>
 #define GL_GLEXT_PROTOTYPES
@@ -40,6 +41,7 @@ struct sb_surface_t {
     sb_size_t _size;
     sb_view_t *_root_view;
     uint32_t scale;
+    sb_view_t *focused_view;
     bool frame_ready;
     bool update_pending;
     /// \brief Program objects for OpenGL.
@@ -300,6 +302,20 @@ static void _draw_recursive(sb_surface_t *surface,
     // Child views.
     sb_list_t *children = sb_view_children(view);
     for (int i = 0; i < sb_list_length(children); ++i) {
+        const sb_view_radius_t *radius = NULL;
+        if (!sb_view_radius_is_zero(sb_view_radius(view))) {
+            radius = sb_view_radius(view);
+        }
+
+        if (sb_view_clip(view)) {
+            // Clip parent view.
+            sb_skia_clip_rect(surface->skia_context,
+                sb_view_geometry(view),
+                radius,
+                surface->scale
+            );
+        }
+
         if (sb_view_parent(view) != NULL) {
             const sb_point_t view_pos = sb_view_geometry(view)->pos;
             sb_point_t scaled_pos;
@@ -310,6 +326,11 @@ static void _draw_recursive(sb_surface_t *surface,
 
         sb_view_t *child = sb_list_at(children, i);
         _draw_recursive(surface, child);
+
+        if (sb_view_clip(view)) {
+            // Restore parent view clip.
+            sb_skia_clip_restore(surface->skia_context);
+        }
 
         if (sb_view_parent(view) != NULL) {
             sb_skia_restore_pos(surface->skia_context);
@@ -544,6 +565,9 @@ sb_surface_t* sb_surface_new()
     // Scale.
     surface->scale = 1;
 
+    // Focused view.
+    surface->focused_view = NULL;
+
     // Event listeners.
     surface->event_listeners = sb_list_new();
 
@@ -673,6 +697,52 @@ void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry)
         geometry->size.width, geometry->size.height);
     wl_surface_set_input_region(wl_surface, region);
     wl_region_destroy(region);
+}
+
+void sb_surface_enable_text_input(sb_surface_t *surface,
+                                  const sb_rect_t *rect)
+{
+    sb_application_t *app = sb_application_instance();
+
+    struct zwp_text_input_v3 *text_input =
+        sb_application_zwp_text_input_v3(app);
+
+    zwp_text_input_v3_enable(text_input);
+    zwp_text_input_v3_set_cursor_rectangle(text_input,
+        rect->pos.x, rect->pos.y,
+        rect->size.width, rect->size.height);
+    zwp_text_input_v3_commit(text_input);
+}
+
+void sb_surface_disable_text_input(sb_surface_t *surface)
+{
+    sb_application_t *app = sb_application_instance();
+
+    struct zwp_text_input_v3 *text_input =
+        sb_application_zwp_text_input_v3(app);
+
+    zwp_text_input_v3_disable(text_input);
+    zwp_text_input_v3_commit(text_input);
+}
+
+sb_view_t* sb_surface_focused_view(const sb_surface_t *surface)
+{
+    return surface->focused_view;
+}
+
+void sb_surface_set_focused_view(sb_surface_t *surface, sb_view_t *view)
+{
+    surface->focused_view = view;
+}
+
+void sb_surface_free(sb_surface_t *surface)
+{
+    wl_egl_window_destroy(surface->_wl_egl_window);
+    wl_surface_destroy(surface->_wl_surface);
+
+    // TODO: Free the views.
+
+    free(surface);
 }
 
 void sb_surface_add_event_listener(sb_surface_t *surface,

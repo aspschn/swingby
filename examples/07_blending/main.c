@@ -2,6 +2,13 @@
 
 #include <swingby/swingby.h>
 
+static void on_click(sb_event_t *event)
+{
+    sb_view_t *target = event->target;
+    sb_point_t pos = sb_view_absolute_position(target);
+    fprintf(stderr, "= Absolute pos: (%f, %f)\n", pos.x, pos.y);
+}
+
 int main(int argc, char *argv[])
 {
     sb_application_t *app = sb_application_new(argc, argv);
@@ -38,6 +45,7 @@ int main(int argc, char *argv[])
     color.b = 255;
     color.a = 0x60;
     sb_view_set_color(final_view, &color);
+    sb_view_add_event_listener(final_view, SB_EVENT_TYPE_POINTER_CLICK, on_click);
     fprintf(stderr, "Final rect: #637a9e\n");
 
     sb_desktop_surface_show(surface);

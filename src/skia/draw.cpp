@@ -159,11 +159,6 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
         SkRRect rrect;
         rrect.setRectRadii(sk_rect, radii);
 
-        // Clip rrect.
-        if (clip == true) {
-            canvas->clipRRect(rrect);
-        }
-
         canvas->drawRRect(rrect, paint);
         for (int i = 0; i < save_count; ++i) {
             canvas->restore();
@@ -171,17 +166,8 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
         return;
     }
 
-    // Clip normal rect.
-    if (clip == true) {
-        canvas->clipRect(sk_rect);
-    }
     canvas->drawRect(sk_rect, paint);
     for (int i = 0; i < save_count; ++i) {
-        canvas->restore();
-    }
-
-    // Restore clip.
-    if (clip == true) {
         canvas->restore();
     }
 }
@@ -218,6 +204,53 @@ void sb_skia_draw_image(sb_skia_context_t *context,
     SkSamplingOptions sampling;
 
     canvas->drawImageRect(sk_image, sk_rect, sampling, nullptr);
+}
+
+void sb_skia_clip_rect(sb_skia_context_t *context,
+                       const sb_rect_t *rect,
+                       const sb_view_radius_t *radius,
+                       uint32_t scale)
+{
+    SkCanvas *canvas = _get_canvas(context);
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+        rect->pos.x * scale,
+        rect->pos.y * scale,
+        rect->size.width * scale,
+        rect->size.height * scale);
+
+    if (radius != NULL) {
+        float top_left = sb_view_radius_top_left(radius) * scale;
+        float top_right = sb_view_radius_top_right(radius) * scale;
+        float bottom_right = sb_view_radius_bottom_right(radius) * scale;
+        float bottom_left = sb_view_radius_bottom_left(radius) * scale;
+        SkVector radii[] = {
+            { top_left, top_left },
+            { top_right, top_right },
+            { bottom_right, bottom_right },
+            { bottom_left, bottom_left },
+        };
+
+        SkRRect rrect;
+        rrect.setRectRadii(sk_rect, radii);
+
+        // Clip rrect.
+        canvas->save();
+        canvas->clipRRect(rrect);
+
+        return;
+    }
+
+    // Clip normal rect.
+    canvas->save();
+    canvas->clipRect(sk_rect);
+}
+
+void sb_skia_clip_restore(sb_skia_context_t *context)
+{
+    SkCanvas *canvas = _get_canvas(context);
+
+    canvas->restore();
 }
 
 void sb_skia_save_pos(sb_skia_context_t *context, const sb_point_t *pos)

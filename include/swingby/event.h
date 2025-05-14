@@ -31,6 +31,7 @@ enum sb_event_type {
     SB_EVENT_TYPE_KEYBOARD_LEAVE            = 31,
     SB_EVENT_TYPE_KEYBOARD_KEY_PRESS        = 32,
     SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE      = 33,
+    SB_EVENT_TYPE_TEXT_INPUT                = 40,
     SB_EVENT_TYPE_REQUEST_UPDATE            = 70,
     SB_EVENT_TYPE_SHOW                      = 80,
     SB_EVENT_TYPE_HIDE                      = 81,
@@ -81,8 +82,10 @@ typedef struct sb_state_change_event_t {
 
 /// \brief Keyboard enter, leave, key press and key release.
 typedef struct sb_keyboard_event_t {
-    int key;
+    enum sb_keyboard_key key;
     uint32_t keycode;
+    uint32_t keysym;
+    char text[16];
     bool repeated;
 } sb_keyboard_event_t;
 
@@ -105,6 +108,12 @@ typedef struct sb_scroll_event_t {
     bool momentum;
 } sb_scroll_event_t;
 
+typedef struct sb_text_input_event_t {
+    const char *preedit_string;
+    const char *commit_string;
+    int32_t index;
+} sb_text_input_event_t;
+
 struct sb_event_t {
     enum sb_event_target_type target_type;
     void *target;
@@ -119,6 +128,7 @@ struct sb_event_t {
         sb_scale_event_t scale;
         sb_timer_event_t timer;
         sb_scroll_event_t scroll;
+        sb_text_input_event_t text_input;
     };
 };
 
@@ -148,13 +158,21 @@ void sb_event_free(sb_event_t *event);
 //!< Pointer Event
 //!<=================
 
-sb_event_t* sb_pointer_event_new(enum sb_event_target_type target_type,
-                                 void *target,
-                                 enum sb_event_type type,
-                                 sb_pointer_button button,
-                                 const sb_point_t *position);
+enum sb_pointer_button sb_event_pointer_button(sb_event_t *event);
 
-sb_pointer_button sb_pointer_event_button(sb_pointer_event_t *event);
+const sb_point_t* sb_event_pointer_position(sb_event_t *event);
+
+//!<===================
+//!< Keyboard Event
+//!<===================
+
+enum sb_keyboard_key sb_event_keyboard_key(sb_event_t *event);
+
+int32_t sb_event_keyboard_keycode(sb_event_t *event);
+
+const char* sb_event_keyboard_text(sb_event_t *event);
+
+bool sb_event_keyboard_repeated(sb_event_t *event);
 
 //!<=================
 //!< Move Event
@@ -177,6 +195,30 @@ bool sb_event_state_change_value(sb_event_t *event);
 //!<================
 
 int32_t sb_event_scale_scale(sb_event_t *event);
+
+//!<================
+//!< Timer Event
+//!<================
+
+uint32_t sb_event_timer_id(sb_event_t *event);
+
+uint32_t sb_event_timer_interval(sb_event_t *event);
+
+//!<================
+//!< Scroll Event
+//!<================
+
+enum sb_pointer_scroll_axis sb_event_scroll_axis(sb_event_t *event);
+
+float sb_event_scroll_value(sb_event_t *event);
+
+//!<===================
+//!< Text Input Event
+//!<===================
+
+const char* sb_event_text_input_preedit_string(sb_event_t *event);
+
+const char* sb_event_text_input_commit_string(sb_event_t *event);
 
 //!<=====================
 //!< Event Listener

@@ -6,3 +6,5 @@ include/wayland-protocols/stable/*.h
 include/wayland-protocols/stable/*.c
 include/wayland-protocols/staging/*.h
 include/wayland-protocols/staging/*.c
+include/wayland-protocols/unstable/*.h
+include/wayland-protocols/unstable/*.c
