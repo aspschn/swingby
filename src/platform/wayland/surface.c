@@ -366,8 +366,10 @@ void _draw_frame(sb_surface_t *surface)
         surface->_size.height * surface->scale);
 
     // Clear color.
-    sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
-    sb_skia_clear(surface->skia_context, &clear_color);
+    if (sb_view_is_dirty(surface->_root_view)) {
+        sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
+        sb_skia_clear(surface->skia_context, &clear_color);
+    }
 
     _draw_recursive(surface, surface->_root_view);
 

@@ -28,6 +28,7 @@ struct sb_view_t {
     /// \brief Clip child views. Default is false.
     bool clip;
     enum sb_cursor_shape cursor_shape;
+    bool is_dirty;
     sb_list_t *event_listeners;
 };
 
@@ -70,6 +71,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     view->clip = false;
 
     view->cursor_shape = SB_CURSOR_SHAPE_DEFAULT;
+
+    view->is_dirty = true;
 
     if (parent != NULL) {
         // Append the new view to the child list of the parent view.
@@ -272,6 +275,20 @@ enum sb_cursor_shape sb_view_cursor_shape(const sb_view_t *view)
 void sb_view_set_cursor_shape(sb_view_t *view, enum sb_cursor_shape shape)
 {
     view->cursor_shape = shape;
+}
+
+void sb_view_mark_dirty(sb_view_t *view, bool value)
+{
+    view->is_dirty = value;
+
+    if (value == true && view->_parent != NULL) {
+        view->_parent->is_dirty = true;
+    }
+}
+
+bool sb_view_is_dirty(const sb_view_t *view)
+{
+    return view->is_dirty;
 }
 
 void sb_view_add_event_listener(sb_view_t *view,

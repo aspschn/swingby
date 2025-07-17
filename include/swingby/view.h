@@ -122,6 +122,10 @@ sb_view_t* sb_view_remove_child(sb_view_t *view, sb_view_t *child);
 
 sb_point_t sb_view_absolute_position(const sb_view_t *view);
 
+void sb_view_mark_dirty(sb_view_t *view, bool value);
+
+bool sb_view_is_dirty(const sb_view_t *view);
+
 SB_EXPORT
 void sb_view_add_event_listener(sb_view_t *view,
                                 enum sb_event_type event_type,
