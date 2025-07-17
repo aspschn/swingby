@@ -47,9 +47,12 @@ enum sb_event_type {
 
 typedef struct sb_event_t sb_event_t;
 
+typedef void (*sb_event_listener_t)(sb_event_t*, void*);
+
 typedef struct sb_event_listener_tuple_t {
     enum sb_event_type type;
-    void (*listener)(sb_event_t*);
+    sb_event_listener_t listener;
+    void *user_data;
 } sb_event_listener_tuple_t;
 
 /// \brief Pointer enter, leave and move event.
@@ -226,7 +229,8 @@ const char* sb_event_text_input_commit_string(sb_event_t *event);
 
 sb_event_listener_tuple_t*
 sb_event_listener_tuple_new(enum sb_event_type type,
-                            void (*listener)(sb_event_t*));
+                            sb_event_listener_t listener,
+                            void *user_data);
 
 void sb_event_listener_tuple_free(sb_event_listener_tuple_t *tuple);
 

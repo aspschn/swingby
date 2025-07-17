@@ -127,7 +127,7 @@ sb_rect_t get_body_geometry(struct window *window)
 }
 
 
-static void on_desktop_surface_resize(sb_event_t *event)
+static void on_desktop_surface_resize(sb_event_t *event, void *user_data)
 {
     // Resize the surface.
     sb_surface_t *surface = sb_desktop_surface_surface(
@@ -142,7 +142,7 @@ static void on_desktop_surface_resize(sb_event_t *event)
     sb_desktop_surface_set_wm_geometry(window_global->desktop_surface, &wm_geo);
 }
 
-static void on_desktop_surface_state_change(sb_event_t *event)
+static void on_desktop_surface_state_change(sb_event_t *event, void *user_data)
 {
     fprintf(stderr, "State changed. %.2fx%.2f\n",
             event->state_change.size.width,
@@ -167,7 +167,7 @@ static void on_desktop_surface_state_change(sb_event_t *event)
     }
 }
 
-static void on_surface_resize(sb_event_t *event)
+static void on_surface_resize(sb_event_t *event, void *user_data)
 {
     fprintf(stderr, "on_resize: %dx%d\n", (int)event->resize.size.width, (int)event->resize.size.height);
 
@@ -192,19 +192,19 @@ static void on_surface_resize(sb_event_t *event)
     sb_view_set_geometry(window_global->body, &body_geometry);
 }
 
-static void on_close_button_press(sb_event_t *event)
+static void on_close_button_press(sb_event_t *event, void *user_data)
 {
     // Stop event propagation.
     event->propagation = false;
 }
 
-static void on_close_button_click(sb_event_t *event)
+static void on_close_button_click(sb_event_t *event, void *user_data)
 {
     fprintf(stderr, "Close button clicked.\n");
     sb_desktop_surface_toplevel_close(window_global->desktop_surface);
 }
 
-static void on_title_bar_press(sb_event_t *event)
+static void on_title_bar_press(sb_event_t *event, void *user_data)
 {
     sb_desktop_surface_toplevel_move(window_global->desktop_surface);
 }
@@ -278,10 +278,12 @@ static void init_window(struct window *window)
     sb_view_set_color(close_button, &color);
     sb_view_add_event_listener(close_button,
         SB_EVENT_TYPE_POINTER_PRESS,
-        on_close_button_press);
+        on_close_button_press,
+        NULL);
     sb_view_add_event_listener(close_button,
         SB_EVENT_TYPE_POINTER_CLICK,
-        on_close_button_click);
+        on_close_button_click,
+        NULL);
 
     button_geometry.pos.x = button_geometry.pos.x + 24 + 3;
     sb_view_t *minimize_button = sb_view_new(window->title_bar,
@@ -325,24 +327,28 @@ int main(int argc, char *argv[])
     sb_desktop_surface_add_event_listener(
         window.desktop_surface,
         SB_EVENT_TYPE_RESIZE,
-        on_desktop_surface_resize);
+        on_desktop_surface_resize,
+        NULL);
 
     // Desktop surface state change event handler.
     sb_desktop_surface_add_event_listener(
         window.desktop_surface,
         SB_EVENT_TYPE_STATE_CHANGE,
-        on_desktop_surface_state_change);
+        on_desktop_surface_state_change,
+        NULL);
 
     // Surface resize event handler.
     sb_surface_add_event_listener(
         sb_desktop_surface_surface(window.desktop_surface),
         SB_EVENT_TYPE_RESIZE,
-        on_surface_resize);
+        on_surface_resize,
+        NULL);
 
     // Title bar press event handler.
     sb_view_add_event_listener(window.title_bar,
         SB_EVENT_TYPE_POINTER_PRESS,
-        on_title_bar_press);
+        on_title_bar_press,
+        NULL);
 
     sb_desktop_surface_show(window.desktop_surface);
 

@@ -40,7 +40,8 @@ struct title_bar* title_bar_new(sb_view_t *parent)
 
     sb_view_add_event_listener(title_bar->close_button,
                                SB_EVENT_TYPE_POINTER_PRESS,
-                               on_button_press);
+                               on_button_press,
+                               NULL);
     /*
     sb_view_add_event_listener(title_bar->close_button,
                                SB_EVENT_TYPE_POINTER_CLICK,
@@ -48,10 +49,12 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     */
     sb_view_add_event_listener(title_bar->close_button,
                                SB_EVENT_TYPE_POINTER_ENTER,
-                               on_close_button_pointer_enter);
+                               on_close_button_pointer_enter,
+                               NULL);
     sb_view_add_event_listener(title_bar->close_button,
                                SB_EVENT_TYPE_POINTER_LEAVE,
-                               on_close_button_pointer_leave);
+                               on_close_button_pointer_leave,
+                               NULL);
 
     // Minimize button.
     geometry.pos.x += TITLE_BAR_BUTTON_SIZE + 3;
@@ -80,19 +83,19 @@ void title_bar_set_window(struct title_bar *title_bar, struct window *window)
 }
 
 
-void on_button_press(sb_event_t *event)
+void on_button_press(sb_event_t *event, void *user_data)
 {
     event->propagation = false;
 }
 
-void on_close_button_pointer_enter(sb_event_t *event)
+void on_close_button_pointer_enter(sb_event_t *event, void *user_data)
 {
     sb_view_t *close_button = (sb_view_t*)event->target;
     sb_color_t color = close_button_color_hover();
     sb_view_set_color(close_button, &color);
 }
 
-void on_close_button_pointer_leave(sb_event_t *event)
+void on_close_button_pointer_leave(sb_event_t *event, void *user_data)
 {
     sb_view_t *close_button = (sb_view_t*)event->target;
     sb_color_t color = close_button_color();

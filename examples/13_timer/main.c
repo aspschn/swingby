@@ -8,7 +8,7 @@
 uint32_t timer_id;
 sb_view_t *color_view;
 
-static void on_preferred_scale(sb_event_t *event)
+static void on_preferred_scale(sb_event_t *event, void *user_data)
 {
     sb_surface_t *surface = event->target;
 
@@ -17,7 +17,7 @@ static void on_preferred_scale(sb_event_t *event)
     sb_surface_set_scale(surface, event->scale.scale);
 }
 
-static void on_timeout(sb_event_t *event)
+static void on_timeout(sb_event_t *event, void *user_data)
 {
     if (timer_id == event->timer.id) {
         srand(time(NULL));
@@ -53,7 +53,8 @@ int main(int argc, char *argv[])
     sb_surface_add_event_listener(
         sb_desktop_surface_surface(surface),
         SB_EVENT_TYPE_PREFERRED_SCALE,
-        on_preferred_scale);
+        on_preferred_scale,
+        NULL);
 
     timer_id = sb_application_add_timer(app,
         sb_desktop_surface_surface(surface),
@@ -63,7 +64,8 @@ int main(int argc, char *argv[])
     sb_surface_add_event_listener(
         sb_desktop_surface_surface(surface),
         SB_EVENT_TYPE_TIMEOUT,
-        on_timeout);
+        on_timeout,
+        NULL);
 
     sb_desktop_surface_show(surface);
 

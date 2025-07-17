@@ -2,14 +2,14 @@
 
 #include <swingby/swingby.h>
 
-static void on_resize(sb_event_t *event)
+static void on_resize(sb_event_t *event, void *user_data)
 {
     sb_surface_t *surface = sb_desktop_surface_surface(event->target);
 
     sb_surface_set_size(surface, &event->resize.size);
 }
 
-static void on_view_pointer_move(sb_event_t *event)
+static void on_view_pointer_move(sb_event_t *event, void *user_data)
 {
     event->propagation = false;
 
@@ -43,7 +43,8 @@ int main(int argc, char *argv[])
         SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
 
     sb_desktop_surface_add_event_listener(surface,
-                                          SB_EVENT_TYPE_RESIZE, on_resize);
+                                          SB_EVENT_TYPE_RESIZE, on_resize,
+                                          NULL);
 
     sb_rect_t geometry = { { 20.0f, 20.0f }, { 80.0f, 80.0f } };
     sb_view_t *view = sb_view_new(
@@ -67,7 +68,8 @@ int main(int argc, char *argv[])
 
     sb_view_add_event_listener(view,
                                SB_EVENT_TYPE_POINTER_MOVE,
-                               on_view_pointer_move);
+                               on_view_pointer_move,
+                               NULL);
 
     sb_desktop_surface_show(surface);
 

@@ -125,7 +125,8 @@ sb_point_t sb_view_absolute_position(const sb_view_t *view);
 SB_EXPORT
 void sb_view_add_event_listener(sb_view_t *view,
                                 enum sb_event_type event_type,
-                                void (*listener)(sb_event_t*));
+                                sb_event_listener_t listener,
+                                void *user_data);
 
 //!<====================
 //!< View Radius

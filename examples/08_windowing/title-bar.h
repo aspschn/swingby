@@ -33,15 +33,15 @@ void title_bar_set_window(struct title_bar *title_bar, struct window *window);
 //!<===================
 
 // Stop propagation.
-void on_button_press(sb_event_t *event);
+void on_button_press(sb_event_t *event, void *user_data);
 
-void on_close_button_click(sb_event_t *event);
-void on_close_button_pointer_enter(sb_event_t *event);
-void on_close_button_pointer_leave(sb_event_t *event);
+void on_close_button_click(sb_event_t *event, void *user_data);
+void on_close_button_pointer_enter(sb_event_t *event, void *user_data);
+void on_close_button_pointer_leave(sb_event_t *event, void *user_data);
 
-void on_minimize_button_click(sb_event_t *event);
+void on_minimize_button_click(sb_event_t *event, void *user_data);
 
-void on_maximize_restore_button_click(sb_event_t *event);
+void on_maximize_restore_button_click(sb_event_t *event, void *user_data);
 
 //!<===================
 //!< Button Colours

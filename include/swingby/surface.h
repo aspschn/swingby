@@ -75,7 +75,8 @@ void sb_surface_free(sb_surface_t *surface);
 SB_EXPORT
 void sb_surface_add_event_listener(sb_surface_t *surface,
                                    enum sb_event_type event_type,
-                                   void (*listener)(sb_event_t*));
+                                   sb_event_listener_t listener,
+                                   void *user_data);
 
 void sb_surface_on_pointer_enter(sb_surface_t *surface, sb_event_t *event);
 

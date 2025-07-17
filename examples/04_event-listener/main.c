@@ -2,7 +2,7 @@
 
 #include <swingby/swingby.h>
 
-static void on_click(sb_event_t *event)
+static void on_click(sb_event_t *event, void *user_data)
 {
     fprintf(stderr, "Click! (%.2f, %.2f)\n",
         event->pointer.position.x,
@@ -18,7 +18,7 @@ static void on_click(sb_event_t *event)
     sb_view_set_color(event->target, &new_color);
 }
 
-static void on_double_click(sb_event_t *event)
+static void on_double_click(sb_event_t *event, void *user_data)
 {
     fprintf(stderr, "on_double_click\n");
     const sb_color_t *color = sb_view_color(event->target);
@@ -62,10 +62,10 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Double click the right rectangle and see the change.\n");
 
     sb_view_add_event_listener(child_view,
-        SB_EVENT_TYPE_POINTER_CLICK, on_click);
+        SB_EVENT_TYPE_POINTER_CLICK, on_click, NULL);
 
     sb_view_add_event_listener(double_click_view,
-        SB_EVENT_TYPE_POINTER_DOUBLE_CLICK, on_double_click);
+        SB_EVENT_TYPE_POINTER_DOUBLE_CLICK, on_double_click, NULL);
 
     sb_desktop_surface_show(surface);
 

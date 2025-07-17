@@ -4,7 +4,7 @@
 
 sb_view_t *item = NULL;
 
-static void on_preferred_scale(sb_event_t *event)
+static void on_preferred_scale(sb_event_t *event, void *user_data)
 {
     sb_surface_t *surface = event->target;
 
@@ -13,7 +13,7 @@ static void on_preferred_scale(sb_event_t *event)
     sb_surface_set_scale(surface, event->scale.scale);
 }
 
-static void on_scroll(sb_event_t *event)
+static void on_scroll(sb_event_t *event, void *user_data)
 {
     fprintf(stderr, "Scroll value: %.2f\n", event->scroll.value);
     const sb_rect_t *prev_geo = sb_view_geometry(item);
@@ -40,7 +40,8 @@ int main(int argc, char *argv[])
     sb_surface_add_event_listener(
         sb_desktop_surface_surface(surface),
         SB_EVENT_TYPE_PREFERRED_SCALE,
-        on_preferred_scale);
+        on_preferred_scale,
+        NULL);
 
     sb_rect_t geometry = { { 0.0f, 0.0f }, { 150.0f, 150.0f } };
     sb_view_t *view = sb_view_new(
@@ -50,7 +51,8 @@ int main(int argc, char *argv[])
     // Clip true.
     sb_view_set_clip(view, true);
 
-    sb_view_add_event_listener(view, SB_EVENT_TYPE_POINTER_SCROLL, on_scroll);
+    sb_view_add_event_listener(view, SB_EVENT_TYPE_POINTER_SCROLL, on_scroll,
+        NULL);
 
     geometry.pos.x = 10.0f;
     geometry.pos.y = 10.0f;
