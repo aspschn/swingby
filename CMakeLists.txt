@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(swingby
     VERSION 0.2.0
-    LANGUAGES C CXX
+    LANGUAGES C CXX OBJCXX
 )
 
 set(SWINGBY_HEADERS
@@ -37,6 +37,11 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(CMAKE_CXX_FLAGS_RELEASE "/MT")
     set(CMAKE_CXX_FLAGS_DEBUG "/MT")
     add_subdirectory(cmake/win32)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_OSX_ARCHITECTURES "arm64")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
+    add_subdirectory(cmake/cocoa)
 endif()
 
 set(SWINGBY_SOURCES
@@ -111,6 +116,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_compile_definitions(SB_PLATFORM_WAYLAND)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_compile_definitions(SB_PLATFORM_WIN32)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    add_compile_definitions(SB_PLATFORM_COCOA)
 endif()
 
 # Version info.

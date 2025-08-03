@@ -4,6 +4,10 @@
 #include <swingby/common.h>
 #include <swingby/event.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct sb_size_i_t sb_size_i_t;
 typedef struct sb_rect_i_t sb_rect_i_t;
 typedef struct sb_size_t sb_size_t;
@@ -148,5 +152,9 @@ void sb_desktop_surface_on_show(sb_desktop_surface_t *desktop_surface,
 
 void sb_desktop_surface_on_hide(sb_desktop_surface_t *desktop_surface,
                                 sb_event_t *event);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _FOUNDATION_DESKTOP_SURFACE_H */

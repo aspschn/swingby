@@ -5,6 +5,10 @@
 #include <swingby/size.h>
 #include <swingby/event.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct sb_rect_t sb_rect_t;
 typedef struct sb_view_t sb_view_t;
 typedef struct sb_event_t sb_event_t;
@@ -105,5 +109,9 @@ struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface);
 /// This method is available only on win32 platform.
 SB_EXPORT
 HWND sb_surface_hwnd(sb_surface_t *surface);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _FOUNDATION_SURFACE_H */

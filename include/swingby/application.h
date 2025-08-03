@@ -12,6 +12,10 @@
 
 #include <swingby/common.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct sb_surface_t sb_surface_t;
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
 typedef struct sb_event_t sb_event_t;
@@ -97,5 +101,9 @@ void sb_application_set_nchittest_return(sb_application_t *application,
 
 SB_EXPORT
 int sb_application_exec(sb_application_t *application);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _FOUNDATION_APPLICATION_H */

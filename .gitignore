@@ -8,3 +8,5 @@ include/wayland-protocols/staging/*.h
 include/wayland-protocols/staging/*.c
 include/wayland-protocols/unstable/*.h
 include/wayland-protocols/unstable/*.c
+
+.idea/
