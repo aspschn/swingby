@@ -6,7 +6,7 @@
 
 sb_view_t *image_view = NULL;
 
-static void on_preferred_scale(sb_event_t *event)
+static void on_preferred_scale(sb_event_t *event, void *user_data)
 {
     sb_surface_t *surface = event->target;
 
@@ -15,7 +15,7 @@ static void on_preferred_scale(sb_event_t *event)
     sb_surface_set_scale(surface, event->scale.scale);
 }
 
-void on_resize(sb_event_t *event)
+void on_resize(sb_event_t *event, void *user_data)
 {
     fprintf(stderr, "on_resize\n");
 
@@ -28,7 +28,7 @@ void on_resize(sb_event_t *event)
     sb_view_set_geometry(image_view, &geo);
 }
 
-void on_click(sb_event_t *event)
+void on_click(sb_event_t *event, void *user_data)
 {
     sb_point_i_t pos;
     pos.x = (int32_t)event->pointer.position.x;
@@ -67,14 +67,15 @@ int main(int argc, char *argv[])
     sb_surface_add_event_listener(
         sb_desktop_surface_surface(surface),
         SB_EVENT_TYPE_PREFERRED_SCALE,
-        on_preferred_scale);
+        on_preferred_scale,
+        NULL);
 
     sb_rect_t geometry = { { 10.0f, 10.0f }, { 256.0f, 256.0f } };
     sb_view_t *view = sb_view_new(
         sb_surface_root_view(sb_desktop_surface_surface(surface)), &geometry);
     image_view = view;
     sb_view_set_fill_type(view, SB_VIEW_FILL_TYPE_IMAGE);
-    sb_view_add_event_listener(view, SB_EVENT_TYPE_POINTER_CLICK, on_click);
+    sb_view_add_event_listener(view, SB_EVENT_TYPE_POINTER_CLICK, on_click, NULL);
 
     sb_size_i_t image_size = { 256, 256 };
 
@@ -95,7 +96,8 @@ int main(int argc, char *argv[])
 
     sb_surface_add_event_listener(sb_desktop_surface_surface(surface),
         SB_EVENT_TYPE_RESIZE,
-        on_resize);
+        on_resize,
+        NULL);
 
     sb_desktop_surface_show(surface);
 

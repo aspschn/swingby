@@ -9,7 +9,7 @@ bool popup_on = false;
 sb_desktop_surface_t *toplevel;
 sb_desktop_surface_t *popup = NULL;
 
-static void on_hide(sb_event_t *event)
+static void on_hide(sb_event_t *event, void *user_data)
 {
     if (popup != NULL) {
         sb_desktop_surface_free(popup);
@@ -18,7 +18,7 @@ static void on_hide(sb_event_t *event)
     }
 }
 
-static void on_click(sb_event_t *event)
+static void on_click(sb_event_t *event, void *user_data)
 {
     if (popup_on == true && popup != NULL) {
         sb_desktop_surface_hide(popup);
@@ -32,7 +32,7 @@ static void on_click(sb_event_t *event)
     sb_desktop_surface_set_parent(popup, toplevel);
 
     sb_desktop_surface_add_event_listener(popup,
-        SB_EVENT_TYPE_HIDE, on_hide);
+        SB_EVENT_TYPE_HIDE, on_hide, NULL);
 
     sb_point_t pos;
     pos.x = 30;
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     item = sb_view_new(view, &geometry);
     sb_view_set_color(item, &color);
 
-    sb_view_add_event_listener(item, SB_EVENT_TYPE_POINTER_CLICK, on_click);
+    sb_view_add_event_listener(item, SB_EVENT_TYPE_POINTER_CLICK, on_click, NULL);
 
     sb_desktop_surface_show(surface);
 

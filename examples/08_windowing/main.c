@@ -15,17 +15,17 @@ sb_view_t *image_view = NULL;
 
 static struct window *window = NULL;
 
-static void on_window_close_button_click(sb_event_t *event)
+static void on_window_close_button_click(sb_event_t *event, void *user_data)
 {
     sb_desktop_surface_toplevel_close(window->desktop_surface);
 }
 
-static void on_window_minimize_button_click(sb_event_t *event)
+static void on_window_minimize_button_click(sb_event_t *event, void *user_data)
 {
     sb_desktop_surface_toplevel_set_minimized(window->desktop_surface);
 }
 
-static void on_window_maximize_restore_button_click(sb_event_t *event)
+static void on_window_maximize_restore_button_click(sb_event_t *event, void *user_data)
 {
     if (window_maximized(window) == false) {
         sb_desktop_surface_toplevel_set_maximized(window->desktop_surface);
@@ -34,19 +34,19 @@ static void on_window_maximize_restore_button_click(sb_event_t *event)
     }
 }
 
-static void on_window_title_bar_press(sb_event_t *event)
+static void on_window_title_bar_press(sb_event_t *event, void *user_data)
 {
     window->decoration->title_bar->pressed = true;
     event->propagation = false;
 }
 
-static void on_window_title_bar_release(sb_event_t *event)
+static void on_window_title_bar_release(sb_event_t *event, void *user_data)
 {
     window->decoration->title_bar->pressed = false;
     event->propagation = false;
 }
 
-static void on_window_title_bar_pointer_move(sb_event_t *event)
+static void on_window_title_bar_pointer_move(sb_event_t *event, void *user_data)
 {
     if (window->decoration->title_bar->pressed) {
         sb_desktop_surface_toplevel_move(window->desktop_surface);
@@ -54,7 +54,7 @@ static void on_window_title_bar_pointer_move(sb_event_t *event)
     }
 }
 
-static void on_window_state_change(sb_event_t *event)
+static void on_window_state_change(sb_event_t *event, void *user_data)
 {
     enum sb_desktop_surface_toplevel_state state = event->state_change.state;
     bool value = event->state_change.value;

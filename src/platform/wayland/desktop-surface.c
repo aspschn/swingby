@@ -131,7 +131,7 @@ static void _event_listener_filter_for_each(sb_list_t *listeners,
     for (uint64_t i = 0; i < length; ++i) {
         sb_event_listener_tuple_t *tuple = sb_list_at(listeners, i);
         if (tuple->type == type) {
-            tuple->listener(event);
+            tuple->listener(event, tuple->user_data);
         }
     }
 }
@@ -451,10 +451,11 @@ void sb_desktop_surface_free(sb_desktop_surface_t *desktop_surface)
 void sb_desktop_surface_add_event_listener(
     sb_desktop_surface_t *desktop_surface,
     enum sb_event_type event_type,
-    void (*listener)(sb_event_t*))
+    sb_event_listener_t listener,
+    void *user_data)
 {
     sb_event_listener_tuple_t *tuple = sb_event_listener_tuple_new(
-        event_type, listener);
+        event_type, listener, user_data);
     sb_list_push(desktop_surface->event_listeners, (void*)tuple);
 }
 

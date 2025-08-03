@@ -2,7 +2,7 @@
 
 #include <swingby/swingby.h>
 
-static void on_preferred_scale(sb_event_t *event)
+static void on_preferred_scale(sb_event_t *event, void *user_data)
 {
     sb_surface_t *surface = event->target;
 
@@ -27,7 +27,8 @@ int main(int argc, char *argv[])
     sb_surface_add_event_listener(
         sb_desktop_surface_surface(surface),
         SB_EVENT_TYPE_PREFERRED_SCALE,
-        on_preferred_scale);
+        on_preferred_scale,
+        NULL);
 
     sb_rect_t geometry = { { 10.0f, 10.0f }, { 80.0f, 80.0f } };
     sb_view_t *view = sb_view_new(

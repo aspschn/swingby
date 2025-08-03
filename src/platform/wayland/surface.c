@@ -23,6 +23,8 @@
 #include <swingby/list.h>
 #include <swingby/event.h>
 
+#include "../../helpers/shared.h"
+
 #include "egl-context/egl-context.h"
 
 #include "../../skia/context.h"
@@ -475,19 +477,6 @@ void _draw_frame(sb_surface_t *surface)
     // surface->gl.program = 0;
 }
 
-static void _event_listener_filter_for_each(sb_list_t *listeners,
-                                            enum sb_event_type type,
-                                            sb_event_t *event)
-{
-    uint64_t length = sb_list_length(listeners);
-    for (uint64_t i = 0; i < length; ++i) {
-        sb_event_listener_tuple_t *tuple = sb_list_at(listeners, i);
-        if (tuple->type == type) {
-            tuple->listener(event);
-        }
-    }
-}
-
 //!<===============
 //!< Surface
 //!<===============
@@ -747,10 +736,11 @@ void sb_surface_free(sb_surface_t *surface)
 
 void sb_surface_add_event_listener(sb_surface_t *surface,
                                    enum sb_event_type event_type,
-                                   void (*listener)(sb_event_t*))
+                                   sb_event_listener_t listener,
+                                   void *user_data)
 {
     sb_event_listener_tuple_t *tuple = sb_event_listener_tuple_new(
-        event_type, listener);
+        event_type, listener, user_data);
     sb_list_push(surface->event_listeners, (void*)tuple);
 }
 

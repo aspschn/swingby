@@ -5,8 +5,8 @@
 
 static struct window *window_global;
 
-static void on_window_resize_press(sb_event_t*);
-static void on_window_resize_release(sb_event_t*);
+static void on_window_resize_press(sb_event_t*, void *user_data);
+static void on_window_resize_release(sb_event_t*, void *user_data);
 
 struct window* window_new(sb_size_t size)
 {
@@ -18,7 +18,8 @@ struct window* window_new(sb_size_t size)
 
     sb_desktop_surface_add_event_listener(window->desktop_surface,
                                           SB_EVENT_TYPE_RESIZE,
-                                          on_desktop_surface_resize);
+                                          on_desktop_surface_resize,
+                                          NULL);
 
     sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
     sb_size_t initial_size;
@@ -40,10 +41,12 @@ struct window* window_new(sb_size_t size)
     title_bar_set_window(window->decoration->title_bar, window);
     sb_view_add_event_listener(window->decoration->resize.view,
                                SB_EVENT_TYPE_POINTER_PRESS,
-                               on_window_resize_press);
+                               on_window_resize_press,
+                               NULL);
     sb_view_add_event_listener(window->decoration->resize.view,
                                SB_EVENT_TYPE_POINTER_RELEASE,
-                               on_window_resize_release);
+                               on_window_resize_release,
+                               NULL);
 
     // Create body.
     sb_rect_t body_geometry;
@@ -81,7 +84,7 @@ void window_maximize(struct window *window)
 }
 
 
-void on_desktop_surface_resize(sb_event_t *event)
+void on_desktop_surface_resize(sb_event_t *event, void *user_data)
 {
     fprintf(stderr, "Desktop surface resize: %fx%f\n",
             event->resize.size.width, event->resize.size.height);
@@ -122,64 +125,71 @@ void on_desktop_surface_resize(sb_event_t *event)
 }
 
 void window_set_on_close_button_click(struct window* window,
-                                      void (*handler)(sb_event_t*))
+                                      sb_event_listener_t handler)
 {
     sb_view_add_event_listener(window->decoration->title_bar->close_button,
                                SB_EVENT_TYPE_POINTER_CLICK,
-                               handler);
+                               handler,
+                               NULL);
 }
 
 void window_set_on_minimize_button_click(struct window *window,
-                                         void (*handler)(sb_event_t*))
+                                         sb_event_listener_t handler)
 {
     sb_view_add_event_listener(window->decoration->title_bar->minimize_button,
                                SB_EVENT_TYPE_POINTER_CLICK,
-                               handler);
+                               handler,
+                               NULL);
 }
 
 void window_set_on_maximize_restore_button_click(struct window *window,
-                                                 void (*handler)(sb_event_t*))
+                                                 sb_event_listener_t handler)
 {
     sb_view_add_event_listener(
         window->decoration->title_bar->maximize_restore_button,
         SB_EVENT_TYPE_POINTER_CLICK,
-        handler);
+        handler,
+        NULL);
 }
 
 void window_set_on_title_bar_press(struct window *window,
-                                   void (*handler)(sb_event_t*))
+                                   sb_event_listener_t handler)
 {
     sb_view_add_event_listener(window->decoration->title_bar->view,
                                SB_EVENT_TYPE_POINTER_PRESS,
-                               handler);
+                               handler,
+                               NULL);
 }
 
 void window_set_on_title_bar_release(struct window *window,
-                                     void (*handler)(sb_event_t*))
+                                     sb_event_listener_t handler)
 {
     sb_view_add_event_listener(window->decoration->title_bar->view,
                                SB_EVENT_TYPE_POINTER_RELEASE,
-                               handler);
+                               handler,
+                               NULL);
 }
 
 void window_set_on_title_bar_pointer_move(struct window *window,
-                                          void (*handler)(sb_event_t*))
+                                          sb_event_listener_t handler)
 {
     sb_view_add_event_listener(window->decoration->title_bar->view,
                                SB_EVENT_TYPE_POINTER_MOVE,
-                               handler);
+                               handler,
+                               NULL);
 }
 
 void window_set_on_state_change(struct window *window,
-                                void (*handler)(sb_event_t*))
+                                sb_event_listener_t handler)
 {
     sb_desktop_surface_add_event_listener(window->desktop_surface,
                                           SB_EVENT_TYPE_STATE_CHANGE,
-                                          handler);
+                                          handler,
+                                          NULL);
 }
 
 
-static void on_window_resize_press(sb_event_t *event)
+static void on_window_resize_press(sb_event_t *event, void *user_data)
 {
     sb_desktop_surface_toplevel_resize(
         window_global->desktop_surface,
@@ -187,7 +197,7 @@ static void on_window_resize_press(sb_event_t *event)
     );
 }
 
-static void on_window_resize_release(sb_event_t *event)
+static void on_window_resize_release(sb_event_t *event, void *user_data)
 {
     // TODO.
 }

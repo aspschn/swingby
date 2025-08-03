@@ -27,28 +27,28 @@ void window_maximize(struct window *window);
 void window_restore(struct window *window);
 
 
-void on_desktop_surface_resize(sb_event_t *event);
+void on_desktop_surface_resize(sb_event_t *event, void *user_data);
 
 void window_set_on_close_button_click(struct window *window,
-                                      void (*handler)(sb_event_t*));
+                                      sb_event_listener_t handler);
 
 void window_set_on_minimize_button_click(struct window *window,
-                                         void (*handler)(sb_event_t*));
+                                         sb_event_listener_t handler);
 
 void window_set_on_maximize_restore_button_click(struct window *window,
-                                                 void (*handler)(sb_event_t*));
+                                                 sb_event_listener_t handler);
 
 void window_set_on_title_bar_press(struct window *window,
-                                   void (*handler)(sb_event_t*));
+                                   sb_event_listener_t handler);
 
 void window_set_on_title_bar_release(struct window *window,
-                                     void (*handler)(sb_event_t*));
+                                     sb_event_listener_t handler);
 
 void window_set_on_title_bar_pointer_move(struct window *window,
-                                          void (*handler)(sb_event_t*));
+                                          sb_event_listener_t handler);
 
 void window_set_on_state_change(struct window *window,
-                                void (*handler)(sb_event_t*));
+                                sb_event_listener_t handler);
 
 //!<==============
 //!< Properties

@@ -134,7 +134,8 @@ SB_EXPORT
 void sb_desktop_surface_add_event_listener(
     sb_desktop_surface_t *desktop_surface,
     enum sb_event_type event_type,
-    void (*listener)(sb_event_t*));
+    sb_event_listener_t listener,
+    void *user_data);
 
 void sb_desktop_surface_on_resize(sb_desktop_surface_t *desktop_surface,
                                   sb_event_t *event);

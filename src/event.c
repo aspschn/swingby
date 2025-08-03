@@ -197,13 +197,15 @@ const char* sb_event_text_input_commit_string(sb_event_t *event)
 
 sb_event_listener_tuple_t*
 sb_event_listener_tuple_new(enum sb_event_type type,
-                            void (*listener)(sb_event_t*))
+                            sb_event_listener_t listener,
+                            void *user_data)
 {
     sb_event_listener_tuple_t *tuple = malloc(
         sizeof(sb_event_listener_tuple_t));
 
     tuple->type = type;
     tuple->listener = listener;
+    tuple->user_data = user_data;
 
     return tuple;
 }
