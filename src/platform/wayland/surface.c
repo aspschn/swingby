@@ -40,7 +40,7 @@ struct sb_surface_t {
     struct wl_surface *_wl_surface;
     struct wl_egl_window *_wl_egl_window;
     EGLSurface _egl_surface;
-    sb_egl_context_t *egl_context;
+    // sb_egl_context_t *egl_context;
     sb_skia_renderer_t *skia_renderer;
     sb_size_t _size;
     sb_view_t *_root_view;
@@ -355,7 +355,9 @@ void _add_frame_callback(sb_surface_t *surface)
 
 void _draw_frame(sb_surface_t *surface)
 {
-    sb_log_debug(" == _draw_frame() ==\n");
+    sb_log_debug(" == _draw_frame() - surface: %p ==\n", surface);
+    sb_application_t *app = sb_application_instance();
+
     enum sb_skia_backend backend = sb_skia_renderer_backend(surface->skia_renderer);
     if (backend != SB_SKIA_BACKEND_GL) {
         _gl_init(surface);
@@ -370,9 +372,10 @@ void _draw_frame(sb_surface_t *surface)
     if (backend == SB_SKIA_BACKEND_GL) {
         sb_skia_gl_renderer_t *renderer =
             sb_skia_renderer_current(surface->skia_renderer);
+        sb_egl_context_t *egl_context = sb_application_egl_context(app);
 
         sb_skia_gl_renderer_begin(renderer,
-            surface->egl_context,
+            egl_context,
             surface->_egl_surface,
             surface->_size.width * surface->scale,
             surface->_size.height * surface->scale
@@ -386,7 +389,7 @@ void _draw_frame(sb_surface_t *surface)
 
         sb_skia_gl_renderer_end(renderer);
 
-        eglSwapBuffers(surface->egl_context->egl_display, surface->_egl_surface);
+        eglSwapBuffers(egl_context->egl_display, surface->_egl_surface);
     }
 
     if (backend == SB_SKIA_BACKEND_RASTER) {
@@ -536,13 +539,15 @@ sb_surface_t* sb_surface_new()
     surface->frame_callback = wl_surface_frame(surface->_wl_surface);
     wl_callback_add_listener(surface->frame_callback, &callback_listener,
         (void*)surface);
+    sb_log_debug("(surface new) surface: %p, frame: %p\n", surface, surface->frame_callback);
 
     // Add surface listener.
     wl_surface_add_listener(surface->_wl_surface, &surface_listener,
         (void*)surface);
 
     // Initialize EGL context.
-    surface->egl_context = sb_egl_context_new();
+    // surface->egl_context = sb_egl_context_new();
+    sb_egl_context_t *egl_context = sb_application_egl_context(app);
 
     // Create wl_egl_window.
     surface->_wl_egl_window = wl_egl_window_create(surface->_wl_surface,
@@ -551,22 +556,27 @@ sb_surface_t* sb_surface_new()
 
     // Create EGL surface.
     surface->_egl_surface = eglCreateWindowSurface(
-        surface->egl_context->egl_display,
-        surface->egl_context->egl_config,
+        egl_context->egl_display,
+        egl_context->egl_config,
         surface->_wl_egl_window,
         NULL);
+
+    EGLBoolean res = eglMakeCurrent(
+        egl_context->egl_display,
+        surface->_egl_surface,
+        surface->_egl_surface,
+        egl_context->egl_context
+    );
+    if (!res) {
+        EGLint err = eglGetError();
+        sb_log_warn("eglMakeCurrent failed in NEW. 0x%x", err);
+    }
 
     // Detect Swingby rendering backend.
     const char *backend = getenv("SWINGBY_BACKEND");
     if (backend == NULL) {
         backend = SWINGBY_BACKEND_DEFAULT;
     }
-
-    eglMakeCurrent(surface->egl_context->egl_display,
-        surface->_egl_surface,
-        surface->_egl_surface,
-        surface->egl_context->egl_context
-    );
 
     if (strcmp(backend, "opengl") == 0) {
         surface->skia_renderer = sb_skia_renderer_new(SB_SKIA_BACKEND_GL);
@@ -666,8 +676,32 @@ void sb_surface_commit(sb_surface_t *surface)
 
 void sb_surface_attach(sb_surface_t *surface)
 {
+    sb_log_debug("(sb_surface_attach) - surface: %p\n", surface);
     _gl_init(surface);
-    eglSwapBuffers(surface->egl_context->egl_display, surface->_egl_surface);
+
+    sb_egl_context_t *egl_context = sb_application_egl_context(
+        sb_application_instance());
+
+    // Dummy drawing for initial frame callback.
+    // TODO: Move code to helper function and call that only first time.
+    eglMakeCurrent(egl_context->egl_display,
+        surface->_egl_surface,
+        surface->_egl_surface,
+        egl_context->egl_context
+    );
+
+    glViewport(0, 0,
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale);
+
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    EGLBoolean res = eglSwapBuffers(egl_context->egl_display, surface->_egl_surface);
+    if (!res) {
+        EGLint err = eglGetError();
+        sb_log_warn("eglSwapBuffers failed in attach! err: 0x%x, surface: %p\n", err, surface);
+    }
 }
 
 void sb_surface_detach(sb_surface_t *surface)
@@ -855,8 +889,8 @@ static void callback_done_handler(void *data,
                                   struct wl_callback *wl_callback,
                                   uint32_t time)
 {
-    sb_log_debug(" = callback_done_handler\n");
     sb_surface_t *surface = (sb_surface_t*)data;
+    sb_log_debug(" = callback_done_handler - surface: %p\n", surface);
 
     wl_callback_destroy(wl_callback);
     _add_frame_callback(surface);

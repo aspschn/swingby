@@ -26,6 +26,8 @@
 #include <swingby/event.h>
 #include <swingby/event-dispatcher.h>
 
+#include "egl-context/egl-context.h"
+
 #include "xkb/xkb-context.h"
 #include "xcursor/xcursor.h"
 
@@ -33,6 +35,7 @@
 #include "helpers/application.h"
 
 struct sb_application_t {
+    sb_egl_context_t *egl_context;
     /// `struct wl_display`.
     struct wl_display *_wl_display;
     /// `struct wl_registry`.
@@ -563,6 +566,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     _sb_application_instance = app;
 
+    app->egl_context = sb_egl_context_new();
+
     return app;
 }
 
@@ -699,6 +704,11 @@ struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
     sb_application_t *application)
 {
     return application->zwp_text_input_v3;
+}
+
+sb_egl_context_t* sb_application_egl_context(sb_application_t *application)
+{
+    return application->egl_context;
 }
 
 int sb_application_exec(sb_application_t *application)
