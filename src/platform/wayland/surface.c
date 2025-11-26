@@ -48,6 +48,7 @@ struct sb_surface_t {
     sb_view_t *focused_view;
     bool frame_ready;
     bool update_pending;
+    bool initial_draw;
     /// \brief Program objects for OpenGL.
     struct {
         GLuint color;
@@ -353,6 +354,32 @@ void _add_frame_callback(sb_surface_t *surface)
     // sb_log_debug(" = frame_callback now %p\n", surface->frame_callback);
 }
 
+static void _initial_draw(sb_surface_t *surface)
+{
+    sb_egl_context_t *egl_context = sb_application_egl_context(
+        sb_application_instance());
+
+    // Dummy drawing for initial frame callback.
+    eglMakeCurrent(egl_context->egl_display,
+        surface->_egl_surface,
+        surface->_egl_surface,
+        egl_context->egl_context
+    );
+
+    glViewport(0, 0,
+        surface->_size.width * surface->scale,
+        surface->_size.height * surface->scale);
+
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    EGLBoolean res = eglSwapBuffers(egl_context->egl_display, surface->_egl_surface);
+    if (!res) {
+        EGLint err = eglGetError();
+        sb_log_warn("eglSwapBuffers failed in attach! err: 0x%x, surface: %p\n", err, surface);
+    }
+}
+
 void _draw_frame(sb_surface_t *surface)
 {
     sb_log_debug(" == _draw_frame() - surface: %p ==\n", surface);
@@ -528,6 +555,7 @@ sb_surface_t* sb_surface_new()
     surface->_size.height = 200.0f;
     surface->frame_ready = false;
     surface->update_pending = false;
+    surface->initial_draw = false;
 
     sb_application_t *app = sb_application_instance();
 
@@ -679,28 +707,9 @@ void sb_surface_attach(sb_surface_t *surface)
     sb_log_debug("(sb_surface_attach) - surface: %p\n", surface);
     _gl_init(surface);
 
-    sb_egl_context_t *egl_context = sb_application_egl_context(
-        sb_application_instance());
-
-    // Dummy drawing for initial frame callback.
-    // TODO: Move code to helper function and call that only first time.
-    eglMakeCurrent(egl_context->egl_display,
-        surface->_egl_surface,
-        surface->_egl_surface,
-        egl_context->egl_context
-    );
-
-    glViewport(0, 0,
-        surface->_size.width * surface->scale,
-        surface->_size.height * surface->scale);
-
-    glClearColor(0.0, 0.0, 0.0, 0.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    EGLBoolean res = eglSwapBuffers(egl_context->egl_display, surface->_egl_surface);
-    if (!res) {
-        EGLint err = eglGetError();
-        sb_log_warn("eglSwapBuffers failed in attach! err: 0x%x, surface: %p\n", err, surface);
+    if (surface->initial_draw == false) {
+        _initial_draw(surface);
+        surface->initial_draw = true;
     }
 }
 
