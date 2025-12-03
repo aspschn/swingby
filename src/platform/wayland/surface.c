@@ -374,7 +374,6 @@ void _draw_frame(sb_surface_t *surface)
             surface->_size.width * surface->scale,
             surface->_size.height * surface->scale
         );
-        sb_log_debug(" == begin called! ==\n");
 
         sb_color_t clear_color = { 0x00, 0x0, 0x00, 0x00 };
         sb_skia_clear(surface->skia_renderer, &clear_color);
