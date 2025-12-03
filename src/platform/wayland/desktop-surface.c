@@ -245,8 +245,6 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
 
     // Commit.
     if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
-        wl_surface_commit(wl_surface);
-
         sb_surface_attach(desktop_surface->_surface);
 
         sb_surface_update(desktop_surface->_surface);

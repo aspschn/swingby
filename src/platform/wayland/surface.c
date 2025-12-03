@@ -48,7 +48,6 @@ struct sb_surface_t {
     sb_view_t *focused_view;
     bool frame_ready;
     bool update_pending;
-    bool initial_draw;
     /// \brief Program objects for OpenGL.
     struct {
         GLuint color;
@@ -348,36 +347,14 @@ static void _draw_recursive(sb_surface_t *surface,
 
 void _add_frame_callback(sb_surface_t *surface)
 {
+    if (surface->frame_callback != NULL) {
+        sb_log_warn("Frame callback is not NULL!\n");
+        return;
+    }
     surface->frame_callback = wl_surface_frame(surface->_wl_surface);
     wl_callback_add_listener(surface->frame_callback, &callback_listener,
         (void*)surface);
-    // sb_log_debug(" = frame_callback now %p\n", surface->frame_callback);
-}
-
-static void _initial_draw(sb_surface_t *surface)
-{
-    sb_egl_context_t *egl_context = sb_application_egl_context(
-        sb_application_instance());
-
-    // Dummy drawing for initial frame callback.
-    eglMakeCurrent(egl_context->egl_display,
-        surface->_egl_surface,
-        surface->_egl_surface,
-        egl_context->egl_context
-    );
-
-    glViewport(0, 0,
-        surface->_size.width * surface->scale,
-        surface->_size.height * surface->scale);
-
-    glClearColor(0.0, 0.0, 0.0, 0.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    EGLBoolean res = eglSwapBuffers(egl_context->egl_display, surface->_egl_surface);
-    if (!res) {
-        EGLint err = eglGetError();
-        sb_log_warn("eglSwapBuffers failed in attach! err: 0x%x, surface: %p\n", err, surface);
-    }
+    sb_log_debug(" = frame_callback now %p\n", surface->frame_callback);
 }
 
 void _draw_frame(sb_surface_t *surface)
@@ -386,16 +363,6 @@ void _draw_frame(sb_surface_t *surface)
     sb_application_t *app = sb_application_instance();
 
     enum sb_skia_backend backend = sb_skia_renderer_backend(surface->skia_renderer);
-    if (backend != SB_SKIA_BACKEND_GL) {
-        _gl_init(surface);
-
-        /*
-        eglMakeCurrent(surface->_egl_context->egl_display,
-            surface->_egl_surface, surface->_egl_surface,
-            surface->_egl_context->egl_context);
-        */
-    }
-
     if (backend == SB_SKIA_BACKEND_GL) {
         sb_skia_gl_renderer_t *renderer =
             sb_skia_renderer_current(surface->skia_renderer);
@@ -555,7 +522,7 @@ sb_surface_t* sb_surface_new()
     surface->_size.height = 200.0f;
     surface->frame_ready = false;
     surface->update_pending = false;
-    surface->initial_draw = false;
+    surface->frame_callback = NULL;
 
     sb_application_t *app = sb_application_instance();
 
@@ -563,18 +530,11 @@ sb_surface_t* sb_surface_new()
     surface->_wl_surface = wl_compositor_create_surface(
         sb_application_wl_compositor(app));
 
-    // Frame callback.
-    surface->frame_callback = wl_surface_frame(surface->_wl_surface);
-    wl_callback_add_listener(surface->frame_callback, &callback_listener,
-        (void*)surface);
-    sb_log_debug("(surface new) surface: %p, frame: %p\n", surface, surface->frame_callback);
-
     // Add surface listener.
     wl_surface_add_listener(surface->_wl_surface, &surface_listener,
         (void*)surface);
 
-    // Initialize EGL context.
-    // surface->egl_context = sb_egl_context_new();
+    // Get global EGL context.
     sb_egl_context_t *egl_context = sb_application_egl_context(app);
 
     // Create wl_egl_window.
@@ -705,25 +665,20 @@ void sb_surface_commit(sb_surface_t *surface)
 void sb_surface_attach(sb_surface_t *surface)
 {
     sb_log_debug("(sb_surface_attach) - surface: %p\n", surface);
-    _gl_init(surface);
 
-    if (surface->initial_draw == false) {
-        _initial_draw(surface);
-        surface->initial_draw = true;
-    }
+    _add_frame_callback(surface);
+
+    _draw_frame(surface);
 }
 
 void sb_surface_detach(sb_surface_t *surface)
 {
-    // eglDestroySurface(surface->_egl_context->egl_display,
-    //     surface->_egl_surface);
-
-    // wl_egl_window_destroy(surface->_wl_egl_window);
-
-    // sb_egl_context_free(surface->_egl_context);
-
     wl_surface_attach(surface->_wl_surface, NULL, 0, 0);
     wl_surface_commit(surface->_wl_surface);
+
+    // Destroy frame callback.
+    wl_callback_destroy(surface->frame_callback);
+    surface->frame_callback = NULL;
 }
 
 void sb_surface_update(sb_surface_t *surface)
@@ -901,7 +856,8 @@ static void callback_done_handler(void *data,
     sb_surface_t *surface = (sb_surface_t*)data;
     sb_log_debug(" = callback_done_handler - surface: %p\n", surface);
 
-    wl_callback_destroy(wl_callback);
+    wl_callback_destroy(surface->frame_callback);
+    surface->frame_callback = NULL;
     _add_frame_callback(surface);
 
     surface->frame_ready = true;
