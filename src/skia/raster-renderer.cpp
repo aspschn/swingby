@@ -7,6 +7,8 @@
 
 #include "skia/include/core/SkCanvas.h"
 
+#include <swingby/log.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -43,7 +45,7 @@ void sb_skia_raster_renderer_begin(sb_skia_raster_renderer_t *renderer,
     renderer->buffer.resize(width * height);
 
     SkImageInfo imageInfo = SkImageInfo::Make(width, height,
-    kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+        kBGRA_8888_SkColorType, kPremul_SkAlphaType);
     renderer->canvas = SkCanvas::MakeRasterDirect(imageInfo,
         renderer->buffer.data(), sizeof(uint32_t) * width);
 }

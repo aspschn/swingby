@@ -1,6 +1,6 @@
 #include "renderer.h"
 
-// #include "./raster-renderer.h"
+#include "./raster-renderer.h"
 #include "./gl-renderer.h"
 
 #ifdef __cplusplus
@@ -26,7 +26,7 @@ sb_skia_renderer_t* sb_skia_renderer_new(enum sb_skia_backend backend)
     renderer->gl_renderer = nullptr;
 
     if (backend == SB_SKIA_BACKEND_RASTER) {
-        renderer->raster_renderer = nullptr;
+        renderer->raster_renderer = sb_skia_raster_renderer_new();
     } else if (backend == SB_SKIA_BACKEND_GL) {
         renderer->gl_renderer = sb_skia_gl_renderer_new();
     }

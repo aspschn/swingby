@@ -9,6 +9,7 @@
 #include "skia/include/effects/SkImageFilters.h"
 
 #include "./renderer.h"
+#include "./raster-renderer.h"
 #include "./gl-renderer.h"
 
 #include <swingby/view.h>
@@ -28,8 +29,8 @@ static SkCanvas* _get_canvas(sb_skia_renderer_t *renderer)
         sb_skia_gl_renderer_t *renderer = (sb_skia_gl_renderer_t*)ptr;
         canvas = (SkCanvas*)sb_skia_gl_renderer_canvas(renderer);
     } else if (backend == SB_SKIA_BACKEND_RASTER) {
-        void *renderer = nullptr;
-        canvas = nullptr;
+        sb_skia_raster_renderer_t *renderer = (sb_skia_raster_renderer_t*)ptr;
+        canvas = (SkCanvas*)sb_skia_raster_renderer_canvas(renderer);
     }
 
     return canvas;

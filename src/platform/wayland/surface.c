@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <unistd.h>
 #include <sys/time.h>
+#include <sys/mman.h>
 
 #include <wayland-client.h>
 #include <wayland-egl.h>
@@ -24,11 +26,13 @@
 #include <swingby/event.h>
 
 #include "../../helpers/shared.h"
+#include "./helpers/surface.h"
 
 #include "egl-context/egl-context.h"
 
 // #include "../../skia/context.h"
 #include "../../skia/renderer.h"
+#include "../../skia/raster-renderer.h"
 #include "../../skia/gl-renderer.h"
 #include "../../skia/draw.h"
 
@@ -40,6 +44,13 @@ struct sb_surface_t {
     struct wl_surface *_wl_surface;
     struct wl_egl_window *_wl_egl_window;
     EGLSurface _egl_surface;
+    struct wl_shm_pool *wl_shm_pool;
+    struct wl_buffer *wl_buffer;
+    struct {
+        void *addr;
+        uint32_t size;
+    } shm_data;
+    const char *backend;
     // sb_egl_context_t *egl_context;
     sb_skia_renderer_t *skia_renderer;
     sb_size_t _size;
@@ -48,16 +59,6 @@ struct sb_surface_t {
     sb_view_t *focused_view;
     bool frame_ready;
     bool update_pending;
-    /// \brief Program objects for OpenGL.
-    struct {
-        GLuint color;
-        GLuint texture;
-    } programs;
-    struct {
-        GLuint vert_shader;
-        GLuint frag_shader;
-        GLuint program;
-    } gl;
     struct wl_callback *frame_callback;
     sb_list_t *event_listeners;
 };
@@ -130,38 +131,47 @@ void _gl_init(sb_surface_t *surface)
     */
 }
 
-/// \brief Compile shader source and returns the shader object.
-static GLuint _load_shader(const char *shader_source, GLuint type)
+static void _raster_init(sb_surface_t *surface)
 {
-    GLuint shader;
-    GLint compiled;
+    sb_application_t *app = sb_application_instance();
+    struct wl_shm *wl_shm = sb_application_wl_shm(app);
 
-    shader = glCreateShader(type);
-    if (shader == 0) {
-        return 0;
+    // Unmap if already mapped.
+    if (surface->shm_data.addr != NULL) {
+        munmap(surface->shm_data.addr, surface->shm_data.size);
     }
 
-    glShaderSource(shader, 1, &shader_source, NULL);
+    // Calculate the size.
+    uint32_t stride = surface->_size.width * surface->scale * 4;
+    uint32_t size = surface->_size.height * surface->scale * stride;
 
-    glCompileShader(shader);
-
-    // Check the compile status.
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-    if (!compiled) {
-        GLint info_len = 0;
-
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_len);
-        if (info_len > 1) {
-            char *info_log = malloc(sizeof(char));
-            // fprintf(stderr, "Error compiling shader: %s\n", info_log);
-            free(info_log);
-        }
-
-        glDeleteShader(shader);
-        return 0;
+    int fd = _create_tmpfile(size);
+    if (fd == -1) {
+        sb_log_error("Failed to create tmpfile.\n");
+        return;
     }
 
-    return shader;
+    surface->shm_data.addr = mmap(NULL,
+        size,
+        PROT_READ | PROT_WRITE,
+        MAP_SHARED,
+        fd,
+        0);
+    if (surface->shm_data.addr == MAP_FAILED) {
+        sb_log_error("Failed to mmap tmpfile.\n");
+        return;
+    }
+    surface->shm_data.size = size;
+
+    surface->wl_shm_pool = wl_shm_create_pool(wl_shm, fd, size);
+    surface->wl_buffer = wl_shm_pool_create_buffer(surface->wl_shm_pool,
+        0, surface->_size.width, surface->_size.height, stride,
+        WL_SHM_FORMAT_ARGB8888);
+
+    close(fd);
+
+    wl_shm_pool_destroy(surface->wl_shm_pool);
+    surface->wl_shm_pool = NULL;
 }
 
 /// \brief Calculate points used in the vertex shader based on the rect.
@@ -203,75 +213,6 @@ static void _set_uniform_resolution(GLuint program, const sb_size_t *resolution)
     GLuint location = glGetUniformLocation(program, "resolution");
     float resolution_u[2] = { resolution->width, resolution->height };
     glUniform2fv(location, 1, resolution_u);
-}
-
-/// \brief Set the uniform variable `color`.
-static void _set_uniform_color(GLuint program, const sb_color_t *color)
-{
-    GLuint location = glGetUniformLocation(program, "color");
-    float color_u[4] = {
-        color->r / 255.0f,
-        color->g / 255.0f,
-        color->b / 255.0f,
-        color->a / 255.0f,
-    };
-    glUniform4fv(location, 1, color_u);
-}
-
-static void _set_uniform_textureIn(GLuint program, sb_image_t *image)
-{
-    sb_log_debug("_set_uniform_textureIn() - %ldx%ld\n",
-                 sb_image_size(image)->width, sb_image_size(image)->height);
-
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-        GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        sb_image_size(image)->width,
-        sb_image_size(image)->height,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        sb_image_data(image)
-    );
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texture);
-}
-
-static GLuint _set_texture(sb_surface_t *surface)
-{
-    GLuint texture;
-/*
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-        GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        surface->_size.width * surface->scale,
-        surface->_size.height * surface->scale,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        sb_skia_context_buffer(surface->skia_context)
-    );
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texture);
-*/
-    return texture;
 }
 
 static void _draw_recursive(sb_surface_t *surface,
@@ -386,127 +327,31 @@ void _draw_frame(sb_surface_t *surface)
     }
 
     if (backend == SB_SKIA_BACKEND_RASTER) {
-        sb_log_warn("raster backend not implemented!\n");
+        uint32_t width = surface->_size.width * surface->scale;
+        uint32_t height = surface->_size.height * surface->scale;
+        uint32_t stride = width * 4;
+        uint32_t size = height * stride;
+
+        sb_skia_raster_renderer_t *renderer =
+            sb_skia_renderer_current(surface->skia_renderer);
+
+        sb_skia_raster_renderer_begin(renderer,
+            surface->_size.width * surface->scale,
+            surface->_size.height * surface->scale);
+
+        sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
+        sb_skia_clear(surface->skia_renderer, &clear_color);
+
+        _draw_recursive(surface, surface->_root_view);
+
+        // Copy pixels.
+        void *pixels = sb_skia_raster_renderer_buffer(renderer);
+        memcpy(surface->shm_data.addr, pixels, size);
+
+        sb_skia_raster_renderer_end(renderer);
+
+        // wl_surface_commit(surface->_wl_surface);
     }
-
-#if 0
-    // Skia context begin.
-    sb_skia_context_set_buffer_size(surface->skia_context,
-        surface->_size.width * surface->scale,
-        surface->_size.height * surface->scale);
-    sb_skia_context_begin(surface->skia_context,
-        surface->_size.width * surface->scale,
-        surface->_size.height * surface->scale);
-
-    // Clear color.
-    sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
-    sb_skia_clear(surface->skia_context, &clear_color);
-
-    _draw_recursive(surface, surface->_root_view);
-
-    // Skia context end.
-    sb_skia_context_end(surface->skia_context);
-
-    // Late make current if OpenGL backend.
-    if (backend == SB_SKIA_BACKEND_GL) {
-        _gl_init(surface);
-    }
-
-    // Compile shaders and attach to the program.
-    if (surface->gl.vert_shader == 0) {
-        surface->gl.vert_shader = _load_shader(canvas_vert_shader,
-            GL_VERTEX_SHADER);
-    }
-    if (surface->gl.frag_shader == 0) {
-        surface->gl.frag_shader = _load_shader(canvas_frag_shader,
-            GL_FRAGMENT_SHADER);
-    }
-    // Create the program if not exist.
-    if (surface->gl.program == 0) {
-        surface->gl.program = glCreateProgram();
-        glAttachShader(surface->gl.program, surface->gl.vert_shader);
-        glAttachShader(surface->gl.program, surface->gl.frag_shader);
-
-        // Link the program.
-        glLinkProgram(surface->gl.program);
-    }
-    // Use the program.
-    glUseProgram(surface->gl.program);
-
-    // GL draw.
-    // Set texture.
-    GLuint texture = _set_texture(surface);
-
-    // Set coordinates.
-    float vertices[] = {
-         1.0f,  1.0f, 0.0f,
-         1.0f, -1.0f, 0.0f,
-        -1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-    };
-
-    GLuint indices[] = {
-        0, 1, 3,
-        1, 2, 3,
-    };
-
-    float tex_coord[] = {
-        -1.0f,  0.0f,
-        -1.0f, -1.0f,
-         0.0f, -1.0f,
-         0.0f,  0.0f,
-    };
-
-    // VAO.
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-
-    // EBO.
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-
-    // VBO.
-    GLuint vbo[2];
-    glGenBuffers(2, vbo);
-
-    // Bind and draw.
-    glBindVertexArray(vao);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-        GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER,
-        sizeof(vertices),
-        vertices,
-        GL_STATIC_DRAW
-    );
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glBufferData(GL_ARRAY_BUFFER,
-        sizeof(tex_coord),
-        tex_coord,
-        GL_STATIC_DRAW);
-
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glEnableVertexAttribArray(1);
-
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
-
-    // Swap buffers.
-    eglSwapBuffers(surface->egl_context->egl_display, surface->_egl_surface);
-
-    // Delete texture.
-    glDeleteTextures(1, &texture);
-
-    // Delete program.
-    // glDeleteProgram(surface->gl.program);
-    // surface->gl.program = 0;
-#endif
 }
 
 //!<===============
@@ -519,9 +364,14 @@ sb_surface_t* sb_surface_new()
 
     surface->_size.width = 200.0f;
     surface->_size.height = 200.0f;
+    surface->scale = 1;
     surface->frame_ready = false;
     surface->update_pending = false;
     surface->frame_callback = NULL;
+    surface->wl_shm_pool = NULL;
+    surface->shm_data.addr = NULL;
+    surface->shm_data.size = 0;
+    surface->backend = NULL;
 
     sb_application_t *app = sb_application_instance();
 
@@ -533,53 +383,53 @@ sb_surface_t* sb_surface_new()
     wl_surface_add_listener(surface->_wl_surface, &surface_listener,
         (void*)surface);
 
-    // Get global EGL context.
-    sb_egl_context_t *egl_context = sb_application_egl_context(app);
-
-    // Create wl_egl_window.
-    surface->_wl_egl_window = wl_egl_window_create(surface->_wl_surface,
-       surface->_size.width,
-       surface->_size.height);
-
-    // Create EGL surface.
-    surface->_egl_surface = eglCreateWindowSurface(
-        egl_context->egl_display,
-        egl_context->egl_config,
-        surface->_wl_egl_window,
-        NULL);
-
-    EGLBoolean res = eglMakeCurrent(
-        egl_context->egl_display,
-        surface->_egl_surface,
-        surface->_egl_surface,
-        egl_context->egl_context
-    );
-    if (!res) {
-        EGLint err = eglGetError();
-        sb_log_warn("eglMakeCurrent failed in NEW. 0x%x", err);
-    }
-
     // Detect Swingby rendering backend.
-    const char *backend = getenv("SWINGBY_BACKEND");
-    if (backend == NULL) {
-        backend = SWINGBY_BACKEND_DEFAULT;
+    surface->backend = getenv("SWINGBY_BACKEND");
+    if (surface->backend == NULL) {
+        surface->backend = SWINGBY_BACKEND_DEFAULT;
     }
 
-    if (strcmp(backend, "opengl") == 0) {
+    if (strcmp(surface->backend, "opengl") == 0) {
         surface->skia_renderer = sb_skia_renderer_new(SB_SKIA_BACKEND_GL);
-    } else if (strcmp(backend, "raster") == 0) {
+    } else if (strcmp(surface->backend, "raster") == 0) {
         surface->skia_renderer = sb_skia_renderer_new(SB_SKIA_BACKEND_RASTER);
     } else {
         sb_log_warn("sb_surface_new() - Invalid backend.\n");
     }
 
-    // Initialize the program objects.
-    surface->programs.color = 0;
-    surface->programs.texture = 0;
+    if (strcmp(surface->backend, "opengl") == 0) {
+        // Get global EGL context.
+        sb_egl_context_t *egl_context = sb_application_egl_context(app);
 
-    surface->gl.vert_shader = 0;
-    surface->gl.frag_shader = 0;
-    surface->gl.program = 0;
+        // Create wl_egl_window.
+        surface->_wl_egl_window = wl_egl_window_create(surface->_wl_surface,
+           surface->_size.width,
+           surface->_size.height);
+
+        // Create EGL surface.
+        surface->_egl_surface = eglCreateWindowSurface(
+            egl_context->egl_display,
+            egl_context->egl_config,
+            surface->_wl_egl_window,
+            NULL);
+
+        EGLBoolean res = eglMakeCurrent(
+            egl_context->egl_display,
+            surface->_egl_surface,
+            surface->_egl_surface,
+            egl_context->egl_context
+        );
+        if (!res) {
+            EGLint err = eglGetError();
+            sb_log_warn("eglMakeCurrent failed in NEW. 0x%x", err);
+        }
+    }
+
+    if (strcmp(surface->backend, "raster") == 0) {
+        _raster_init(surface);
+
+        _add_frame_callback(surface);
+    }
 
     // Root view.
     sb_rect_t geo;
@@ -589,9 +439,6 @@ sb_surface_t* sb_surface_new()
     geo.size.height = surface->_size.height;
     surface->_root_view = sb_view_new(NULL, &geo);
     sb_view_set_surface(surface->_root_view, surface);
-
-    // Scale.
-    surface->scale = 1;
 
     // Focused view.
     surface->focused_view = NULL;
@@ -645,10 +492,12 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
 
     sb_surface_update(surface);
 
-    wl_egl_window_resize(surface->_wl_egl_window,
-        surface->_size.width * surface->scale,
-        surface->_size.height * surface->scale,
-        0, 0);
+    if (strcmp(surface->backend, "opengl") == 0) {
+        wl_egl_window_resize(surface->_wl_egl_window,
+            surface->_size.width * surface->scale,
+            surface->_size.height * surface->scale,
+            0, 0);
+    }
 }
 
 sb_view_t* sb_surface_root_view(sb_surface_t *surface)
@@ -663,11 +512,21 @@ void sb_surface_commit(sb_surface_t *surface)
 
 void sb_surface_attach(sb_surface_t *surface)
 {
-    sb_log_debug("(sb_surface_attach) - surface: %p\n", surface);
+    sb_log_debug("(sb_surface_attach) - surface: %p, backend: %s\n",
+        surface, surface->backend);
 
-    _add_frame_callback(surface);
+    if (strcmp(surface->backend, "raster") == 0) {
+        _draw_frame(surface);
 
-    _draw_frame(surface);
+        wl_surface_attach(surface->_wl_surface, surface->wl_buffer, 0, 0);
+        wl_surface_damage_buffer(surface->_wl_surface, 0, 0, surface->_size.width, surface->_size.height);
+        wl_surface_commit(surface->_wl_surface);
+    }
+
+    if (strcmp(surface->backend, "opengl") == 0) {
+        _add_frame_callback(surface);
+        _draw_frame(surface);
+    }
 }
 
 void sb_surface_detach(sb_surface_t *surface)
