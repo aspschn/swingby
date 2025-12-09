@@ -59,6 +59,7 @@ set(SWINGBY_SOURCES
     src/event-dispatcher.c
     src/skia/gl-renderer.h
     src/skia/gl-renderer.cpp
+    src/skia/raster-renderer.cpp
     src/skia/renderer.h
     src/skia/renderer.cpp
     src/skia/raster-context.h

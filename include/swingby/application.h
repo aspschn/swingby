@@ -73,6 +73,9 @@ struct wl_display* sb_application_wl_display(
 struct wl_compositor* sb_application_wl_compositor(
     sb_application_t *application);
 
+/// \brief Get the `struct wl_shm` of the application.
+struct wl_shm* sb_application_wl_shm(sb_application_t *application);
+
 /// \brief Get the `struct xdg_wm_base` of the application.
 struct xdg_wm_base* sb_application_xdg_wm_base(
     sb_application_t *application);

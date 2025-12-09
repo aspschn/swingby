@@ -18,6 +18,7 @@ set(SWINGBY_PLATFORM_SOURCES
     src/platform/wayland/xcursor/xcursor.c
     src/platform/wayland/helpers/application.h
     src/platform/wayland/helpers/application.c
+    src/platform/wayland/helpers/surface.c
 
     PARENT_SCOPE
 )
