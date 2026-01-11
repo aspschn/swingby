@@ -1457,10 +1457,12 @@ static void seat_capabilities_handler(void *data,
         wl_keyboard_add_listener(app->_wl_keyboard, &keyboard_listener,
             (void*)app);
 
-        app->zwp_text_input_v3 = zwp_text_input_manager_v3_get_text_input(
-            app->zwp_text_input_manager_v3, wl_seat);
-        zwp_text_input_v3_add_listener(app->zwp_text_input_v3,
-            &text_input_listener, (void*)app);
+        if (app->zwp_text_input_manager_v3 != NULL) {
+            app->zwp_text_input_v3 = zwp_text_input_manager_v3_get_text_input(
+                app->zwp_text_input_manager_v3, wl_seat);
+            zwp_text_input_v3_add_listener(app->zwp_text_input_v3,
+                &text_input_listener, (void*)app);
+        }
     }
 }
 
