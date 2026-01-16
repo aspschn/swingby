@@ -165,7 +165,10 @@ static void _raster_init(sb_surface_t *surface)
 
     surface->wl_shm_pool = wl_shm_create_pool(wl_shm, fd, size);
     surface->wl_buffer = wl_shm_pool_create_buffer(surface->wl_shm_pool,
-        0, surface->_size.width, surface->_size.height, stride,
+        0,
+        surface->_size.width,
+        surface->_size.height,
+        stride,
         WL_SHM_FORMAT_ARGB8888);
 
     close(fd);
@@ -428,7 +431,7 @@ sb_surface_t* sb_surface_new()
     if (strcmp(surface->backend, "raster") == 0) {
         _raster_init(surface);
 
-        _add_frame_callback(surface);
+        // _add_frame_callback(surface);
     }
 
     // Root view.
@@ -497,6 +500,8 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
             surface->_size.width * surface->scale,
             surface->_size.height * surface->scale,
             0, 0);
+    } else if (strcmp(surface->backend, "raster") == 0) {
+        _raster_init(surface);
     }
 }
 
