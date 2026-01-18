@@ -1,13 +1,16 @@
 # Swingby
 
-A minimal GUI library written in C, rendered with [Skia](https://skia.org/).
+A GUI engine for Wayland written in C, rendered with [Skia](https://skia.org/).
 
-Swingby is the first cross-platform GUI library that prioritizes Wayland first.
-
-Swingby is not a full-featured framework. It is a library for minimal GUI.
+Swingby is not a full-featured framework. It is an engine for minimal GUI.
 
 
 ## Features
+
+- Basic drawing
+- Event system
+- Low-level windowing system
+- Various common Wayland protocols support
 
 Swingby not provide a window directly. But you can build your own window (that
 client-side decorated).
@@ -17,9 +20,28 @@ The event system makes easier to make the event driven GUI programs.
 It is based on OpenGL 4.6 (the latest version) for easier buffer management.
 
 
+## Goal
+
+Wayland client programming is very complicated because its core library
+is just a thin wrapper around a low-level protocol (socket) to communicate
+with the server, commonly called a compositor.
+
+Swingby is a bridge for GUI frameworks. It provides object-oriented APIs
+for drawing primitives and handling events.
+
+While you can build a GUI application directly with this library, but doing
+so would be quite painful. The primary purpose of Swingby is to serve as a
+backend that can be bound and wrapped by high-level languages.
+
+
 ## Build
 
-Swingby is a Wayland based library. Therefore your system must suppport Wayland
+Currently, development is based only on Arch Linux. There is no reason
+you cannot build Swingby on other distributions as we use very basic
+dependencies common to modern desktop environments. However, you may need to
+install some packages manually for a development build.
+
+Swingby is a Wayland based library. Therefore, your system must suppport Wayland
 before building the project.
 
 We are using the latest version of OpenGL for rendering. The version 4.6 was
@@ -44,7 +66,7 @@ be committed so you don't need to use this script.
 
 The other one is `gen-protocols.sh`. This script generate the Wayland interface
 code which are not included in the core of Wayland protocol.
-I'm not sure that these must be committed or not. Therefore you must generate
+I'm not sure that these must be committed or not. Therefore, you must generate
 the C code with this script.
 
 Additionally, since it uses Skia, you need to build Skia first.
@@ -52,7 +74,6 @@ Additionally, since it uses Skia, you need to build Skia first.
 To build Skia, follow the below commands.
 
 ```sh
-$ git submodule update --init --recursive
 $ make build-skia
 ```
 
@@ -76,7 +97,7 @@ You can test Swingby with the examples.
 ```sh
 $ make example
 ```
-The examples are in the `examples/` directory with begin of two digit numbers.
+The examples are in the `examples/` directory with begin of two-digit numbers.
 
 
 #### Debug Logs
@@ -107,12 +128,13 @@ compositor (maybe the desktop environment).
 
 ### View
 
-The views are the elements that rendered in a surface. A view has it's parent (except
+The views are the elements that rendered in a surface. A view has its parent (except
 the root-view), and contain the children. A view can listen a pointer (mouse) enter,
-leave, move, click event and etc.
+leave, move, click event etc.
 
-Perhaps this could be called a widget. In Swingby however not privide real controls.
-But you can make your own buttons, inputs and others with the views.
+Perhaps this could be called a widget. In Swingby however does not privide
+real controls. But you can make your own buttons, inputs and others with
+the views.
 
 
 ## Contribute
@@ -127,4 +149,3 @@ Please don't hesitate to open any issues, as they drive development forward.
 ## License
 
 Swingby is developing under MIT License. For the detail, see the LICENSE file.
-
