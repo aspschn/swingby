@@ -5,10 +5,12 @@
 #include "skia/include/core/SkColor.h"
 #include "skia/include/core/SkBitmap.h"
 #include "skia/include/core/SkImage.h"
+#include "skia/include/core/SkCanvas.h"
 #include "skia/include/effects/SkImageFilters.h"
 
-#include "./gl-context.h"
-#include "./raster-context.h"
+#include "./renderer.h"
+#include "./raster-renderer.h"
+#include "./gl-renderer.h"
 
 #include <swingby/view.h>
 #include <swingby/list.h>
@@ -18,34 +20,35 @@
 extern "C" {
 #endif
 
-static SkCanvas* _get_canvas(sb_skia_context_t *context)
+static SkCanvas* _get_canvas(sb_skia_renderer_t *renderer)
 {
     SkCanvas *canvas = nullptr;
-    enum sb_skia_backend backend = sb_skia_context_backend(context);
+    enum sb_skia_backend backend = sb_skia_renderer_backend(renderer);
+    void *ptr = sb_skia_renderer_current(renderer);
     if (backend == SB_SKIA_BACKEND_GL) {
-        auto gl_context = static_cast<sb_skia_gl_context_t*>(sb_skia_context_gl_context(context));
-        canvas = gl_context->surface->getCanvas();
+        sb_skia_gl_renderer_t *renderer = (sb_skia_gl_renderer_t*)ptr;
+        canvas = (SkCanvas*)sb_skia_gl_renderer_canvas(renderer);
     } else if (backend == SB_SKIA_BACKEND_RASTER) {
-        auto raster_context = static_cast<sb_skia_raster_context_t*>(sb_skia_context_raster_context(context));
-        canvas = raster_context->canvas.get();
+        sb_skia_raster_renderer_t *renderer = (sb_skia_raster_renderer_t*)ptr;
+        canvas = (SkCanvas*)sb_skia_raster_renderer_canvas(renderer);
     }
 
     return canvas;
 }
 
-void sb_skia_clear(sb_skia_context_t *context,
+void sb_skia_clear(sb_skia_renderer_t *renderer,
                    const sb_color_t *color)
 {
-    SkCanvas *canvas = _get_canvas(context);
+    SkCanvas *canvas = _get_canvas(renderer);
 
     canvas->clear(SkColorSetARGB(color->a, color->r, color->g, color->b));
 }
 
-void sb_skia_draw_rect(sb_skia_context_t *context,
+void sb_skia_draw_rect(sb_skia_renderer_t *renderer,
                        const sb_rect_t *rect,
                        const sb_color_t *color)
 {
-    SkCanvas *canvas = _get_canvas(context);
+    SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
         rect->pos.x, rect->pos.y,
@@ -55,12 +58,12 @@ void sb_skia_draw_rect(sb_skia_context_t *context,
     canvas->drawRect(sk_rect, paint);
 }
 
-void sb_skia_draw_rect_with_radius(sb_skia_context_t *context,
+void sb_skia_draw_rect_with_radius(sb_skia_renderer_t *renderer,
                                    const sb_rect_t *rect,
                                    const sb_color_t *color,
                                    const sb_view_radius_t *radius)
 {
-    SkCanvas *canvas = _get_canvas(context);
+    SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
         rect->pos.x, rect->pos.y,
@@ -85,7 +88,7 @@ void sb_skia_draw_rect_with_radius(sb_skia_context_t *context,
     canvas->drawRRect(rrect, paint);
 }
 
-void sb_skia_draw_rect2(sb_skia_context_t *context,
+void sb_skia_draw_rect2(sb_skia_renderer_t *renderer,
                         const sb_rect_t *rect,
                         uint32_t scale,
                         const sb_color_t *color,
@@ -93,7 +96,7 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
                         const sb_list_t *filters,
                         bool clip)
 {
-    SkCanvas *canvas = _get_canvas(context);
+    SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
         rect->pos.x * scale,
@@ -172,12 +175,12 @@ void sb_skia_draw_rect2(sb_skia_context_t *context,
     }
 }
 
-void sb_skia_draw_image(sb_skia_context_t *context,
+void sb_skia_draw_image(sb_skia_renderer_t *renderer,
                         const sb_rect_t *rect,
                         uint32_t scale,
                         const sb_image_t *image)
 {
-    SkCanvas *canvas = _get_canvas(context);
+    SkCanvas *canvas = _get_canvas(renderer);
 
     const sb_size_i_t *image_size = sb_image_size((sb_image_t*)image);
 
@@ -206,12 +209,12 @@ void sb_skia_draw_image(sb_skia_context_t *context,
     canvas->drawImageRect(sk_image, sk_rect, sampling, nullptr);
 }
 
-void sb_skia_clip_rect(sb_skia_context_t *context,
+void sb_skia_clip_rect(sb_skia_renderer_t *renderer,
                        const sb_rect_t *rect,
                        const sb_view_radius_t *radius,
                        uint32_t scale)
 {
-    SkCanvas *canvas = _get_canvas(context);
+    SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
         rect->pos.x * scale,
@@ -246,24 +249,24 @@ void sb_skia_clip_rect(sb_skia_context_t *context,
     canvas->clipRect(sk_rect);
 }
 
-void sb_skia_clip_restore(sb_skia_context_t *context)
+void sb_skia_clip_restore(sb_skia_renderer_t *renderer)
 {
-    SkCanvas *canvas = _get_canvas(context);
+    SkCanvas *canvas = _get_canvas(renderer);
 
     canvas->restore();
 }
 
-void sb_skia_save_pos(sb_skia_context_t *context, const sb_point_t *pos)
+void sb_skia_save_pos(sb_skia_renderer_t *renderer, const sb_point_t *pos)
 {
-    SkCanvas *canvas = _get_canvas(context);
+    SkCanvas *canvas = _get_canvas(renderer);
 
     canvas->save();
     canvas->translate(pos->x, pos->y);
 }
 
-void sb_skia_restore_pos(sb_skia_context_t *context)
+void sb_skia_restore_pos(sb_skia_renderer_t *renderer)
 {
-    SkCanvas *canvas = _get_canvas(context);
+    SkCanvas *canvas = _get_canvas(renderer);
 
     canvas->restore();
 }

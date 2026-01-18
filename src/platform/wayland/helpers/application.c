@@ -44,7 +44,7 @@ _to_wp_cursor_shape(enum sb_cursor_shape shape)
         return WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB;
     case SB_CURSOR_SHAPE_GRABBING:
         return WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING;
-    case SB_CURSPR_SHAPE_E_RESIZE:
+    case SB_CURSOR_SHAPE_E_RESIZE:
         return WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_E_RESIZE;
     case SB_CURSOR_SHAPE_N_RESIZE:
         return WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_N_RESIZE;

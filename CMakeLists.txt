@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(swingby
-    VERSION 0.2.0
+    VERSION 0.3.0
     LANGUAGES C CXX
 )
 
@@ -57,20 +57,15 @@ set(SWINGBY_SOURCES
     src/cursor.c
     src/event.c
     src/event-dispatcher.c
-    src/skia/raster-context.h
-    src/skia/raster-context.cpp
-    src/skia/context.h
-    src/skia/context.cpp
-    src/skia/gl-context.h
-    src/skia/gl-context.cpp
+    src/skia/gl-renderer.h
+    src/skia/gl-renderer.cpp
+    src/skia/raster-renderer.cpp
+    src/skia/renderer.h
+    src/skia/renderer.cpp
     src/skia/draw.h
     src/skia/draw.cpp
     src/skia/load-image.h
     src/skia/load-image.cpp
-    src/skia/backend/gl.h
-    src/skia/backend/gl.cpp
-    src/skia/backend/raster.h
-    src/skia/backend/raster.cpp
     src/helpers/shared.h
     src/helpers/shared.c
 )

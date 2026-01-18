@@ -203,11 +203,6 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         xdg_toplevel_add_listener(desktop_surface->_xdg_toplevel,
             &xdg_toplevel_listener, (void*)desktop_surface);
 
-        // Set parent toplevel.
-        if (desktop_surface->parent != NULL) {
-            _set_toplevel_parent(desktop_surface->parent, desktop_surface);
-        }
-
         // Must commit and roundtrip.
         sb_surface_commit(sb_desktop_surface_surface(desktop_surface));
         wl_display_roundtrip(sb_application_wl_display(app));
@@ -245,16 +240,23 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         xdg_popup_add_listener(desktop_surface->xdg_popup, &xdg_popup_listener,
             (void*)desktop_surface);
 
+        // Must commit and roundtrip.
+        sb_surface_commit(sb_desktop_surface_surface(desktop_surface));
+        wl_display_roundtrip(sb_application_wl_display(app));
+
         xdg_positioner_destroy(positioner);
     }
 
     // Commit.
     if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
-        wl_surface_commit(wl_surface);
-
         sb_surface_attach(desktop_surface->_surface);
 
         sb_surface_update(desktop_surface->_surface);
+
+        // Set parent toplevel.
+        if (desktop_surface->parent != NULL) {
+            _set_toplevel_parent(desktop_surface->parent, desktop_surface);
+        }
     }
 
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
