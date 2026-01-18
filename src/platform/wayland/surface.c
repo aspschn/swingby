@@ -38,7 +38,8 @@
 
 #include "../../shaders.h"
 
-#define SWINGBY_BACKEND_DEFAULT "raster"
+// #define SWINGBY_BACKEND_DEFAULT "raster"
+#define SWINGBY_BACKEND_DEFAULT "opengl"
 
 struct sb_surface_t {
     struct wl_surface *_wl_surface;
