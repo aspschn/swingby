@@ -46,6 +46,7 @@ struct sb_application_t {
     struct wl_pointer *_wl_pointer;
     struct wl_keyboard *_wl_keyboard;
     struct wl_touch *_wl_touch;
+    struct wl_shm *wl_shm;
     struct wp_cursor_shape_manager_v1 *wp_cursor_shape_manager_v1;
     struct zwp_text_input_manager_v3 *zwp_text_input_manager_v3;
     struct zwp_text_input_v3 *zwp_text_input_v3;
@@ -327,6 +328,25 @@ static void seat_name_handler(void *data,
 static const struct wl_seat_listener seat_listener = {
     .capabilities = seat_capabilities_handler,
     .name = seat_name_handler,
+};
+
+//!<====================
+//!< Shm
+//!<====================
+
+static void shm_format_handler(void *data,
+                               struct wl_shm *wl_shm,
+                               uint32_t format);
+
+static const struct wl_shm_listener shm_listener = {
+    .format = shm_format_handler,
+};
+
+static void buffer_release_handler(void *data,
+                                   struct wl_buffer *wl_buffer);
+
+static const struct wl_buffer_listener buffer_listener = {
+    .release = buffer_release_handler,
 };
 
 //!<====================
@@ -690,6 +710,11 @@ struct wl_compositor* sb_application_wl_compositor(
     return application->_wl_compositor;
 }
 
+struct wl_shm* sb_application_wl_shm(sb_application_t *application)
+{
+    return application->wl_shm;
+}
+
 struct xdg_wm_base* sb_application_xdg_wm_base(sb_application_t *application)
 {
     return application->_xdg_wm_base;
@@ -787,6 +812,10 @@ static void app_global_handler(void *data,
             sb_list_push(app->outputs, output);
         }
         wl_output_add_listener(wl_output, &output_listener, (void*)app);
+    } else if (strcmp(interface, "wl_shm") == 0) {
+        app->wl_shm = wl_registry_bind(wl_registry,
+            name, &wl_shm_interface, 1);
+        wl_shm_add_listener(app->wl_shm, &shm_listener, (void*)app);
     } else if (strcmp(interface, "wp_cursor_shape_manager_v1") == 0) {
         app->wp_cursor_shape_manager_v1 = wl_registry_bind(wl_registry,
             name, &wp_cursor_shape_manager_v1_interface, 1);
@@ -1428,10 +1457,12 @@ static void seat_capabilities_handler(void *data,
         wl_keyboard_add_listener(app->_wl_keyboard, &keyboard_listener,
             (void*)app);
 
-        app->zwp_text_input_v3 = zwp_text_input_manager_v3_get_text_input(
-            app->zwp_text_input_manager_v3, wl_seat);
-        zwp_text_input_v3_add_listener(app->zwp_text_input_v3,
-            &text_input_listener, (void*)app);
+        if (app->zwp_text_input_manager_v3 != NULL) {
+            app->zwp_text_input_v3 = zwp_text_input_manager_v3_get_text_input(
+                app->zwp_text_input_manager_v3, wl_seat);
+            zwp_text_input_v3_add_listener(app->zwp_text_input_v3,
+                &text_input_listener, (void*)app);
+        }
     }
 }
 
@@ -1440,6 +1471,20 @@ static void seat_name_handler(void *data,
                               const char *name)
 {
     sb_log_debug("Seat name: %s\n", name);
+}
+
+//!<====================
+//!< Shm
+//!<====================
+
+static void shm_format_handler(void *data, struct wl_shm *wl_shm, uint32_t format)
+{
+    sb_log_debug("Shm format: %d\n", format);
+}
+
+static void buffer_release_handler(void *data, struct wl_buffer *buffer)
+{
+    // TODO.
 }
 
 //!<====================

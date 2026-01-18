@@ -46,7 +46,7 @@ enum sb_cursor_shape {
     /// Closed hand.
     SB_CURSOR_SHAPE_GRABBING        = 17,
     /// Resize arrow pointing right.
-    SB_CURSPR_SHAPE_E_RESIZE        = 18,
+    SB_CURSOR_SHAPE_E_RESIZE        = 18,
     /// Risize arrow pointing top.
     SB_CURSOR_SHAPE_N_RESIZE        = 19,
     /// Resize arrow pointing top right.

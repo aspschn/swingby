@@ -91,5 +91,6 @@ void sb_skia_gl_renderer_begin(sb_skia_gl_renderer_t *renderer,
 
 void sb_skia_gl_renderer_end(sb_skia_gl_renderer_t *renderer)
 {
+    renderer->direct_context->resetContext();
     renderer->direct_context->flush();
 }

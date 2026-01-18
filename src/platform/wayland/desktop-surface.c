@@ -240,6 +240,10 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         xdg_popup_add_listener(desktop_surface->xdg_popup, &xdg_popup_listener,
             (void*)desktop_surface);
 
+        // Must commit and roundtrip.
+        sb_surface_commit(sb_desktop_surface_surface(desktop_surface));
+        wl_display_roundtrip(sb_application_wl_display(app));
+
         xdg_positioner_destroy(positioner);
     }
 
