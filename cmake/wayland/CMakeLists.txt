@@ -24,22 +24,27 @@ set(SWINGBY_PLATFORM_SOURCES
 )
 
 set(SWINGBY_PLATFORM_LINK_OPTIONS
-    PRIVATE -lwayland-client
-    PRIVATE -lwayland-egl
-    PRIVATE -lEGL
-    PRIVATE -lOpenGL
-    PRIVATE -lxkbcommon
-    # Skia
-    PRIVATE -lfreetype
-    PRIVATE -lz
-    PRIVATE -lpng16
-    PRIVATE -ljpeg
+    PRIVATE ""
 
     PARENT_SCOPE
 )
 
 set(SWINGBY_PLATFORM_LINK_LIBRARIES
+    # Skia static library
     PRIVATE ${SWINGBY_SKIA_STATIC_DIR}/libskia.a
+
+    # Swingby dependencies
+    PRIVATE wayland-client
+    PRIVATE wayland-egl
+    PRIVATE EGL
+    PRIVATE OpenGL
+    PRIVATE xkbcommon
+
+    # Skia dependencies
+    PRIVATE freetype
+    PRIVATE z
+    PRIVATE png16
+    PRIVATE jpeg
 
     PARENT_SCOPE
 )
