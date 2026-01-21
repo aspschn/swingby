@@ -18,6 +18,21 @@ struct sb_image_t {
     void *data;
 };
 
+sb_image_t* sb_image_new2(const sb_image_desc_t *desc)
+{
+    sb_image_t *image = malloc(sizeof(sb_image_t));
+
+    // Empty.
+    if (desc->source_type == SB_IMAGE_SOURCE_TYPE_EMPTY) {
+        image->data = malloc(
+            sizeof(uint32_t) * (desc->size.width * desc->size.height)
+        );
+        image->size = desc->size;
+    }
+
+    return image;
+}
+
 sb_image_t* sb_image_new(const sb_size_i_t *size, enum sb_image_format format)
 {
     sb_image_t *image = malloc(sizeof(sb_image_t));
