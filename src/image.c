@@ -6,6 +6,7 @@
 
 #include <swingby/log.h>
 
+#include "skia/image.h"
 #include "skia/load-image.h"
 
 #ifdef __cplusplus
@@ -16,6 +17,7 @@ struct sb_image_t {
     sb_size_i_t size;
     enum sb_image_format format;
     void *data;
+    sb_skia_image_t *skia_image;
 };
 
 sb_image_t* sb_image_new2(const sb_image_desc_t *desc)
@@ -29,6 +31,39 @@ sb_image_t* sb_image_new2(const sb_image_desc_t *desc)
         );
         image->size = desc->size;
     }
+
+    // File.
+    if (desc->source_type == SB_IMAGE_SOURCE_TYPE_FILE) {
+        //
+    }
+
+    // Data.
+    if (desc->source_type == SB_IMAGE_SOURCE_TYPE_DATA) {
+        //
+    }
+
+    // Pixels.
+    if (desc->source_type == SB_IMAGE_SOURCE_TYPE_PIXELS) {
+        //
+    }
+
+    return image;
+}
+
+sb_image_t* sb_image_new_from_data(const uint8_t *data,
+                                   uint64_t len,
+                                   enum sb_image_format format)
+{
+    sb_image_t *image = malloc(sizeof(sb_image_t));
+
+    image->skia_image = sb_skia_image_new();
+    bool res = sb_skia_image_load_from_data(image->skia_image, data, len);
+    if (res == false) {
+        sb_log_warn("sb_image_new_from_data() - Failed.\n");
+        return NULL;
+    }
+
+    image->size = *sb_skia_image_size(image->skia_image);
 
     return image;
 }
@@ -135,6 +170,11 @@ bool sb_image_load_from_data(sb_image_t *image,
     }
 
     return true;
+}
+
+void* sb_image_sk_bitmap(const sb_image_t *image)
+{
+    return sb_skia_image_sk_bitmap(image->skia_image);
 }
 
 void sb_image_free(sb_image_t *image)

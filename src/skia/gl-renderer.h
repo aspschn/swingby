@@ -23,6 +23,8 @@ void sb_skia_gl_renderer_begin(sb_skia_gl_renderer_t *renderer,
 
 void sb_skia_gl_renderer_end(sb_skia_gl_renderer_t *renderer);
 
+void* sb_skia_gl_renderer_gr_direct_context(sb_skia_gl_renderer_t *renderer);
+
 void sb_skia_gl_renderer_free(sb_skia_gl_renderer_t *renderer);
 
 #ifdef __cplusplus

@@ -4,8 +4,15 @@
 #include "skia/include/core/SkRRect.h"
 #include "skia/include/core/SkColor.h"
 #include "skia/include/core/SkBitmap.h"
+#include "skia/include/core/SkPixmap.h"
 #include "skia/include/core/SkImage.h"
 #include "skia/include/core/SkCanvas.h"
+#include "skia/include/gpu/GpuTypes.h"
+#include "skia/include/gpu/ganesh/GrDirectContext.h"
+// GrBackendTexture
+#include "skia/include/gpu/ganesh/GrBackendSurface.h"
+// SkImages::BorrowTextureFrom
+#include "skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "skia/include/effects/SkImageFilters.h"
 
 #include "./renderer.h"
@@ -203,6 +210,48 @@ void sb_skia_draw_image(sb_skia_renderer_t *renderer,
         rect->pos.y * scale,
         rect->size.width * scale,
         rect->size.height * scale);
+
+    SkSamplingOptions sampling;
+
+    canvas->drawImageRect(sk_image, sk_rect, sampling, nullptr);
+}
+
+void sb_skia_draw_image_gpu(sb_skia_renderer_t *renderer,
+                            const sb_rect_t *rect,
+                            uint32_t scale,
+                            const sb_image_t *image)
+{
+    SkCanvas *canvas = _get_canvas(renderer);
+
+    SkPixmap pixmap;
+    SkBitmap *bitmap = (SkBitmap*)sb_image_sk_bitmap(image);
+    bitmap->peekPixels(&pixmap);
+
+    sb_skia_gl_renderer_t *gl_renderer =
+        (sb_skia_gl_renderer_t*)sb_skia_renderer_current(renderer);
+    GrDirectContext *context =
+        (GrDirectContext*)sb_skia_gl_renderer_gr_direct_context(gl_renderer);
+
+    GrBackendTexture texture = context->createBackendTexture(
+        pixmap,
+        skgpu::Renderable::kNo,
+        skgpu::Protected::kNo
+    );
+
+    sk_sp<SkImage> sk_image = SkImages::BorrowTextureFrom(
+        context,
+        texture,
+        kTopLeft_GrSurfaceOrigin,
+        kRGBA_8888_SkColorType,
+        kPremul_SkAlphaType,
+        nullptr
+    );
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+    rect->pos.x * scale,
+    rect->pos.y * scale,
+    rect->size.width * scale,
+    rect->size.height * scale);
 
     SkSamplingOptions sampling;
 
