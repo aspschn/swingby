@@ -17,14 +17,16 @@
 // SkSurfaces::WrapBackendRenderTarget
 #include "skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 
+#include <swingby/application.h>
 #include <swingby/log.h>
 
 #include "../platform/wayland/egl-context/egl-context.h"
+#include "../skia/sk-surface.h"
 
 typedef struct sb_skia_gl_renderer_t {
     sk_sp<const GrGLInterface> gl_interface;
     sk_sp<GrDirectContext> direct_context;
-    sk_sp<SkSurface> surface;
+    const SkSurface *sk_surface;
 } sb_skia_gl_renderer_t;
 
 sk_sp<const GrGLInterface> _gl_interface = nullptr;
@@ -37,20 +39,46 @@ sb_skia_gl_renderer_t* sb_skia_gl_renderer_new()
     // renderer->gl_interface = GrGLInterfaces::MakeEGL();
     // renderer->direct_context = GrDirectContexts::MakeGL(renderer->gl_interface);
 
+    sb_application_t *app = sb_application_instance();
+    sb_egl_context_t *egl_context = sb_application_egl_context(app);
+
     renderer->gl_interface = nullptr;
     renderer->direct_context = nullptr;
+    renderer->sk_surface = nullptr;
+
+    // Dummy surface.
+    EGLint pbuf_attribs[] = { EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE };
+    EGLSurface egl_surface = eglCreatePbufferSurface(
+        egl_context->egl_display, egl_context->egl_config, pbuf_attribs);
+
+    EGLBoolean res = eglMakeCurrent(egl_context->egl_display,
+        egl_surface, egl_surface, egl_context->egl_context);
+    if (!res) {
+        EGLint err = eglGetError();
+        sb_log_warn("eglMakeCurrent failed in renderer! err: 0x%x\n", err);
+    }
+
+    if (!_gl_interface) {
+        _gl_interface = GrGLInterfaces::MakeEGL();
+    }
+    renderer->gl_interface = _gl_interface;
+    if (!renderer->direct_context) {
+        // _direct_context = GrDirectContexts::MakeGL(_gl_interface);
+        renderer->direct_context = GrDirectContexts::MakeGL(_gl_interface);
+    }
 
     return renderer;
 }
 
 void* sb_skia_gl_renderer_canvas(sb_skia_gl_renderer_t *renderer)
 {
-    return renderer->surface->getCanvas();
+    return ((SkSurface*)(renderer->sk_surface))->getCanvas();
 }
 
 void sb_skia_gl_renderer_begin(sb_skia_gl_renderer_t *renderer,
                                sb_egl_context_t *egl_context,
                                EGLSurface egl_surface,
+                               sb_sk_surface_t *sk_surface,
                                int width,
                                int height)
 {
@@ -70,29 +98,17 @@ void sb_skia_gl_renderer_begin(sb_skia_gl_renderer_t *renderer,
         renderer->direct_context = GrDirectContexts::MakeGL(_gl_interface);
     }
 
-    GrGLFramebufferInfo fb_info;
-    fb_info.fFBOID = 0;
-    fb_info.fFormat = GL_RGBA8;
+    renderer->sk_surface = (const SkSurface*)sb_sk_surface_c_ptr(sk_surface);
 
-    GrBackendRenderTarget target = GrBackendRenderTargets::MakeGL(
-        width, height, 0, 8, fb_info);
-
-    renderer->surface = SkSurfaces::WrapBackendRenderTarget(
-        renderer->direct_context.get(),
-        target,
-        kBottomLeft_GrSurfaceOrigin,
-        kRGBA_8888_SkColorType,
-        nullptr,
-        nullptr
-    );
-
-    sb_log_debug(" == (gl_renderer) surface: %p\n", renderer->surface.get());
+    sb_log_debug(" == (gl_renderer) surface: %p\n", renderer->sk_surface);
 }
 
 void sb_skia_gl_renderer_end(sb_skia_gl_renderer_t *renderer)
 {
     renderer->direct_context->resetContext();
     renderer->direct_context->flush();
+
+    renderer->sk_surface = nullptr;
 }
 
 void* sb_skia_gl_renderer_gr_direct_context(sb_skia_gl_renderer_t *renderer)

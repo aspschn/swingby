@@ -34,6 +34,7 @@
 #include "../../skia/renderer.h"
 #include "../../skia/raster-renderer.h"
 #include "../../skia/gl-renderer.h"
+#include "../../skia/sk-surface.h"
 #include "../../skia/draw.h"
 
 #include "../../shaders.h"
@@ -45,15 +46,13 @@ struct sb_surface_t {
     struct wl_surface *_wl_surface;
     struct wl_egl_window *_wl_egl_window;
     EGLSurface _egl_surface;
+    sb_sk_surface_t *sk_surface;
     struct wl_shm_pool *wl_shm_pool;
     struct wl_buffer *wl_buffer;
     struct {
         void *addr;
         uint32_t size;
     } shm_data;
-    const char *backend;
-    // sb_egl_context_t *egl_context;
-    sb_skia_renderer_t *skia_renderer;
     sb_size_t _size;
     sb_view_t *_root_view;
     uint32_t scale;
@@ -222,6 +221,9 @@ static void _set_uniform_resolution(GLuint program, const sb_size_t *resolution)
 static void _draw_recursive(sb_surface_t *surface,
                             sb_view_t *view)
 {
+    sb_application_t *app = sb_application_instance();
+    sb_skia_renderer_t *skia_renderer = sb_application_skia_renderer(app);
+
     enum sb_view_fill_type fill_type = sb_view_fill_type(view);
 
     if (fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
@@ -238,7 +240,7 @@ static void _draw_recursive(sb_surface_t *surface,
             }
         }
         sb_skia_draw_rect2(
-            surface->skia_renderer,
+            skia_renderer,
             sb_view_geometry(view),
             surface->scale,
             sb_view_color(view),
@@ -247,7 +249,7 @@ static void _draw_recursive(sb_surface_t *surface,
             sb_view_clip(view)
         );
     } else if (fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
-        sb_skia_draw_image(surface->skia_renderer,
+        sb_skia_draw_image(skia_renderer,
             sb_view_geometry(view), surface->scale, sb_view_image(view));
     }
 
@@ -261,7 +263,7 @@ static void _draw_recursive(sb_surface_t *surface,
 
         if (sb_view_clip(view)) {
             // Clip parent view.
-            sb_skia_clip_rect(surface->skia_renderer,
+            sb_skia_clip_rect(skia_renderer,
                 sb_view_geometry(view),
                 radius,
                 surface->scale
@@ -273,7 +275,7 @@ static void _draw_recursive(sb_surface_t *surface,
             sb_point_t scaled_pos;
             scaled_pos.x = view_pos.x * surface->scale;
             scaled_pos.y = view_pos.y * surface->scale;
-            sb_skia_save_pos(surface->skia_renderer, &scaled_pos);
+            sb_skia_save_pos(skia_renderer, &scaled_pos);
         }
 
         sb_view_t *child = sb_list_at(children, i);
@@ -281,11 +283,11 @@ static void _draw_recursive(sb_surface_t *surface,
 
         if (sb_view_clip(view)) {
             // Restore parent view clip.
-            sb_skia_clip_restore(surface->skia_renderer);
+            sb_skia_clip_restore(skia_renderer);
         }
 
         if (sb_view_parent(view) != NULL) {
-            sb_skia_restore_pos(surface->skia_renderer);
+            sb_skia_restore_pos(skia_renderer);
         }
     }
 }
@@ -306,22 +308,24 @@ void _draw_frame(sb_surface_t *surface)
 {
     sb_log_debug(" == _draw_frame() - surface: %p ==\n", surface);
     sb_application_t *app = sb_application_instance();
+    sb_skia_renderer_t *skia_renderer = sb_application_skia_renderer(app);
 
-    enum sb_skia_backend backend = sb_skia_renderer_backend(surface->skia_renderer);
+    enum sb_skia_backend backend = sb_skia_renderer_backend(skia_renderer);
     if (backend == SB_SKIA_BACKEND_GL) {
         sb_skia_gl_renderer_t *renderer =
-            sb_skia_renderer_current(surface->skia_renderer);
+            sb_skia_renderer_current(skia_renderer);
         sb_egl_context_t *egl_context = sb_application_egl_context(app);
 
         sb_skia_gl_renderer_begin(renderer,
             egl_context,
             surface->_egl_surface,
+            surface->sk_surface,
             surface->_size.width * surface->scale,
             surface->_size.height * surface->scale
         );
 
         sb_color_t clear_color = { 0x00, 0x0, 0x00, 0x00 };
-        sb_skia_clear(surface->skia_renderer, &clear_color);
+        sb_skia_clear(skia_renderer, &clear_color);
 
         _draw_recursive(surface, surface->_root_view);
 
@@ -337,14 +341,14 @@ void _draw_frame(sb_surface_t *surface)
         uint32_t size = height * stride;
 
         sb_skia_raster_renderer_t *renderer =
-            sb_skia_renderer_current(surface->skia_renderer);
+            sb_skia_renderer_current(skia_renderer);
 
         sb_skia_raster_renderer_begin(renderer,
             surface->_size.width * surface->scale,
             surface->_size.height * surface->scale);
 
         sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
-        sb_skia_clear(surface->skia_renderer, &clear_color);
+        sb_skia_clear(skia_renderer, &clear_color);
 
         _draw_recursive(surface, surface->_root_view);
 
@@ -375,7 +379,6 @@ sb_surface_t* sb_surface_new()
     surface->wl_shm_pool = NULL;
     surface->shm_data.addr = NULL;
     surface->shm_data.size = 0;
-    surface->backend = NULL;
 
     sb_application_t *app = sb_application_instance();
 
@@ -387,21 +390,9 @@ sb_surface_t* sb_surface_new()
     wl_surface_add_listener(surface->_wl_surface, &surface_listener,
         (void*)surface);
 
-    // Detect Swingby rendering backend.
-    surface->backend = getenv("SWINGBY_BACKEND");
-    if (surface->backend == NULL) {
-        surface->backend = SWINGBY_BACKEND_DEFAULT;
-    }
+    const char *backend = sb_application_backend(app);
 
-    if (strcmp(surface->backend, "opengl") == 0) {
-        surface->skia_renderer = sb_skia_renderer_new(SB_SKIA_BACKEND_GL);
-    } else if (strcmp(surface->backend, "raster") == 0) {
-        surface->skia_renderer = sb_skia_renderer_new(SB_SKIA_BACKEND_RASTER);
-    } else {
-        sb_log_warn("sb_surface_new() - Invalid backend.\n");
-    }
-
-    if (strcmp(surface->backend, "opengl") == 0) {
+    if (strcmp(backend, "opengl") == 0) {
         // Get global EGL context.
         sb_egl_context_t *egl_context = sb_application_egl_context(app);
 
@@ -417,6 +408,15 @@ sb_surface_t* sb_surface_new()
             surface->_wl_egl_window,
             NULL);
 
+        // Create SkSurface.
+        sb_skia_renderer_t *renderer = sb_application_skia_renderer(app);
+        sb_skia_gl_renderer_t *gl_renderer = sb_skia_renderer_current(renderer);
+        void *gr_direct_context =
+            sb_skia_gl_renderer_gr_direct_context(gl_renderer);
+        surface->sk_surface = sb_sk_surface_new(gr_direct_context,
+            surface->_size.width * surface->scale,
+            surface->_size.height * surface->scale);
+
         EGLBoolean res = eglMakeCurrent(
             egl_context->egl_display,
             surface->_egl_surface,
@@ -429,7 +429,7 @@ sb_surface_t* sb_surface_new()
         }
     }
 
-    if (strcmp(surface->backend, "raster") == 0) {
+    if (strcmp(backend, "raster") == 0) {
         _raster_init(surface);
 
         // _add_frame_callback(surface);
@@ -496,12 +496,24 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
 
     sb_surface_update(surface);
 
-    if (strcmp(surface->backend, "opengl") == 0) {
+    const char *backend = sb_application_backend(sb_application_instance());
+
+    if (strcmp(backend, "opengl") == 0) {
+        sb_application_t *app = sb_application_instance();
+        sb_skia_renderer_t *renderer = sb_application_skia_renderer(app);
+        sb_skia_gl_renderer_t *gl_renderer = sb_skia_renderer_current(renderer);
+
         wl_egl_window_resize(surface->_wl_egl_window,
             surface->_size.width * surface->scale,
             surface->_size.height * surface->scale,
             0, 0);
-    } else if (strcmp(surface->backend, "raster") == 0) {
+        sb_sk_surface_free(surface->sk_surface);
+        void *gr_direct_context =
+            sb_skia_gl_renderer_gr_direct_context(gl_renderer);
+        surface->sk_surface = sb_sk_surface_new(gr_direct_context,
+            surface->_size.width * surface->scale,
+            surface->_size.height * surface->scale);
+    } else if (strcmp(backend, "raster") == 0) {
         _raster_init(surface);
     }
 }
@@ -518,10 +530,11 @@ void sb_surface_commit(sb_surface_t *surface)
 
 void sb_surface_attach(sb_surface_t *surface)
 {
+    const char *backend = sb_application_backend(sb_application_instance());
     sb_log_debug("(sb_surface_attach) - surface: %p, backend: %s\n",
-        surface, surface->backend);
+        surface, backend);
 
-    if (strcmp(surface->backend, "raster") == 0) {
+    if (strcmp(backend, "raster") == 0) {
         _draw_frame(surface);
 
         wl_surface_attach(surface->_wl_surface, surface->wl_buffer, 0, 0);
@@ -529,7 +542,7 @@ void sb_surface_attach(sb_surface_t *surface)
         wl_surface_commit(surface->_wl_surface);
     }
 
-    if (strcmp(surface->backend, "opengl") == 0) {
+    if (strcmp(backend, "opengl") == 0) {
         _add_frame_callback(surface);
         _draw_frame(surface);
     }

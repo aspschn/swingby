@@ -11,6 +11,8 @@ typedef struct sb_egl_context_t sb_egl_context_t;
 
 typedef struct sb_skia_gl_renderer_t sb_skia_gl_renderer_t;
 
+typedef struct sb_sk_surface_t sb_sk_surface_t;
+
 sb_skia_gl_renderer_t* sb_skia_gl_renderer_new();
 
 void* sb_skia_gl_renderer_canvas(sb_skia_gl_renderer_t *renderer);
@@ -18,6 +20,7 @@ void* sb_skia_gl_renderer_canvas(sb_skia_gl_renderer_t *renderer);
 void sb_skia_gl_renderer_begin(sb_skia_gl_renderer_t *renderer,
                                sb_egl_context_t *egl_context,
                                EGLSurface egl_surface,
+                               sb_sk_surface_t *sk_surface,
                                int width,
                                int height);
 

@@ -27,6 +27,7 @@
 #include <swingby/event-dispatcher.h>
 
 #include "egl-context/egl-context.h"
+#include "../../skia/renderer.h"
 
 #include "xkb/xkb-context.h"
 #include "xcursor/xcursor.h"
@@ -34,8 +35,13 @@
 #include "../../helpers/shared.h"
 #include "helpers/application.h"
 
+// #define SWINGBY_BACKEND_DEFAULT "raster"
+#define SWINGBY_BACKEND_DEFAULT "opengl"
+
 struct sb_application_t {
     sb_egl_context_t *egl_context;
+    sb_skia_renderer_t *renderer;
+    const char *backend;
     /// `struct wl_display`.
     struct wl_display *_wl_display;
     /// `struct wl_registry`.
@@ -530,6 +536,9 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->_wl_display = wl_display_connect(NULL);
 
     // Null initializations.
+    app->backend = NULL;
+    app->renderer = NULL;
+
     app->_wl_seat = NULL;
     app->_wl_pointer = NULL;
     app->_wl_keyboard = NULL;
@@ -587,6 +596,21 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     _sb_application_instance = app;
 
     app->egl_context = sb_egl_context_new();
+
+    // Detect Swingby rendering backend.
+    app->backend = getenv("SWINGBY_BACKEND");
+    if (app->backend == NULL) {
+        app->backend = SWINGBY_BACKEND_DEFAULT;
+    }
+
+    // Create renderer.
+    if (strcmp(app->backend, "opengl") == 0) {
+        app->renderer = sb_skia_renderer_new(SB_SKIA_BACKEND_GL);
+    } else if (strcmp(app->backend, "raster") == 0) {
+        app->renderer = sb_skia_renderer_new(SB_SKIA_BACKEND_RASTER);
+    } else {
+        sb_log_warn("sb_surface_new() - Invalid backend.\n");
+    }
 
     return app;
 }
@@ -734,6 +758,17 @@ struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
 sb_egl_context_t* sb_application_egl_context(sb_application_t *application)
 {
     return application->egl_context;
+}
+
+const char* sb_application_backend(const sb_application_t *application)
+{
+    return application->backend;
+}
+
+sb_skia_renderer_t*
+sb_application_skia_renderer(const sb_application_t *application)
+{
+    return application->renderer;
 }
 
 int sb_application_exec(sb_application_t *application)

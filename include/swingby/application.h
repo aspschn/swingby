@@ -18,10 +18,15 @@ typedef struct sb_event_t sb_event_t;
 typedef struct sb_list_t sb_list_t;
 
 typedef struct sb_egl_context_t sb_egl_context_t;
+typedef struct sb_skia_renderer_t sb_skia_renderer_t;
 typedef struct sb_d3d_global_context_t sb_d3d_global_context_t;
 
 /// \brief A global application object.
 typedef struct sb_application_t sb_application_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 SB_EXPORT
 sb_application_t* sb_application_new(int argc, char *argv[]);
@@ -88,6 +93,10 @@ struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
 
 sb_egl_context_t* sb_application_egl_context(sb_application_t *application);
 
+const char* sb_application_backend(const sb_application_t *application);
+
+sb_skia_renderer_t* sb_application_skia_renderer(const sb_application_t*);
+
 /// \brief Get the `WNDCLASS` of the application.
 ///
 /// This method is available only on win32 platform.
@@ -103,5 +112,9 @@ void sb_application_set_nchittest_return(sb_application_t *application,
 
 SB_EXPORT
 int sb_application_exec(sb_application_t *application);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif /* _FOUNDATION_APPLICATION_H */
