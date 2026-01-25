@@ -16,10 +16,13 @@
 #include "skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
 // SkSurfaces::WrapBackendRenderTarget
 #include "skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+// SkImages::BorrowTextureFrom
+#include "skia/include/gpu/ganesh/SkImageGanesh.h"
 
 #include <swingby/log.h>
 
 #include "../platform/wayland/egl-context/egl-context.h"
+#include "../impl/image-impl.hpp"
 
 typedef struct sb_skia_gl_renderer_t {
     sk_sp<const GrGLInterface> gl_interface;
@@ -46,6 +49,37 @@ sb_skia_gl_renderer_t* sb_skia_gl_renderer_new()
 void* sb_skia_gl_renderer_canvas(sb_skia_gl_renderer_t *renderer)
 {
     return renderer->surface->getCanvas();
+}
+
+void sb_skia_gl_renderer_make_image_texture(sb_skia_gl_renderer_t *renderer,
+                                            SbImageImpl *image_impl)
+{
+    SkPixmap pixmap;
+    SkBitmap bitmap = image_impl->sk_bitmap();
+    bitmap.peekPixels(&pixmap);
+
+    if (!renderer->direct_context) {
+        sb_log_warn("sb_skia_gl_renderer_make_image_texture - "
+                    "Direct context is null.\n");
+        return;
+    }
+
+    GrBackendTexture texture = renderer->direct_context->createBackendTexture(
+        pixmap,
+        skgpu::Renderable::kNo,
+        skgpu::Protected::kNo
+    );
+    image_impl->set_texture(texture);
+
+    sk_sp<SkImage> sk_image = SkImages::BorrowTextureFrom(
+        renderer->direct_context.get(),
+        texture,
+        kTopLeft_GrSurfaceOrigin,
+        kRGBA_8888_SkColorType,
+        kPremul_SkAlphaType,
+        nullptr
+    );
+    image_impl->set_sk_image(sk_image);
 }
 
 void sb_skia_gl_renderer_begin(sb_skia_gl_renderer_t *renderer,

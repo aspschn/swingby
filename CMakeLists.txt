@@ -66,9 +66,9 @@ set(SWINGBY_SOURCES
     src/skia/draw.cpp
     src/skia/load-image.h
     src/skia/load-image.cpp
-    src/skia/image.cpp
     src/helpers/shared.h
     src/helpers/shared.c
+    src/impl/image-impl.cpp
 )
 
 add_library(swingby SHARED

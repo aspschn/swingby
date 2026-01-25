@@ -63,6 +63,9 @@ typedef struct sb_image_t sb_image_t;
 sb_image_t* sb_image_new2(const sb_image_desc_t *descriptor);
 
 SB_EXPORT
+sb_image_t* sb_image_new_from_data(const uint8_t *data, uint64_t len);
+
+SB_EXPORT
 sb_image_t* sb_image_new(const sb_size_i_t *size, enum sb_image_format format);
 
 SB_EXPORT
@@ -101,6 +104,15 @@ bool sb_image_load_from_data(sb_image_t *image,
 
 SB_EXPORT
 void sb_image_free(sb_image_t *image);
+
+
+typedef struct SbImageImpl SbImageImpl;
+
+SbImageImpl* sb_image_impl(const sb_image_t *image);
+
+SbImageImpl* sb_image_impl_new_from_data(const uint8_t *data, uint64_t len);
+
+void sb_image_impl_free(SbImageImpl *image);
 
 #ifdef __cplusplus
 }

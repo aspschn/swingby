@@ -16,6 +16,8 @@
 #include <swingby/list.h>
 #include <swingby/filter.h>
 
+#include "../impl/image-impl.hpp"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -207,6 +209,39 @@ void sb_skia_draw_image(sb_skia_renderer_t *renderer,
     SkSamplingOptions sampling;
 
     canvas->drawImageRect(sk_image, sk_rect, sampling, nullptr);
+}
+
+void sb_skia_draw_image2(sb_skia_renderer_t *renderer,
+                         const sb_rect_t *rect,
+                         uint32_t scale,
+                         const sb_image_t *image)
+{
+    SkCanvas *canvas = _get_canvas(renderer);
+    SbImageImpl *impl = sb_image_impl(image);
+
+    // Prepare pixmap.
+    SkBitmap bitmap = impl->sk_bitmap();
+    SkPixmap pixmap;
+    bitmap.peekPixels(&pixmap);
+
+    // Make texture.
+    auto gl_renderer =
+        (sb_skia_gl_renderer_t*)sb_skia_renderer_current(renderer);
+
+    sb_skia_gl_renderer_make_image_texture(gl_renderer, impl);
+
+    // TODO: RRect.
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+        rect->pos.x * scale,
+        rect->pos.y * scale,
+        rect->size.width * scale,
+        rect->size.height * scale
+    );
+
+    SkSamplingOptions sampling;
+
+    canvas->drawImageRect(impl->sk_image(), sk_rect, sampling, nullptr);
 }
 
 void sb_skia_clip_rect(sb_skia_renderer_t *renderer,

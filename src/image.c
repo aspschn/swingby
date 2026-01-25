@@ -16,6 +16,7 @@ struct sb_image_t {
     sb_size_i_t size;
     enum sb_image_format format;
     void *data;
+    SbImageImpl *impl;
 };
 
 sb_image_t* sb_image_new2(const sb_image_desc_t *desc)
@@ -29,6 +30,15 @@ sb_image_t* sb_image_new2(const sb_image_desc_t *desc)
         );
         image->size = desc->size;
     }
+
+    return image;
+}
+
+sb_image_t* sb_image_new_from_data(const uint8_t *data, uint64_t len)
+{
+    sb_image_t *image = malloc(sizeof(sb_image_t));
+
+    image->impl = sb_image_impl_new_from_data(data, len);
 
     return image;
 }
@@ -139,8 +149,14 @@ bool sb_image_load_from_data(sb_image_t *image,
 
 void sb_image_free(sb_image_t *image)
 {
+    sb_image_impl_free(image->impl);
     free(image->data);
     free(image);
+}
+
+SbImageImpl* sb_image_impl(const sb_image_t *image)
+{
+    return image->impl;
 }
 
 #ifdef __cplusplus
