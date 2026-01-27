@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 
 #include <swingby/swingby.h>
@@ -5,6 +6,27 @@
 #include "image.h"
 
 sb_view_t *image_view = NULL;
+
+static uint8_t* load_image(int32_t *len)
+{
+    FILE *f = fopen("../../examples/05_image-view/miku@256x256.png", "rb");
+    if (!f) {
+        fprintf(stderr, "Failed to open image!\n");
+        return NULL;
+    }
+
+    fseek(f, 0, SEEK_END);
+    int32_t size = ftell(f);
+    *len = size;
+    fseek(f, 0, SEEK_SET);
+
+    uint8_t *data = malloc(size);
+    fread(data, 1, size, f);
+
+    fclose(f);
+
+    return data;
+}
 
 static void on_preferred_scale(sb_event_t *event, void *user_data)
 {
@@ -15,7 +37,7 @@ static void on_preferred_scale(sb_event_t *event, void *user_data)
     sb_surface_set_scale(surface, event->scale.scale);
 }
 
-void on_resize(sb_event_t *event, void *user_data)
+static void on_resize(sb_event_t *event, void *user_data)
 {
     fprintf(stderr, "on_resize\n");
 
@@ -28,8 +50,9 @@ void on_resize(sb_event_t *event, void *user_data)
     sb_view_set_geometry(image_view, &geo);
 }
 
-void on_click(sb_event_t *event, void *user_data)
+static void on_click(sb_event_t *event, void *user_data)
 {
+    return;
     sb_point_i_t pos;
     pos.x = (int32_t)event->pointer.position.x;
     pos.y = (int32_t)event->pointer.position.y;
@@ -79,9 +102,14 @@ int main(int argc, char *argv[])
 
     sb_size_i_t image_size = { 256, 256 };
 
-    sb_image_t *image = sb_image_new(&image_size, SB_IMAGE_FORMAT_RGBA32);
+    // sb_image_t *image = sb_image_new(&image_size, SB_IMAGE_FORMAT_RGBA32);
+    // sb_image_t *image = sb_image_new_from_data(image_data, sizeof(image_data));
+    int32_t len;
+    uint8_t *data = load_image(&len);
+    sb_image_t *image = sb_image_new_from_data(data, len);
     sb_view_set_image(view, image);
 
+    /*
     uint64_t len = sb_image_size(image)->width * sb_image_size(image)->height;
     fprintf(stderr, "Length: %ld\n", len);
     uint32_t *pixel = (uint32_t*)sb_image_data(image);
@@ -93,6 +121,7 @@ int main(int argc, char *argv[])
         *pixel = r | g | b | a;
         ++pixel;
     }
+    */
 
     sb_surface_add_event_listener(sb_desktop_surface_surface(surface),
         SB_EVENT_TYPE_RESIZE,
