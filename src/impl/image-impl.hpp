@@ -36,6 +36,8 @@ public:
 
     void set_sk_image(sk_sp<SkImage> sk_image);
 
+    SkPixmap& sk_pixmap();
+
 private:
     sb_size_i_t _size;
     SkPixmap _pixmap;

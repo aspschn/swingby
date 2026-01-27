@@ -55,11 +55,15 @@ void sb_skia_gl_renderer_make_image_texture(sb_skia_gl_renderer_t *renderer,
                                             SbImageImpl *image_impl)
 {
     SkPixmap pixmap;
-    SkBitmap bitmap = image_impl->sk_bitmap();
-    if (!bitmap.peekPixels(&pixmap)) {
-        sb_log_warn("sb_skia_gl_renderer_make_image_texture - "
-                    "peekPixels failed!\n");
-        return;
+    if (image_impl->sk_pixmap().addr() == nullptr) {
+        bool ok = image_impl->sk_bitmap().peekPixels(&pixmap);
+        if (!ok) {
+            sb_log_warn("sb_skia_gl_renderer_make_image_texture - "
+                        "peekPixels failed!\n");
+            return;
+        }
+    } else {
+        pixmap = image_impl->sk_pixmap();
     }
 
     if (!renderer->direct_context) {
