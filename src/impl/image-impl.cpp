@@ -15,6 +15,7 @@ SbImageImpl::SbImageImpl(const uint8_t *data, uint64_t len)
         return;
     }
     SkImageInfo info = codec->getInfo();
+    sb_log_debug("SbImageImpl::SbImageImpl - %d\n", info.colorType());
 
     if (_bitmap.tryAllocPixels(info) != true) {
         sb_log_warn("SbImageImpl::SbImageImpl - tryAllocPixels failed.\n");

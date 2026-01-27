@@ -56,7 +56,11 @@ void sb_skia_gl_renderer_make_image_texture(sb_skia_gl_renderer_t *renderer,
 {
     SkPixmap pixmap;
     SkBitmap bitmap = image_impl->sk_bitmap();
-    bitmap.peekPixels(&pixmap);
+    if (!bitmap.peekPixels(&pixmap)) {
+        sb_log_warn("sb_skia_gl_renderer_make_image_texture - "
+                    "peekPixels failed!\n");
+        return;
+    }
 
     if (!renderer->direct_context) {
         sb_log_warn("sb_skia_gl_renderer_make_image_texture - "
@@ -69,6 +73,10 @@ void sb_skia_gl_renderer_make_image_texture(sb_skia_gl_renderer_t *renderer,
         skgpu::Renderable::kNo,
         skgpu::Protected::kNo
     );
+    if (texture.isValid() == false) {
+        sb_log_warn("sb_skia_gl_renderer_make_image_texture - "
+                    "Texture is invalid!\n");
+    }
     image_impl->set_texture(texture);
 
     sk_sp<SkImage> sk_image = SkImages::BorrowTextureFrom(
