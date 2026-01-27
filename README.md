@@ -1,6 +1,7 @@
 # Swingby
 
-A GUI engine for Wayland written in C, rendered with [Skia](https://skia.org/).
+A GUI engine for Wayland written in C/C++, rendered
+with [Skia](https://skia.org/).
 
 Swingby is not a full-featured framework. It is an engine for minimal GUI.
 
@@ -16,8 +17,6 @@ Swingby not provide a window directly. But you can build your own window (that
 client-side decorated).
 
 The event system makes easier to make the event driven GUI programs.
-
-It is based on OpenGL 4.6 (the latest version) for easier buffer management.
 
 
 ## Goal
@@ -44,8 +43,10 @@ install some packages manually for a development build.
 Swingby is a Wayland based library. Therefore, your system must suppport Wayland
 before building the project.
 
-We are using the latest version of OpenGL for rendering. The version 4.6 was
-released in 2017.
+We are using the latest version of OpenGL for GPU-accelerated rendering.
+For machines that do not support OpenGL version 4.6 (such as legacy GPUs,
+VMs, ARM-based devices, etc.), you can try setting the environment
+variable `MESA_GL_VERSION_OVERRIDE=4.6`.
 
 Here is the details of the requirements.
 
