@@ -1,8 +1,10 @@
 #include "image-impl.hpp"
 
 #include <skia/include/core/SkData.h>
+#include <skia/include/core/SkImageInfo.h>
 #include <skia/include/codec/SkCodec.h>
 
+#include <swingby/pixmap.h>
 #include <swingby/log.h>
 
 SbImageImpl::SbImageImpl(const uint8_t *data, uint64_t len)
@@ -31,6 +33,24 @@ SbImageImpl::SbImageImpl(const uint8_t *data, uint64_t len)
 
     _size.width = _bitmap.width();
     _size.height = _bitmap.height();
+}
+
+SbImageImpl::SbImageImpl(const sb_pixmap_t *pixmap)
+{
+    auto width = sb_pixmap_width(pixmap);
+    auto height = sb_pixmap_height(pixmap);
+
+    SkImageInfo info = SkImageInfo::Make(
+        width,
+        height,
+        kRGBA_8888_SkColorType, // TODO: Conditional value.
+        kUnpremul_SkAlphaType
+    );
+
+    _pixmap = SkPixmap(info, sb_pixmap_data(pixmap), width * 4);
+
+    _size.width = width;
+    _size.height = height;
 }
 
 SbImageImpl::~SbImageImpl()

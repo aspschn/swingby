@@ -5,10 +5,13 @@
 #include <include/gpu/ganesh/GrBackendSurface.h>
 
 #include "skia/include/core/SkBitmap.h"
+#include "skia/include/core/SkPixmap.h"
 #include "skia/include/core/SkImage.h"
 
 #include <swingby/size.h>
 #include <swingby/image.h>
+
+typedef struct sb_pixmap_t sb_pixmap_t;
 
 class __attribute__((visibility("hidden"))) SbImageImpl
 {
@@ -16,6 +19,8 @@ public:
     SbImageImpl() = delete;
 
     SbImageImpl(const uint8_t *data, uint64_t len);
+
+    SbImageImpl(const sb_pixmap_t *pixmap);
 
     ~SbImageImpl();
 
@@ -33,6 +38,7 @@ public:
 
 private:
     sb_size_i_t _size;
+    SkPixmap _pixmap;
     SkBitmap _bitmap;
     GrBackendTexture _texture;
     sk_sp<SkImage> _image;

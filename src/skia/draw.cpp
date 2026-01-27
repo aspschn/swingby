@@ -219,6 +219,8 @@ void sb_skia_draw_image2(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
     SbImageImpl *impl = sb_image_impl(image);
 
+    // TODO: Pixmap or bitmap.
+
     // Prepare pixmap.
     SkBitmap bitmap = impl->sk_bitmap();
     SkPixmap pixmap;
