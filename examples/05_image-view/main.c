@@ -7,6 +7,7 @@
 
 sb_view_t *image_view = NULL;
 
+/*
 static uint8_t* load_image(int32_t *len)
 {
     FILE *f = fopen("../../examples/05_image-view/miku@256x256.png", "rb");
@@ -27,6 +28,7 @@ static uint8_t* load_image(int32_t *len)
 
     return data;
 }
+*/
 
 static void on_preferred_scale(sb_event_t *event, void *user_data)
 {
@@ -104,9 +106,11 @@ int main(int argc, char *argv[])
 
     // sb_image_t *image = sb_image_new(&image_size, SB_IMAGE_FORMAT_RGBA32);
     // sb_image_t *image = sb_image_new_from_data(image_data, sizeof(image_data));
-    int32_t len;
-    uint8_t *data = load_image(&len);
-    sb_image_t *image = sb_image_new_from_data(data, len);
+    // int32_t len;
+    // uint8_t *data = load_image(&len);
+    sb_pixmap_t *pixmap = sb_pixmap_new(image_data,
+        &image_size, image_size.width * 4, SB_PIXEL_FORMAT_RGBA32);
+    sb_image_t *image = sb_image_new_from_pixmap(pixmap);
     sb_view_set_image(view, image);
 
     /*

@@ -14,6 +14,8 @@ extern "C" {
 
 typedef struct sb_color_t sb_color_t;
 
+typedef struct sb_pixmap_t sb_pixmap_t;
+
 enum sb_image_source_type {
     /// Delegate allocation to `sb_image_t`.
     SB_IMAGE_SOURCE_TYPE_EMPTY,
@@ -66,6 +68,9 @@ SB_EXPORT
 sb_image_t* sb_image_new_from_data(const uint8_t *data, uint64_t len);
 
 SB_EXPORT
+sb_image_t* sb_image_new_from_pixmap(sb_pixmap_t *pixmap);
+
+SB_EXPORT
 sb_image_t* sb_image_new(const sb_size_i_t *size, enum sb_image_format format);
 
 SB_EXPORT
@@ -111,6 +116,8 @@ typedef struct SbImageImpl SbImageImpl;
 SbImageImpl* sb_image_impl(const sb_image_t *image);
 
 SbImageImpl* sb_image_impl_new_from_data(const uint8_t *data, uint64_t len);
+
+SbImageImpl* sb_image_impl_new_from_pixmap(sb_pixmap_t *pixmap);
 
 void sb_image_impl_free(SbImageImpl *image);
 

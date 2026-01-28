@@ -87,6 +87,11 @@ void SbImageImpl::set_sk_image(sk_sp<SkImage> sk_image)
     _image = sk_image;
 }
 
+SkPixmap& SbImageImpl::sk_pixmap()
+{
+    return _pixmap;
+}
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -95,6 +100,13 @@ extern "C" {
 SbImageImpl* sb_image_impl_new_from_data(const uint8_t *data, uint64_t len)
 {
     auto impl = new SbImageImpl(data, len);
+
+    return impl;
+}
+
+SbImageImpl* sb_image_impl_new_from_pixmap(sb_pixmap_t *pixmap)
+{
+    auto impl = new SbImageImpl(pixmap);
 
     return impl;
 }

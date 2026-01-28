@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include <swingby/log.h>
+#include <swingby/pixmap.h>
 
 #include "skia/load-image.h"
 
@@ -39,6 +40,15 @@ sb_image_t* sb_image_new_from_data(const uint8_t *data, uint64_t len)
     sb_image_t *image = malloc(sizeof(sb_image_t));
 
     image->impl = sb_image_impl_new_from_data(data, len);
+
+    return image;
+}
+
+sb_image_t* sb_image_new_from_pixmap(sb_pixmap_t *pixmap)
+{
+    sb_image_t *image = malloc(sizeof(sb_image_t));
+
+    image->impl = sb_image_impl_new_from_pixmap(pixmap);
 
     return image;
 }
