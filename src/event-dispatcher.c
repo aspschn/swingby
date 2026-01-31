@@ -217,6 +217,9 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
             case SB_EVENT_TYPE_RESIZE:
                 sb_desktop_surface_on_resize(event->target, event);
                 break;
+            case SB_EVENT_TYPE_RESIZE_REQUEST:
+                sb_desktop_surface_on_resize_request(event->target, event);
+                break;
             case SB_EVENT_TYPE_STATE_CHANGE:
                 sb_desktop_surface_on_state_change(event->target,
                     event);

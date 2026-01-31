@@ -17,9 +17,9 @@ struct window* window_new(sb_size_t size)
         sb_desktop_surface_new(SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
 
     sb_desktop_surface_add_event_listener(window->desktop_surface,
-                                          SB_EVENT_TYPE_RESIZE,
-                                          on_desktop_surface_resize,
-                                          NULL);
+        SB_EVENT_TYPE_RESIZE_REQUEST,
+        on_desktop_surface_resize,
+        NULL);
 
     sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
     sb_size_t initial_size;

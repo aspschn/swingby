@@ -140,6 +140,9 @@ void sb_desktop_surface_add_event_listener(
 void sb_desktop_surface_on_resize(sb_desktop_surface_t *desktop_surface,
                                   sb_event_t *event);
 
+void sb_desktop_surface_on_resize_request(sb_desktop_surface_t *desktop_surface,
+                                          sb_event_t *event);
+
 void sb_desktop_surface_on_state_change(sb_desktop_surface_t *desktop_surface,
                                         sb_event_t *event);
 

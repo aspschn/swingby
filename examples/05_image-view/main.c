@@ -34,7 +34,7 @@ static void on_preferred_scale(sb_event_t *event, void *user_data)
 {
     sb_surface_t *surface = event->target;
 
-    fprintf(stderr, "on_preferred_scale.\n");
+    fprintf(stderr, "on_preferred_scale: %d.\n", event->scale.scale);
 
     sb_surface_set_scale(surface, event->scale.scale);
 }
