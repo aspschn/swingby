@@ -127,8 +127,8 @@ int main(int argc, char *argv[])
     }
     */
 
-    sb_surface_add_event_listener(sb_desktop_surface_surface(surface),
-        SB_EVENT_TYPE_RESIZE,
+    sb_desktop_surface_add_event_listener(surface,
+        SB_EVENT_TYPE_RESIZE_REQUEST,
         on_resize,
         NULL);
 
