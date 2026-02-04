@@ -33,6 +33,8 @@ SbImageImpl::SbImageImpl(const uint8_t *data, uint64_t len)
 
     _size.width = _bitmap.width();
     _size.height = _bitmap.height();
+
+    _image = nullptr;
 }
 
 SbImageImpl::SbImageImpl(const sb_pixmap_t *pixmap)
@@ -51,6 +53,8 @@ SbImageImpl::SbImageImpl(const sb_pixmap_t *pixmap)
 
     _size.width = width;
     _size.height = height;
+
+    _image = nullptr;
 }
 
 SbImageImpl::~SbImageImpl()

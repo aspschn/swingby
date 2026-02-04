@@ -54,6 +54,11 @@ void* sb_skia_gl_renderer_canvas(sb_skia_gl_renderer_t *renderer)
 void sb_skia_gl_renderer_make_image_texture(sb_skia_gl_renderer_t *renderer,
                                             SbImageImpl *image_impl)
 {
+    // Do nothing if SkImage is not null.
+    if (image_impl->sk_image() != nullptr) {
+        return;
+    }
+
     SkPixmap pixmap;
     if (image_impl->sk_pixmap().addr() == nullptr) {
         bool ok = image_impl->sk_bitmap().peekPixels(&pixmap);
