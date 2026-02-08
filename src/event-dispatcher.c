@@ -9,6 +9,7 @@
 #include <swingby/bench.h>
 #include <swingby/event.h>
 #include <swingby/list.h>
+#include <swingby/application.h>
 #include <swingby/view.h>
 #include <swingby/desktop-surface.h>
 
@@ -211,7 +212,14 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
             event_dispatcher->queue);
 
         if (event->target_type == SB_EVENT_TARGET_TYPE_APPLICATION) {
-            //
+            switch (event->type) {
+            case SB_EVENT_TYPE_NEXT_TICK:
+                sb_application_on_next_tick(event->target, event);
+                sb_event_free(event);
+                break;
+            default:
+                break;
+            }
         } else if (event->target_type == SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE) {
             switch (event->type) {
             case SB_EVENT_TYPE_RESIZE:

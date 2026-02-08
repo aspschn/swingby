@@ -19,6 +19,7 @@ enum sb_event_target_type {
 };
 
 enum sb_event_type {
+    SB_EVENT_TYPE_NEXT_TICK                 = 5,
     SB_EVENT_TYPE_POINTER_ENTER             = 10,
     SB_EVENT_TYPE_POINTER_LEAVE             = 11,
     SB_EVENT_TYPE_POINTER_MOVE              = 12,

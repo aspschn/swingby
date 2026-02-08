@@ -117,6 +117,7 @@ struct sb_application_t {
     sb_list_t *outputs;
     /// \brief An event dispatcher.
     sb_event_dispatcher_t *event_dispatcher;
+    sb_list_t *event_listeners;
 };
 
 // Singleton object.
@@ -588,6 +589,9 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     app->egl_context = sb_egl_context_new();
 
+    // Event listeners.
+    app->event_listeners = sb_list_new();
+
     return app;
 }
 
@@ -742,6 +746,11 @@ int sb_application_exec(sb_application_t *application)
     while (err != -1) {
         sb_event_dispatcher_process_events(application->event_dispatcher);
 
+        sb_event_t *tick_event = sb_event_new(SB_EVENT_TARGET_TYPE_APPLICATION,
+            application,
+            SB_EVENT_TYPE_NEXT_TICK);
+        sb_application_post_event(application, tick_event);
+
         // Exit event loop when last desktop surface closed.
         if (sb_list_length(application->desktop_surfaces) == 0) {
             sb_log_debug("Last desktop surface closed.\n");
@@ -777,6 +786,28 @@ int sb_application_exec(sb_application_t *application)
     sb_log_debug("Quit application.\n");
 
     return 0;
+}
+
+
+//!<==============
+//!< Events
+//!<==============
+
+void sb_application_add_event_listener(sb_application_t *application,
+                                       enum sb_event_type event_type,
+                                       sb_event_listener_t listener,
+                                       void *user_data)
+{
+    sb_event_listener_tuple_t *tuple = sb_event_listener_tuple_new(
+        event_type, listener, user_data);
+    sb_list_push(application->event_listeners, (void*)tuple);
+}
+
+void sb_application_on_next_tick(sb_application_t *application,
+                                 sb_event_t *event)
+{
+    _event_listener_filter_for_each(application->event_listeners,
+        SB_EVENT_TYPE_NEXT_TICK, event);
 }
 
 
