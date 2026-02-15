@@ -121,7 +121,7 @@ void sb_skia_draw_rect2(sb_skia_renderer_t *renderer,
         SkPaint filter_paint;
         sk_sp<SkImageFilter> prev_filter = nullptr; // For multiple filters,
                                                     // store the previous one.
-        for (int i = 0; i < sb_list_length((sb_list_t*)filters); ++i) {
+        for (uint64_t i = 0; i < sb_list_length((sb_list_t*)filters); ++i) {
             const sb_filter_t *filter = (sb_filter_t*)sb_list_at((sb_list_t*)filters, i);
             if (sb_filter_type(filter) == SB_FILTER_TYPE_BLUR) {
                 float radius = sb_filter_blur_radius(filter);
