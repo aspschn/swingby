@@ -1,4 +1,4 @@
 [submodule "skia"]
 	path = skia
 	url = https://skia.googlesource.com/skia
-	branch = chrome/m126
+	branch = chrome/m146
