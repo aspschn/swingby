@@ -16,10 +16,10 @@ struct sb_view_t {
     sb_surface_t *_surface;
     sb_rect_t geometry;
     sb_view_t *_parent;
-    /// \brief View's color if the view fill type is single color.
+    /// \brief View's color if the view render type is single color.
     sb_color_t _color;
     sb_list_t *_children;
-    enum sb_view_fill_type fill_type;
+    enum sb_view_render_type render_type;
     sb_image_t *image;
     /// \brief Rectangle view radius.
     sb_view_radius_t radius;
@@ -60,7 +60,7 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 
     view->_children = sb_list_new();
 
-    view->fill_type = SB_VIEW_FILL_TYPE_SINGLE_COLOR;
+    view->render_type = SB_VIEW_RENDER_TYPE_SINGLE_COLOR;
     view->image = NULL;
 
     view->filters = sb_list_new();
@@ -135,14 +135,14 @@ const sb_color_t* sb_view_color(const sb_view_t *view)
     return &view->_color;
 }
 
-enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view)
+enum sb_view_render_type sb_view_render_type(const sb_view_t *view)
 {
-    return view->fill_type;
+    return view->render_type;
 }
 
-void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type)
+void sb_view_set_render_type(sb_view_t *view, enum sb_view_render_type type)
 {
-    view->fill_type = fill_type;
+    view->render_type = type;
 }
 
 sb_image_t* sb_view_image(sb_view_t *view)

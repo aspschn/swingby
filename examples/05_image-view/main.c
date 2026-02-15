@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     sb_view_t *view = sb_view_new(
         sb_surface_root_view(sb_desktop_surface_surface(surface)), &geometry);
     image_view = view;
-    sb_view_set_fill_type(view, SB_VIEW_FILL_TYPE_IMAGE);
+    sb_view_set_render_type(view, SB_VIEW_RENDER_TYPE_IMAGE);
     sb_view_add_event_listener(view, SB_EVENT_TYPE_POINTER_CLICK, on_click, NULL);
 
     sb_size_i_t image_size = { 256, 256 };

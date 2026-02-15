@@ -141,7 +141,7 @@ void sb_skia_image_fill(sb_image_t *image, const sb_color_t *color)
 {
     const sb_size_i_t *size = sb_image_size(image);
 
-    SkColorType color_type = kRGBA_8888_SkColorType; // 기본값
+    SkColorType color_type = kRGBA_8888_SkColorType;
     SkAlphaType alpha_type = kUnpremul_SkAlphaType;
 
     switch (sb_image_format(image)) {

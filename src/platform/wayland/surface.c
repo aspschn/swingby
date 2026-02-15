@@ -222,9 +222,9 @@ static void _set_uniform_resolution(GLuint program, const sb_size_t *resolution)
 static void _draw_recursive(sb_surface_t *surface,
                             sb_view_t *view)
 {
-    enum sb_view_fill_type fill_type = sb_view_fill_type(view);
+    enum sb_view_render_type render_type = sb_view_render_type(view);
 
-    if (fill_type == SB_VIEW_FILL_TYPE_SINGLE_COLOR) {
+    if (render_type == SB_VIEW_RENDER_TYPE_SINGLE_COLOR) {
         const sb_view_radius_t *radius = NULL;
         const sb_list_t *filters = NULL;
         {
@@ -246,7 +246,7 @@ static void _draw_recursive(sb_surface_t *surface,
             filters,
             sb_view_clip(view)
         );
-    } else if (fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
+    } else if (render_type == SB_VIEW_RENDER_TYPE_IMAGE) {
         sb_skia_draw_image2(surface->skia_renderer,
             sb_view_geometry(view), surface->scale, sb_view_image(view));
     }

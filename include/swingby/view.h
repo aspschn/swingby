@@ -26,9 +26,10 @@ typedef struct sb_view_radius_t {
     float bottom_left;
 } sb_view_radius_t;
 
-enum sb_view_fill_type {
-    SB_VIEW_FILL_TYPE_SINGLE_COLOR,
-    SB_VIEW_FILL_TYPE_IMAGE,
+enum sb_view_render_type {
+    SB_VIEW_RENDER_TYPE_SINGLE_COLOR,
+    SB_VIEW_RENDER_TYPE_IMAGE,
+    SB_VIEW_RENDER_TYPE_GLYPHS,
 };
 
 typedef struct sb_view_t sb_view_t;
@@ -55,7 +56,7 @@ const sb_rect_t* sb_view_geometry(const sb_view_t *view);
 SB_EXPORT
 void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry);
 
-/// \brief Get the color of the view if view's fill type is single color.
+/// \brief Get the color of the view if view's render type is single color.
 SB_EXPORT
 const sb_color_t* sb_view_color(const sb_view_t *view);
 
@@ -63,13 +64,13 @@ const sb_color_t* sb_view_color(const sb_view_t *view);
 SB_EXPORT
 void sb_view_set_color(sb_view_t *view, const sb_color_t *color);
 
-/// \brief Get the fill type of the view.
+/// \brief Get the render type of the view.
 SB_EXPORT
-enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view);
+enum sb_view_render_type sb_view_render_type(const sb_view_t *view);
 
-/// \brief Set the fill type of the view.
+/// \brief Set the render type of the view.
 SB_EXPORT
-void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type);
+void sb_view_set_render_type(sb_view_t *view, enum sb_view_render_type type);
 
 /// \brief Get the image of the view. Returns NULL if there is no image.
 SB_EXPORT
