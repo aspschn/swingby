@@ -107,7 +107,12 @@ void sb_skia_draw_rect2(sb_skia_renderer_t *renderer,
         rect->size.height * scale);
 
     SkPaint paint;
-    paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
+    SkColor4f sk_color_4f;
+    sk_color_4f.fR = color->r;
+    sk_color_4f.fG = color->g;
+    sk_color_4f.fB = color->b;
+    sk_color_4f.fA = color->a;
+    paint.setColor(sk_color_4f);
 
     // For restore stack.
     int save_count = 0;
@@ -131,12 +136,15 @@ void sb_skia_draw_rect2(sb_skia_renderer_t *renderer,
                 float radius = sb_filter_drop_shadow_radius(filter);
                 const sb_color_t *color = sb_filter_drop_shadow_color(filter);
 
-                auto sk_color = SkColorSetARGB(
-                    color->a, color->r, color->g, color->b);
+                SkColor4f sk_color;
+                sk_color.fR = color->r;
+                sk_color.fG = color->g;
+                sk_color.fB = color->b;
+                sk_color.fA = color->a;
                 sk_sp<SkImageFilter> shadow_filter = SkImageFilters::DropShadow(
                     offset->x, offset->y,
                     radius, radius,
-                    sk_color,
+                    sk_color.toSkColor(),
                     prev_filter,
                     {}
                 );

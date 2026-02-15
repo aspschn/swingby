@@ -49,10 +49,10 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     sb_log_debug("sb_view_new() - view: %p, parent: %p\n", view, parent);
     view->geometry.pos = geometry->pos;
     view->geometry.size = geometry->size;
-    view->_color.r = 255;
-    view->_color.g = 255;
-    view->_color.b = 255;
-    view->_color.a = 255;
+    view->_color.r = 1.0f;
+    view->_color.g = 1.0f;
+    view->_color.b = 1.0f;
+    view->_color.a = 1.0f;
 
     // Set initial radius.
     sb_view_radius_t radius = { 0.0f, 0.0f, 0.0f, 0.0f };
