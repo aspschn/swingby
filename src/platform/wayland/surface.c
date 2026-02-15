@@ -247,7 +247,7 @@ static void _draw_recursive(sb_surface_t *surface,
             sb_view_clip(view)
         );
     } else if (fill_type == SB_VIEW_FILL_TYPE_IMAGE) {
-        sb_skia_draw_image(surface->skia_renderer,
+        sb_skia_draw_image2(surface->skia_renderer,
             sb_view_geometry(view), surface->scale, sb_view_image(view));
     }
 

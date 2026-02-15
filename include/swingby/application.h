@@ -11,6 +11,7 @@
 #endif
 
 #include <swingby/common.h>
+#include <swingby/event.h>
 
 typedef struct sb_surface_t sb_surface_t;
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
@@ -103,5 +104,15 @@ void sb_application_set_nchittest_return(sb_application_t *application,
 
 SB_EXPORT
 int sb_application_exec(sb_application_t *application);
+
+SB_EXPORT
+void sb_application_add_event_listener(sb_application_t *application,
+                                       enum sb_event_type event_type,
+                                       sb_event_listener_t listener,
+                                       void *user_data);
+
+SB_EXPORT
+void sb_application_on_next_tick(sb_application_t *application,
+                                 sb_event_t *event);
 
 #endif /* _FOUNDATION_APPLICATION_H */

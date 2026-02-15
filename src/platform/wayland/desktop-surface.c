@@ -468,6 +468,13 @@ void sb_desktop_surface_on_resize(sb_desktop_surface_t *desktop_surface,
         SB_EVENT_TYPE_RESIZE, event);
 }
 
+void sb_desktop_surface_on_resize_request(sb_desktop_surface_t *desktop_surface,
+                                          sb_event_t *event)
+{
+    _event_listener_filter_for_each(desktop_surface->event_listeners,
+        SB_EVENT_TYPE_RESIZE_REQUEST, event);
+}
+
 void sb_desktop_surface_on_state_change(sb_desktop_surface_t *desktop_surface,
                                         sb_event_t *event)
 {
@@ -558,7 +565,7 @@ static void xdg_toplevel_configure_handler(void *data,
                 sb_event_t *event = sb_event_new(
                     SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
                     desktop_surface,
-                    SB_EVENT_TYPE_RESIZE);
+                    SB_EVENT_TYPE_RESIZE_REQUEST);
                 event->resize.old_size = *sb_surface_size(surface);
                 event->resize.size.width = width;
                 event->resize.size.height = height;

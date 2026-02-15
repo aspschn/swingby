@@ -53,7 +53,8 @@ void sb_event_set_propagation(sb_event_t *event, bool value)
 
 const sb_size_t* sb_event_resize_old_size(sb_event_t *event)
 {
-    if (event->type != SB_EVENT_TYPE_RESIZE) {
+    if (event->type != SB_EVENT_TYPE_RESIZE &&
+        event->type != SB_EVENT_TYPE_RESIZE_REQUEST) {
         sb_log_warn("Trying to access a resize info, but the event type is not SB_EVENT_TYPE_RESIZE\n");
     }
 
@@ -62,7 +63,8 @@ const sb_size_t* sb_event_resize_old_size(sb_event_t *event)
 
 const sb_size_t* sb_event_resize_size(sb_event_t *event)
 {
-    if (event->type != SB_EVENT_TYPE_RESIZE) {
+    if (event->type != SB_EVENT_TYPE_RESIZE &&
+        event->type != SB_EVENT_TYPE_RESIZE_REQUEST) {
         sb_log_warn("Trying to access a resize info, but the event type is not SB_EVENT_TYPE_RESIZE\n");
     }
 

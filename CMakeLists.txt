@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(swingby
-    VERSION 0.3.0
+    VERSION 0.4.0
     LANGUAGES C CXX
 )
 
@@ -21,6 +21,7 @@ set(SWINGBY_HEADERS
     include/swingby/desktop-surface.h
     include/swingby/view.h
     include/swingby/image.h
+    include/swingby/pixmap.h
     include/swingby/input.h
     include/swingby/cursor.h
     include/swingby/event.h
@@ -54,6 +55,7 @@ set(SWINGBY_SOURCES
     src/output.c
     src/view.c
     src/image.c
+    src/pixmap.c
     src/cursor.c
     src/event.c
     src/event-dispatcher.c
@@ -68,6 +70,7 @@ set(SWINGBY_SOURCES
     src/skia/load-image.cpp
     src/helpers/shared.h
     src/helpers/shared.c
+    src/impl/image-impl.cpp
 )
 
 add_library(swingby SHARED
