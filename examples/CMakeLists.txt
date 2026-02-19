@@ -14,6 +14,7 @@ add_subdirectory(12_parent)
 add_subdirectory(13_timer)
 add_subdirectory(14_scroll)
 add_subdirectory(15_popup)
+add_subdirectory(16_glyphs)
 
 add_custom_target(example)
 
@@ -34,4 +35,5 @@ add_dependencies(example
     example_timer
     example_scroll
     example_popup
+    example_glyphs
 )

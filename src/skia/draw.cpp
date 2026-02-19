@@ -280,7 +280,14 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
                 font->path,
                 font->ttc_index
             );
-            // TODO: Null check.
+            // Null check.
+            if (typeface == nullptr) {
+                sb_log_warn(
+                    "sb_skia_draw_glyphs - Invalid typeface: \"%s (%d)\".\n",
+                    font->path, font->ttc_index
+                );
+                return;
+            }
             SkFont sk_font = SkFont(typeface, font->size * scale);
 
             auto& run = builder.allocRunPos(sk_font, glyph_count);
