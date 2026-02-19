@@ -18,6 +18,7 @@ typedef struct sb_image_t sb_image_t;
 typedef struct sb_list_t sb_list_t;
 typedef struct sb_filter_t sb_filter_t;
 typedef struct sb_event_t sb_event_t;
+typedef struct sb_glyph_layout_t sb_glyph_layout_t;
 
 typedef struct sb_view_radius_t {
     float top_left;
@@ -79,6 +80,14 @@ sb_image_t* sb_view_image(sb_view_t *view);
 /// \brief Set the image of the view. Pass NULL to unset.
 SB_EXPORT
 void sb_view_set_image(sb_view_t *view, sb_image_t *image);
+
+/// \brief Get the glyph layout of the view.
+SB_EXPORT
+sb_glyph_layout_t* sb_view_glyph_layout(sb_view_t *view);
+
+/// \brief Set the glyph layout of the view.
+SB_EXPORT
+void sb_view_set_glyph_layout(sb_view_t *view, sb_glyph_layout_t *layout);
 
 /// \brief Get the radius of the view.
 SB_EXPORT

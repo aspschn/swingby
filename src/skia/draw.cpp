@@ -6,7 +6,12 @@
 #include "skia/include/core/SkBitmap.h"
 #include "skia/include/core/SkImage.h"
 #include "skia/include/core/SkCanvas.h"
+#include "skia/include/core/SkFontMgr.h"
+#include "skia/include/core/SkTypeface.h"
+#include "skia/include/core/SkFont.h"
+#include "skia/include/core/SkTextBlob.h"
 #include "skia/include/effects/SkImageFilters.h"
+#include "skia/include/ports/SkFontMgr_directory.h"
 
 #include "./renderer.h"
 #include "./raster-renderer.h"
@@ -15,6 +20,8 @@
 #include <swingby/view.h>
 #include <swingby/list.h>
 #include <swingby/filter.h>
+#include <swingby/glyph.h>
+#include <swingby/log.h>
 
 #include "../impl/image-impl.hpp"
 
@@ -245,6 +252,51 @@ void sb_skia_draw_image2(sb_skia_renderer_t *renderer,
     SkSamplingOptions sampling;
 
     canvas->drawImageRect(impl->sk_image(), sk_rect, sampling, nullptr);
+}
+
+void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
+                         const sb_rect_t *rect,
+                         uint32_t scale,
+                         const sb_glyph_layout_t *layout)
+{
+    SkCanvas *canvas = _get_canvas(renderer);
+
+    sk_sp<SkFontMgr> font_manager = SkFontMgr_New_Custom_Directory("/usr/share/fonts/");
+    SkTextBlobBuilder builder;
+
+    float total_x = 0.0f;
+    const sb_glyph_line_t **lines = sb_glyph_layout_lines(layout);
+    auto line_count = sb_glyph_layout_line_count(layout);
+    for (uint32_t i = 0; i < line_count; ++i) {
+        const sb_glyph_run_t **runs = sb_glyph_line_runs(lines[i]);
+        auto run_count = sb_glyph_line_run_count(lines[i]);
+        for (uint32_t j = 0; j < run_count; ++j) {
+            auto glyph_count = sb_glyph_run_count(runs[j]);
+            auto glyphs = sb_glyph_run_glyphs((sb_glyph_run_t*)runs[j]);
+
+            // Get font.
+            const sb_font_t *font = sb_glyph_run_font(runs[j]);
+            sk_sp<SkTypeface> typeface = font_manager->makeFromFile(
+                font->path,
+                font->ttc_index
+            );
+            // TODO: Null check.
+            SkFont sk_font = SkFont(typeface, font->size * scale);
+
+            auto& run = builder.allocRunPos(sk_font, glyph_count);
+            for (uint32_t i = 0; i < glyph_count; ++i) {
+                run.glyphs[i] = glyphs[i].id;
+                run.points()[i] = SkPoint::Make(total_x, glyphs[i].offset.y * scale);
+                total_x += (glyphs[i].advance * scale) + (glyphs[i].offset.x * scale);
+            }
+        }
+    }
+
+    sk_sp<SkTextBlob> blob = builder.make();
+
+    SkPaint paint;
+    paint.setColor(SK_ColorBLACK);
+    canvas->drawTextBlob(blob.get(), 0, 24, paint);
 }
 
 void sb_skia_clip_rect(sb_skia_renderer_t *renderer,

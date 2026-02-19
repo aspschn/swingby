@@ -13,6 +13,7 @@ typedef struct sb_skia_renderer_t sb_skia_renderer_t;
 
 typedef struct sb_view_radius_t sb_view_radius_t;
 typedef struct sb_list_t sb_list_t;
+typedef struct sb_glyph_layout_t sb_glyph_layout_t;
 
 void sb_skia_clear(sb_skia_renderer_t *renderer,
                    const sb_color_t *color);
@@ -52,6 +53,11 @@ void sb_skia_draw_image2(sb_skia_renderer_t *renderer,
                          const sb_rect_t *rect,
                          uint32_t scale,
                          const sb_image_t *image);
+
+void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
+                         const sb_rect_t *rect,
+                         uint32_t scale,
+                         const sb_glyph_layout_t *layout);
 
 void sb_skia_clip_rect(sb_skia_renderer_t *renderer,
                        const sb_rect_t *rect,

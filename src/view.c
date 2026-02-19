@@ -6,6 +6,7 @@
 #include <swingby/log.h>
 #include <swingby/surface.h>
 #include <swingby/image.h>
+#include <swingby/glyph.h>
 #include <swingby/filter.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
@@ -21,6 +22,7 @@ struct sb_view_t {
     sb_list_t *_children;
     enum sb_view_render_type render_type;
     sb_image_t *image;
+    sb_glyph_layout_t *glyph_layout;
     /// \brief Rectangle view radius.
     sb_view_radius_t radius;
     /// \brief View effect filters.
@@ -62,6 +64,7 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 
     view->render_type = SB_VIEW_RENDER_TYPE_SINGLE_COLOR;
     view->image = NULL;
+    view->glyph_layout = NULL;
 
     view->filters = sb_list_new();
 
@@ -153,6 +156,16 @@ sb_image_t* sb_view_image(sb_view_t *view)
 void sb_view_set_image(sb_view_t *view, sb_image_t *image)
 {
     view->image = image;
+}
+
+sb_glyph_layout_t* sb_view_glyph_layout(sb_view_t *view)
+{
+    return view->glyph_layout;
+}
+
+void sb_view_set_glyph_layout(sb_view_t *view, sb_glyph_layout_t *layout)
+{
+    view->glyph_layout = layout;
 }
 
 const sb_view_radius_t* sb_view_radius(const sb_view_t *view)
