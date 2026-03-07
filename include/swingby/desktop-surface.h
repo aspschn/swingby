@@ -122,6 +122,10 @@ void sb_desktop_surface_toplevel_set_minimized(
 void sb_desktop_surface_popup_set_position(
     sb_desktop_surface_t *desktop_surface, const sb_point_t *position);
 
+/// \brief Set grabbable property for popup desktop surface.
+void sb_desktop_surface_popup_set_grabbable(
+    sb_desktop_surface_t *desktop_surface, bool value);
+
 void sb_desktop_surface_popup_grab_for_button(
     sb_desktop_surface_t *desktop_surface);
 

@@ -33,6 +33,7 @@ struct sb_desktop_surface_t {
     } toplevel;
     struct {
         sb_point_t position;
+        bool grabbable;
     } popup;
     sb_list_t *event_listeners;
 };
@@ -158,6 +159,7 @@ sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
 
     d_surface->popup.position.x = 0;
     d_surface->popup.position.y = 0;
+    d_surface->popup.grabbable = false;
 
     d_surface->event_listeners = sb_list_new();
 
@@ -240,10 +242,6 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         xdg_popup_add_listener(desktop_surface->xdg_popup, &xdg_popup_listener,
             (void*)desktop_surface);
 
-        // Must commit and roundtrip.
-        sb_surface_commit(sb_desktop_surface_surface(desktop_surface));
-        wl_display_roundtrip(sb_application_wl_display(app));
-
         xdg_positioner_destroy(positioner);
     }
 
@@ -258,7 +256,14 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
             _set_toplevel_parent(desktop_surface->parent, desktop_surface);
         }
     } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
-        sb_surface_attach(desktop_surface->_surface);
+        // Show directly for a non grabbable popup.
+        if (!desktop_surface->popup.grabbable) {
+            // Must commit and roundtrip.
+            sb_surface_commit(sb_desktop_surface_surface(desktop_surface));
+            wl_display_roundtrip(sb_application_wl_display(app));
+
+            sb_surface_attach(desktop_surface->_surface);
+        }
     }
 
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
@@ -423,16 +428,30 @@ void sb_desktop_surface_popup_set_position(
     desktop_surface->popup.position = *position;
 }
 
+void sb_desktop_surface_popup_set_grabbable(
+    sb_desktop_surface_t *desktop_surface, bool value)
+{
+    desktop_surface->popup.grabbable = value;
+}
+
 void sb_desktop_surface_popup_grab_for_button(
     sb_desktop_surface_t *desktop_surface)
 {
     if (desktop_surface->xdg_popup == NULL) {
         return;
     }
+    if (desktop_surface->popup.grabbable == false) {
+        sb_log_warn("sb_desktop_surface_popup_grab_for_button"
+                    " - Popup is not set as grabbable.\n");
+        return;
+    }
+
     xdg_popup_grab(desktop_surface->xdg_popup,
         sb_application_wl_seat(sb_application_instance()),
         sb_application_pointer_button_serial(sb_application_instance()));
 
+    sb_surface_commit(desktop_surface->_surface);
+    wl_display_roundtrip(sb_application_wl_display(sb_application_instance()));
     sb_surface_attach(desktop_surface->_surface);
 }
 

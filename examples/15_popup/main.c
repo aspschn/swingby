@@ -57,6 +57,7 @@ static void on_click(sb_event_t *event, void *user_data)
 
     sb_view_t *popup_root_view = sb_surface_root_view(popup_surface);
     sb_view_set_color(popup_root_view, &color);
+    sb_desktop_surface_popup_set_grabbable(popup, true);
     sb_desktop_surface_show(popup);
     sb_desktop_surface_popup_grab_for_button(popup);
 
