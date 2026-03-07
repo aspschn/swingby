@@ -257,6 +257,8 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         if (desktop_surface->parent != NULL) {
             _set_toplevel_parent(desktop_surface->parent, desktop_surface);
         }
+    } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
+        sb_surface_attach(desktop_surface->_surface);
     }
 
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
