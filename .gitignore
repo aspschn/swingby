@@ -11,3 +11,4 @@ include/wayland-protocols/unstable/*.c
 
 
 .idea
+.vscode/
