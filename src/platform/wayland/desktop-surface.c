@@ -551,7 +551,7 @@ static void xdg_toplevel_configure_handler(void *data,
     bool fullscreen = false;
     sb_desktop_surface_toplevel_state_flags curr_states = 0;
 
-    void *it;
+    enum xdg_toplevel_state *it;
     wl_array_for_each(it, states) {
         enum xdg_toplevel_state state = *(enum xdg_toplevel_state*)it;
         sb_log_debug("wl_array_for_each() - state: %d, %dx%d\n", state, width, height);

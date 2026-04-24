@@ -98,6 +98,11 @@ if(SWINGBY_DEBUG)
     add_definitions(-DSWINGBY_DEBUG)
 endif()
 
+if(SWINGBY_ASAN)
+    target_compile_options(swingby PRIVATE -fsanitize=address -g)
+    target_link_options(swingby PRIVATE -fsanitize=address)
+endif()
+
 target_link_options(swingby
     ${SWINGBY_PLATFORM_LINK_OPTIONS}
 )

@@ -76,4 +76,8 @@ sb_egl_context_t* sb_egl_context_new()
 void sb_egl_context_free(sb_egl_context_t *context)
 {
     eglDestroyContext(context->egl_display, context->egl_context);
+    eglTerminate(context->egl_display);
+    eglReleaseThread();
+
+    free(context);
 }
