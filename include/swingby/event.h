@@ -33,6 +33,8 @@ enum sb_event_type {
     SB_EVENT_TYPE_KEYBOARD_KEY_PRESS        = 32,
     SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE      = 33,
     SB_EVENT_TYPE_TEXT_INPUT                = 40,
+    /// \brief Time to paint. Only for `SB_VIEW_RENDER_TYPE_CANVAS`.
+    SB_EVENT_TYPE_PAINT                     = 60,
     SB_EVENT_TYPE_REQUEST_UPDATE            = 70,
     SB_EVENT_TYPE_SHOW                      = 80,
     SB_EVENT_TYPE_HIDE                      = 81,

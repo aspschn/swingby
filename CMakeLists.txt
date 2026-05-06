@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(swingby
-    VERSION 0.5.0
+    VERSION 0.6.0
     LANGUAGES C CXX
 )
 
@@ -24,6 +24,8 @@ set(SWINGBY_HEADERS
     include/swingby/pixmap.h
     include/swingby/font.h
     include/swingby/glyph.h
+    include/swingby/paint.h
+    include/swingby/canvas.h
     include/swingby/input.h
     include/swingby/cursor.h
     include/swingby/event.h
@@ -71,6 +73,7 @@ set(SWINGBY_SOURCES
     src/skia/draw.cpp
     src/skia/load-image.h
     src/skia/load-image.cpp
+    src/skia/canvas.cpp
     src/helpers/shared.h
     src/helpers/shared.c
     src/impl/image-impl.cpp

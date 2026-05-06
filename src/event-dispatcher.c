@@ -335,6 +335,10 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 sb_view_on_text_input(event->target, event);
                 sb_event_free(event);
                 break;
+            case SB_EVENT_TYPE_PAINT:
+                // sb_view_on_paint(event->target, event);
+                // sb_event_free(event);
+                break;
             default:
                 break;
             }
