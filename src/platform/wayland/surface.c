@@ -277,6 +277,9 @@ static void _draw_recursive(sb_surface_t *surface,
         // This event must be consumed here. Not on event dispatcher.
         sb_view_on_paint(view, event);
         sb_event_free(event);
+
+        sb_canvas_free(canvas);
+        sb_view_set_canvas(view, NULL);
     }
 
     // Child views.
