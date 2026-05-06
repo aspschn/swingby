@@ -783,6 +783,9 @@ int sb_application_exec(sb_application_t *application)
         return 1;
     }
 
+    sb_log_debug("Destroying application resources ...\n");
+    sb_egl_context_free(application->egl_context);
+
     sb_log_debug("Quit application.\n");
 
     return 0;

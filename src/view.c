@@ -6,6 +6,7 @@
 #include <swingby/log.h>
 #include <swingby/surface.h>
 #include <swingby/image.h>
+#include <swingby/glyph.h>
 #include <swingby/filter.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
@@ -16,11 +17,12 @@ struct sb_view_t {
     sb_surface_t *_surface;
     sb_rect_t geometry;
     sb_view_t *_parent;
-    /// \brief View's color if the view fill type is single color.
+    /// \brief View's color if the view render type is single color.
     sb_color_t _color;
     sb_list_t *_children;
-    enum sb_view_fill_type fill_type;
+    enum sb_view_render_type render_type;
     sb_image_t *image;
+    sb_glyph_layout_t *glyph_layout;
     /// \brief Rectangle view radius.
     sb_view_radius_t radius;
     /// \brief View effect filters.
@@ -49,10 +51,10 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     sb_log_debug("sb_view_new() - view: %p, parent: %p\n", view, parent);
     view->geometry.pos = geometry->pos;
     view->geometry.size = geometry->size;
-    view->_color.r = 255;
-    view->_color.g = 255;
-    view->_color.b = 255;
-    view->_color.a = 255;
+    view->_color.r = 1.0f;
+    view->_color.g = 1.0f;
+    view->_color.b = 1.0f;
+    view->_color.a = 1.0f;
 
     // Set initial radius.
     sb_view_radius_t radius = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -60,8 +62,9 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 
     view->_children = sb_list_new();
 
-    view->fill_type = SB_VIEW_FILL_TYPE_SINGLE_COLOR;
+    view->render_type = SB_VIEW_RENDER_TYPE_SINGLE_COLOR;
     view->image = NULL;
+    view->glyph_layout = NULL;
 
     view->filters = sb_list_new();
 
@@ -135,14 +138,14 @@ const sb_color_t* sb_view_color(const sb_view_t *view)
     return &view->_color;
 }
 
-enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view)
+enum sb_view_render_type sb_view_render_type(const sb_view_t *view)
 {
-    return view->fill_type;
+    return view->render_type;
 }
 
-void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type)
+void sb_view_set_render_type(sb_view_t *view, enum sb_view_render_type type)
 {
-    view->fill_type = fill_type;
+    view->render_type = type;
 }
 
 sb_image_t* sb_view_image(sb_view_t *view)
@@ -153,6 +156,16 @@ sb_image_t* sb_view_image(sb_view_t *view)
 void sb_view_set_image(sb_view_t *view, sb_image_t *image)
 {
     view->image = image;
+}
+
+sb_glyph_layout_t* sb_view_glyph_layout(sb_view_t *view)
+{
+    return view->glyph_layout;
+}
+
+void sb_view_set_glyph_layout(sb_view_t *view, sb_glyph_layout_t *layout)
+{
+    view->glyph_layout = layout;
 }
 
 const sb_view_radius_t* sb_view_radius(const sb_view_t *view)

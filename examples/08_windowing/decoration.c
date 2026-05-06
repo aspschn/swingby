@@ -42,30 +42,30 @@ struct decoration* decoration_new(struct window *window)
     shadow_geometry.size.height = 200.0f;
     decoration->shadow.view = sb_view_new(decoration->view, &shadow_geometry);
     sb_color_t shadow_color;
-    shadow_color.r = 0;
-    shadow_color.g = 0;
-    shadow_color.b = 0;
-    shadow_color.a = 100;
+    shadow_color.r = 0.0f;
+    shadow_color.g = 0.0f;
+    shadow_color.b = 0.0f;
+    shadow_color.a = 0.4f;
     sb_view_set_color(decoration->shadow.view, &shadow_color);
 
     // Resize.
     decoration->resize.thickness = 5.0f;
     decoration->resize.view = sb_view_new(decoration->view, &g);
     sb_color_t resize_color; // Must transparent. Green for debug.
-    resize_color.r = 0;
-    resize_color.g = 255;
-    resize_color.b = 0;
-    resize_color.a = 255;
+    resize_color.r = 0.0f;
+    resize_color.g = 1.0f;
+    resize_color.b = 0.0f;
+    resize_color.a = 1.0f;
     sb_view_set_color(decoration->resize.view, &resize_color);
 
     // Border.
     decoration->border.thickness = 1.0f;
     decoration->border.view = sb_view_new(decoration->view, &g);
     sb_color_t border_color;
-    border_color.r = 0;
-    border_color.g = 0;
-    border_color.b = 0;
-    border_color.a = 255;
+    border_color.r = 0.0f;
+    border_color.g = 0.0f;
+    border_color.b = 0.0f;
+    border_color.a = 1.0f;
     sb_view_set_color(decoration->border.view, &border_color);
 
     // Title bar.

@@ -22,3 +22,8 @@ target_include_directories(example_${EXAMPLE_NAME}
 target_link_libraries(example_${EXAMPLE_NAME}
     swingby
 )
+
+if(SWINGBY_ASAN)
+    target_compile_options(example_${EXAMPLE_NAME} PRIVATE -fsanitize=address -g)
+    target_link_options(example_${EXAMPLE_NAME} PRIVATE -fsanitize=address)
+endif()

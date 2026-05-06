@@ -23,10 +23,10 @@ static void on_timeout(sb_event_t *event, void *user_data)
         srand(time(NULL));
 
         sb_color_t color;
-        color.r = rand() % 255;
-        color.g = rand() % 255;
-        color.b = rand() % 255;
-        color.a = 255;
+        color.r = (rand() % 255) / 255.0f;
+        color.g = (rand() % 255) / 255.0f;
+        color.b = (rand() % 255) / 255.0f;
+        color.a = 1.0f;
 
         sb_view_set_color(color_view, &color);
     }

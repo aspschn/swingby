@@ -1,21 +1,19 @@
-#ifndef _FOUNDATION_COLOR_H
-#define _FOUNDATION_COLOR_H
-
-#include <stdint.h>
+#ifndef _SWINGBY_COLOR_H
+#define _SWINGBY_COLOR_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct sb_color_t {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a;
+    float r;
+    float g;
+    float b;
+    float a;
 } sb_color_t;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _FOUNDATION_COLOR_H */
+#endif /* _SWINGBY_COLOR_H */

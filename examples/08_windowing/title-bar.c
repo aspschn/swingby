@@ -20,10 +20,10 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     sb_view_t *view = sb_view_new(parent, &geometry);
 
     sb_color_t color;
-    color.r = 180;
-    color.g = 180;
-    color.b = 180;
-    color.a = 255;
+    color.r = 0.7f;
+    color.g = 0.7f;
+    color.b = 0.7f;
+    color.a = 1.0f;
 
     sb_view_set_color(view, &color);
 
@@ -66,10 +66,10 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     geometry.pos.x += TITLE_BAR_BUTTON_SIZE + 3;
     title_bar->maximize_restore_button = sb_view_new(title_bar->view,
         &geometry);
-    button_color.r = 0;
-    button_color.g = 200;
-    button_color.b = 0;
-    button_color.a = 255;
+    button_color.r = 0.0f;
+    button_color.g = 0.8f;
+    button_color.b = 0.0f;
+    button_color.a = 1.0f;
     sb_view_set_color(title_bar->maximize_restore_button, &button_color);
 
     title_bar->pressed = false;
@@ -106,10 +106,10 @@ void on_close_button_pointer_leave(sb_event_t *event, void *user_data)
 sb_color_t close_button_color()
 {
     sb_color_t color;
-    color.r = 255;
-    color.g = 0;
-    color.b = 0;
-    color.a = 255;
+    color.r = 1.0f;
+    color.g = 0.0f;
+    color.b = 0.0f;
+    color.a = 1.0f;
 
     return color;
 }
@@ -117,10 +117,10 @@ sb_color_t close_button_color()
 sb_color_t close_button_color_hover()
 {
     sb_color_t color;
-    color.r = 255;
-    color.g = 100;
-    color.b = 100;
-    color.a = 255;
+    color.r = 1.0f;
+    color.g = 0.45f;
+    color.b = 0.45f;
+    color.a = 1.0f;
 
     return color;
 }
@@ -128,10 +128,10 @@ sb_color_t close_button_color_hover()
 sb_color_t minimize_button_color()
 {
     sb_color_t color;
-    color.r = 255;
-    color.g = 255;
-    color.b = 0;
-    color.a = 255;
+    color.r = 1.0f;
+    color.g = 1.0f;
+    color.b = 0.0f;
+    color.a = 1.0f;
 
     return color;
 }

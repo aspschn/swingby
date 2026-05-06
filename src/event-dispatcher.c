@@ -256,6 +256,7 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 break;
             case SB_EVENT_TYPE_RESIZE:
                 sb_surface_on_resize(event->target, event);
+                sb_event_free(event);
                 break;
             case SB_EVENT_TYPE_KEYBOARD_KEY_PRESS:
                 sb_surface_on_keyboard_key_press(event->target, event);
@@ -277,6 +278,7 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 break;
             case SB_EVENT_TYPE_PREFERRED_SCALE:
                 sb_surface_on_preferred_scale(event->target, event);
+                sb_event_free(event);
                 break;
             default:
                 break;
@@ -295,18 +297,22 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
             case SB_EVENT_TYPE_POINTER_MOVE:
                 sb_view_on_pointer_move(event->target, event);
                 _propagate_pointer_event(event->target, event);
+                sb_event_free(event);
                 break;
             case SB_EVENT_TYPE_POINTER_PRESS:
                 sb_view_on_pointer_press(event->target, event);
                 _propagate_pointer_event(event->target, event);
+                sb_event_free(event);
                 break;
             case SB_EVENT_TYPE_POINTER_RELEASE:
                 sb_view_on_pointer_release(event->target, event);
                 _propagate_pointer_event(event->target, event);
+                sb_event_free(event);
                 break;
             case SB_EVENT_TYPE_POINTER_CLICK:
                 sb_view_on_pointer_click(event->target, event);
                 _propagate_pointer_event(event->target, event);
+                sb_event_free(event);
                 break;
             case SB_EVENT_TYPE_POINTER_DOUBLE_CLICK:
                 sb_view_on_pointer_double_click(event->target, event);

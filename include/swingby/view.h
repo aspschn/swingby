@@ -18,6 +18,7 @@ typedef struct sb_image_t sb_image_t;
 typedef struct sb_list_t sb_list_t;
 typedef struct sb_filter_t sb_filter_t;
 typedef struct sb_event_t sb_event_t;
+typedef struct sb_glyph_layout_t sb_glyph_layout_t;
 
 typedef struct sb_view_radius_t {
     float top_left;
@@ -26,9 +27,10 @@ typedef struct sb_view_radius_t {
     float bottom_left;
 } sb_view_radius_t;
 
-enum sb_view_fill_type {
-    SB_VIEW_FILL_TYPE_SINGLE_COLOR,
-    SB_VIEW_FILL_TYPE_IMAGE,
+enum sb_view_render_type {
+    SB_VIEW_RENDER_TYPE_SINGLE_COLOR,
+    SB_VIEW_RENDER_TYPE_IMAGE,
+    SB_VIEW_RENDER_TYPE_GLYPHS,
 };
 
 typedef struct sb_view_t sb_view_t;
@@ -55,7 +57,7 @@ const sb_rect_t* sb_view_geometry(const sb_view_t *view);
 SB_EXPORT
 void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry);
 
-/// \brief Get the color of the view if view's fill type is single color.
+/// \brief Get the color of the view if view's render type is single color.
 SB_EXPORT
 const sb_color_t* sb_view_color(const sb_view_t *view);
 
@@ -63,13 +65,13 @@ const sb_color_t* sb_view_color(const sb_view_t *view);
 SB_EXPORT
 void sb_view_set_color(sb_view_t *view, const sb_color_t *color);
 
-/// \brief Get the fill type of the view.
+/// \brief Get the render type of the view.
 SB_EXPORT
-enum sb_view_fill_type sb_view_fill_type(const sb_view_t *view);
+enum sb_view_render_type sb_view_render_type(const sb_view_t *view);
 
-/// \brief Set the fill type of the view.
+/// \brief Set the render type of the view.
 SB_EXPORT
-void sb_view_set_fill_type(sb_view_t *view, enum sb_view_fill_type fill_type);
+void sb_view_set_render_type(sb_view_t *view, enum sb_view_render_type type);
 
 /// \brief Get the image of the view. Returns NULL if there is no image.
 SB_EXPORT
@@ -78,6 +80,14 @@ sb_image_t* sb_view_image(sb_view_t *view);
 /// \brief Set the image of the view. Pass NULL to unset.
 SB_EXPORT
 void sb_view_set_image(sb_view_t *view, sb_image_t *image);
+
+/// \brief Get the glyph layout of the view.
+SB_EXPORT
+sb_glyph_layout_t* sb_view_glyph_layout(sb_view_t *view);
+
+/// \brief Set the glyph layout of the view.
+SB_EXPORT
+void sb_view_set_glyph_layout(sb_view_t *view, sb_glyph_layout_t *layout);
 
 /// \brief Get the radius of the view.
 SB_EXPORT

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(swingby
-    VERSION 0.4.0
+    VERSION 0.5.0
     LANGUAGES C CXX
 )
 
@@ -22,6 +22,8 @@ set(SWINGBY_HEADERS
     include/swingby/view.h
     include/swingby/image.h
     include/swingby/pixmap.h
+    include/swingby/font.h
+    include/swingby/glyph.h
     include/swingby/input.h
     include/swingby/cursor.h
     include/swingby/event.h
@@ -56,6 +58,7 @@ set(SWINGBY_SOURCES
     src/view.c
     src/image.c
     src/pixmap.c
+    src/glyph.c
     src/cursor.c
     src/event.c
     src/event-dispatcher.c
@@ -71,6 +74,9 @@ set(SWINGBY_SOURCES
     src/helpers/shared.h
     src/helpers/shared.c
     src/impl/image-impl.cpp
+    src/impl/glyph-impl.h
+    src/impl/glyph-impl.hpp
+    src/impl/glyph-impl.cpp
 )
 
 add_library(swingby SHARED
@@ -90,6 +96,11 @@ string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
 if(SWINGBY_DEBUG)
     add_definitions(-DSWINGBY_DEBUG)
+endif()
+
+if(SWINGBY_ASAN)
+    target_compile_options(swingby PRIVATE -fsanitize=address -g)
+    target_link_options(swingby PRIVATE -fsanitize=address)
 endif()
 
 target_link_options(swingby
