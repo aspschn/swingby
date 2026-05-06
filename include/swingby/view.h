@@ -19,6 +19,7 @@ typedef struct sb_list_t sb_list_t;
 typedef struct sb_filter_t sb_filter_t;
 typedef struct sb_event_t sb_event_t;
 typedef struct sb_glyph_layout_t sb_glyph_layout_t;
+typedef struct sb_canvas_t sb_canvas_t;
 
 typedef struct sb_view_radius_t {
     float top_left;
@@ -105,6 +106,14 @@ void sb_view_add_filter(sb_view_t *view, const sb_filter_t *filter);
 /// \brief Get the list of filters of the view.
 SB_EXPORT
 const sb_list_t* sb_view_filters(const sb_view_t *view);
+
+/// \brief Get the canvas of the view.
+SB_EXPORT
+sb_canvas_t* sb_view_canvas(const sb_view_t *view);
+
+/// \brief Set the canvas of the view.
+SB_EXPORT
+void sb_view_set_canvas(sb_view_t *view, const sb_canvas_t *canvas);
 
 /// \brief Get the clip property of the view.
 SB_EXPORT
