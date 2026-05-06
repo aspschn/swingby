@@ -15,6 +15,10 @@ extern "C" {
 SB_EXPORT
 sb_canvas_t* sb_canvas_new(void *sk_canvas);
 
+/// \brief Set surface scale factor.
+SB_EXPORT
+void sb_canvas_set_scale(sb_canvas_t *canvas, float scale);
+
 /// \brief Get the default paint of the canvas.
 SB_EXPORT
 sb_paint_t* sb_canvas_paint(sb_canvas_t *canvas);

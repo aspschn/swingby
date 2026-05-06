@@ -13,6 +13,7 @@ extern "C" {
 struct sb_canvas_t {
     SkCanvas *sk_canvas;
     sb_paint_t paint;
+    float scale;
 };
 
 sb_canvas_t* sb_canvas_new(void *sk_canvas)
@@ -21,8 +22,14 @@ sb_canvas_t* sb_canvas_new(void *sk_canvas)
 
     canvas->sk_canvas = (SkCanvas*)sk_canvas;
     canvas->paint.fill_color = sb_color_t { .0f, .0f, .0f, .0f };
+    canvas->scale = 1.0f;
 
     return canvas;
+}
+
+void sb_canvas_set_scale(sb_canvas_t *canvas, float scale)
+{
+    canvas->scale = scale;
 }
 
 sb_paint_t* sb_canvas_paint(sb_canvas_t *canvas)
@@ -34,9 +41,11 @@ void sb_canvas_draw_rect(sb_canvas_t *canvas,
                          const sb_rect_t *rect,
                          const sb_paint_t *paint)
 {
+    const float scale = canvas->scale;
+
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x, rect->pos.y,
-        rect->size.width, rect->size.height);
+        rect->pos.x * scale, rect->pos.y * scale,
+        rect->size.width * scale, rect->size.height * scale);
 
     SkPaint sk_paint;
 
