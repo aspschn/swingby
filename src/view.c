@@ -23,6 +23,7 @@ struct sb_view_t {
     enum sb_view_render_type render_type;
     sb_image_t *image;
     sb_glyph_layout_t *glyph_layout;
+    sb_canvas_t *canvas;
     /// \brief Rectangle view radius.
     sb_view_radius_t radius;
     /// \brief View effect filters.
@@ -65,6 +66,7 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     view->render_type = SB_VIEW_RENDER_TYPE_SINGLE_COLOR;
     view->image = NULL;
     view->glyph_layout = NULL;
+    view->canvas = NULL;
 
     view->filters = sb_list_new();
 
@@ -190,6 +192,16 @@ void sb_view_add_filter(sb_view_t *view, const sb_filter_t *filter)
 const sb_list_t* sb_view_filters(const sb_view_t *view)
 {
     return view->filters;
+}
+
+sb_canvas_t* sb_view_canvas(const sb_view_t *view)
+{
+    return view->canvas;
+}
+
+void sb_view_set_canvas(sb_view_t *view, const sb_canvas_t *canvas)
+{
+    view->canvas = canvas;
 }
 
 sb_list_t* sb_view_children(sb_view_t *view)
@@ -421,4 +433,10 @@ void sb_view_on_text_input(sb_view_t *view, sb_event_t *event)
 {
     _event_listener_filter_for_each(view->event_listeners,
         SB_EVENT_TYPE_TEXT_INPUT, event);
+}
+
+void sb_view_on_paint(sb_view_t *view, sb_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        SB_EVENT_TYPE_PAINT, event);
 }

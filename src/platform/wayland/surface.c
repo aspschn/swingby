@@ -22,6 +22,7 @@
 #include <swingby/application.h>
 #include <swingby/view.h>
 #include <swingby/image.h>
+#include <swingby/canvas.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
 
@@ -256,6 +257,29 @@ static void _draw_recursive(sb_surface_t *surface,
             surface->scale,
             sb_view_glyph_layout(view)
         );
+    } else if (render_type == SB_VIEW_RENDER_TYPE_CANVAS) {
+        sb_application_t *app = sb_application_instance();
+
+        // Get canvas.
+        void *renderer = sb_skia_renderer_current(surface->skia_renderer);
+        sb_skia_gl_renderer_t *gl_renderer = (sb_skia_gl_renderer_t*)renderer;
+        void *sk_canvas = sb_skia_gl_renderer_canvas(gl_renderer);
+
+        // Set the canvas to the view.
+        sb_canvas_t *canvas = sb_canvas_new(sk_canvas);
+        sb_canvas_set_scale(canvas, surface->scale);
+        sb_view_set_canvas(view, canvas);
+
+        // Post paint event.
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+            view, SB_EVENT_TYPE_PAINT);
+        // sb_application_post_event(app, event);
+        // This event must be consumed here. Not on event dispatcher.
+        sb_view_on_paint(view, event);
+        sb_event_free(event);
+
+        sb_canvas_free(canvas);
+        sb_view_set_canvas(view, NULL);
     }
 
     // Child views.
@@ -327,7 +351,7 @@ void _draw_frame(sb_surface_t *surface)
             surface->_size.height * surface->scale
         );
 
-        sb_color_t clear_color = { 0x00, 0x0, 0x00, 0x00 };
+        sb_color_t clear_color = { 0.0f, 0.0f, 0.0f, 0.0f };
         sb_skia_clear(surface->skia_renderer, &clear_color);
 
         _draw_recursive(surface, surface->_root_view);
