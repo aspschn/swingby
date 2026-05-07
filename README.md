@@ -75,7 +75,7 @@ Additionally, since it uses Skia, you need to build Skia first.
 To build Skia, follow the below commands.
 
 ```sh
-$ git submodule update --init --recursive
+$ git submodule update --init --recursive --depth 1
 $ make build-skia
 ```
 
