@@ -35,6 +35,8 @@ enum sb_event_type {
     SB_EVENT_TYPE_TEXT_INPUT                = 40,
     /// \brief Time to paint. Only for `SB_VIEW_RENDER_TYPE_CANVAS`.
     SB_EVENT_TYPE_PAINT                     = 60,
+    /// \brief Time to render directly with GL or Vulkan (not yet).
+    SB_EVENT_TYPE_DIRECT_RENDER             = 61,
     SB_EVENT_TYPE_REQUEST_UPDATE            = 70,
     SB_EVENT_TYPE_SHOW                      = 80,
     SB_EVENT_TYPE_HIDE                      = 81,
