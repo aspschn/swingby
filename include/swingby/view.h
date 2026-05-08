@@ -33,6 +33,7 @@ enum sb_view_render_type {
     SB_VIEW_RENDER_TYPE_IMAGE,
     SB_VIEW_RENDER_TYPE_GLYPHS,
     SB_VIEW_RENDER_TYPE_CANVAS,
+    SB_VIEW_RENDER_TYPE_GL,
 };
 
 typedef struct sb_view_t sb_view_t;

@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-typedef struct sb_egl_context_t sb_egl_context_t;
+typedef struct sb_egl_t sb_egl_t;
+typedef sb_egl_t sb_egl_context_t;
 
 typedef struct sb_skia_gl_renderer_t sb_skia_gl_renderer_t;
 
