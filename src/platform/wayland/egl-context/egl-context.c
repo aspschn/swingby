@@ -33,6 +33,7 @@ sb_egl_t* sb_egl_new()
         8,
         EGL_ALPHA_SIZE,
         8,
+        EGL_DEPTH_SIZE, 1,
         EGL_RENDERABLE_TYPE,
         EGL_OPENGL_BIT,
         EGL_NONE,
