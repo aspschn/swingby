@@ -4,7 +4,12 @@
 
 #include <swingby/application.h>
 
-sb_egl_context_t* sb_egl_context_new()
+sb_egl_t* sb_egl_context_new()
+{
+    return sb_egl_new();
+}
+
+sb_egl_t* sb_egl_new()
 {
     sb_egl_context_t *context;
 
@@ -28,6 +33,7 @@ sb_egl_context_t* sb_egl_context_new()
         8,
         EGL_ALPHA_SIZE,
         8,
+        EGL_DEPTH_SIZE, 1,
         EGL_RENDERABLE_TYPE,
         EGL_OPENGL_BIT,
         EGL_NONE,
@@ -75,9 +81,14 @@ sb_egl_context_t* sb_egl_context_new()
 
 void sb_egl_context_free(sb_egl_context_t *context)
 {
-    eglDestroyContext(context->egl_display, context->egl_context);
-    eglTerminate(context->egl_display);
+    return sb_egl_free(context);
+}
+
+void sb_egl_free(sb_egl_t *egl)
+{
+    eglDestroyContext(egl->egl_display, egl->egl_context);
+    eglTerminate(egl->egl_display);
     eglReleaseThread();
 
-    free(context);
+    free(egl);
 }

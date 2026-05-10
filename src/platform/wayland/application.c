@@ -740,6 +740,11 @@ sb_egl_context_t* sb_application_egl_context(sb_application_t *application)
     return application->egl_context;
 }
 
+sb_egl_context_t* sb_application_egl(sb_application_t *application)
+{
+    return application->egl_context;
+}
+
 int sb_application_exec(sb_application_t *application)
 {
     int err = wl_display_dispatch(application->_wl_display);

@@ -18,7 +18,8 @@ typedef struct sb_desktop_surface_t sb_desktop_surface_t;
 typedef struct sb_event_t sb_event_t;
 typedef struct sb_list_t sb_list_t;
 
-typedef struct sb_egl_context_t sb_egl_context_t;
+typedef struct sb_egl_t sb_egl_t;
+typedef sb_egl_t sb_egl_context_t;
 typedef struct sb_d3d_global_context_t sb_d3d_global_context_t;
 
 /// \brief A global application object.
@@ -87,7 +88,10 @@ struct wl_seat* sb_application_wl_seat(sb_application_t *application);
 struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
     sb_application_t *application);
 
-sb_egl_context_t* sb_application_egl_context(sb_application_t *application);
+sb_egl_context_t* sb_application_egl_context(sb_application_t *application)
+    __attribute__((deprecated("use sb_application_egl() instead.")));
+
+sb_egl_context_t* sb_application_egl(sb_application_t *application);
 
 /// \brief Get the `WNDCLASS` of the application.
 ///

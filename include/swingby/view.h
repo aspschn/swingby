@@ -33,6 +33,7 @@ enum sb_view_render_type {
     SB_VIEW_RENDER_TYPE_IMAGE,
     SB_VIEW_RENDER_TYPE_GLYPHS,
     SB_VIEW_RENDER_TYPE_CANVAS,
+    SB_VIEW_RENDER_TYPE_GL,
 };
 
 typedef struct sb_view_t sb_view_t;
@@ -193,6 +194,8 @@ void sb_view_on_keyboard_key_release(sb_view_t *view, sb_event_t *event);
 void sb_view_on_text_input(sb_view_t *view, sb_event_t *event);
 
 void sb_view_on_paint(sb_view_t *view, sb_event_t *event);
+
+void sb_view_on_render(sb_view_t *view, sb_event_t *event);
 
 #ifdef __cplusplus
 }
