@@ -280,6 +280,22 @@ static void _draw_recursive(sb_surface_t *surface,
 
         sb_canvas_free(canvas);
         sb_view_set_canvas(view, NULL);
+    } else if (render_type == SB_VIEW_RENDER_TYPE_GL) {
+        // Get renderer.
+        void *renderer = sb_skia_renderer_current(surface->skia_renderer);
+        sb_skia_gl_renderer_t *gl_renderer = (sb_skia_gl_renderer_t*)renderer;
+
+        // Flush and submit.
+        sb_skia_gl_renderer_flush_and_submit(gl_renderer);
+
+        // This event must be consumed here. Same as PAINT event type.
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
+            view, SB_EVENT_TYPE_DIRECT_RENDER);
+        sb_view_on_render(view, event);
+        sb_event_free(event);
+
+        // Reset context.
+        sb_skia_gl_renderer_reset_context(gl_renderer);
     }
 
     // Child views.

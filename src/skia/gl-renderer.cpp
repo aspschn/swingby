@@ -99,6 +99,16 @@ void sb_skia_gl_renderer_make_image_texture(sb_skia_gl_renderer_t *renderer,
     image_impl->set_sk_image(sk_image);
 }
 
+void sb_skia_gl_renderer_flush_and_submit(sb_skia_gl_renderer_t *renderer)
+{
+    renderer->direct_context->flushAndSubmit();
+}
+
+void sb_skia_gl_renderer_reset_context(sb_skia_gl_renderer_t *renderer)
+{
+    renderer->direct_context->resetContext();
+}
+
 void sb_skia_gl_renderer_begin(sb_skia_gl_renderer_t *renderer,
                                sb_egl_context_t *egl_context,
                                EGLSurface egl_surface,

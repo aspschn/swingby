@@ -440,3 +440,9 @@ void sb_view_on_paint(sb_view_t *view, sb_event_t *event)
     _event_listener_filter_for_each(view->event_listeners,
         SB_EVENT_TYPE_PAINT, event);
 }
+
+void sb_view_on_render(sb_view_t *view, sb_event_t *event)
+{
+    _event_listener_filter_for_each(view->event_listeners,
+        SB_EVENT_TYPE_DIRECT_RENDER, event);
+}
