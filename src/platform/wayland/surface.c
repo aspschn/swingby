@@ -179,47 +179,6 @@ static void _raster_init(sb_surface_t *surface)
     surface->wl_shm_pool = NULL;
 }
 
-/// \brief Calculate points used in the vertex shader based on the rect.
-///
-/// The vertex shader requires four points (top-left, bottom-left,
-/// bottom-right, top-right).
-/// This function calculate that points in a display coordinate. Then the
-/// vertex shader converts each point to the OpenGL coordinate (from -1.0 to
-/// 1.0).
-static void _calc_points(const sb_rect_t *rect, float *points)
-{
-    float x = rect->pos.x;
-    float y = rect->pos.y;
-    float width = rect->size.width;
-    float height = rect->size.height;
-
-    // Top-left.
-    points[0] = x;
-    points[1] = y;
-    // Bottom-left.
-    points[3] = x;
-    points[4] = y + height;
-    // Bottom-right.
-    points[6] = x + width;
-    points[7] = y + height;
-    // Top-right.
-    points[9] = x + width;
-    points[10] = y;
-}
-
-/// \brief Set the uniform variable `resolution`.
-///
-/// Uniform `resolution` used in the vertex shader to calculate OpenGL
-/// coordinate.
-///
-/// The `resolution` should be same as surface's width and height.
-static void _set_uniform_resolution(GLuint program, const sb_size_t *resolution)
-{
-    GLuint location = glGetUniformLocation(program, "resolution");
-    float resolution_u[2] = { resolution->width, resolution->height };
-    glUniform2fv(location, 1, resolution_u);
-}
-
 static void _draw_recursive(sb_surface_t *surface,
                             sb_view_t *view)
 {
@@ -258,8 +217,6 @@ static void _draw_recursive(sb_surface_t *surface,
             sb_view_glyph_layout(view)
         );
     } else if (render_type == SB_VIEW_RENDER_TYPE_CANVAS) {
-        sb_application_t *app = sb_application_instance();
-
         // Get canvas.
         void *renderer = sb_skia_renderer_current(surface->skia_renderer);
         sb_skia_gl_renderer_t *gl_renderer = (sb_skia_gl_renderer_t*)renderer;
