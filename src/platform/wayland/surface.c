@@ -37,8 +37,6 @@
 #include "../../skia/gl-renderer.h"
 #include "../../skia/draw.h"
 
-#include "../../shaders.h"
-
 // #define SWINGBY_BACKEND_DEFAULT "raster"
 #define SWINGBY_BACKEND_DEFAULT "opengl"
 
