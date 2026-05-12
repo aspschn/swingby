@@ -1,0 +1,46 @@
+/**
+ * \mainpage Swingby
+ *
+ * Swingby is a GUI library for Wayland, Linux.
+ * Using [Skia](https://skia.org/) as a rendering backend.
+ *
+ * ## Usage Example
+ *
+ * ```
+ * // This demo shows a red rectangle in the basic surface.
+ *
+ * #include <swingby/swingby.h>
+ *
+ * int main(int argc, char *argv[])
+ * {
+ *     sb_application_t *app = sb_application_new(argc, argv);
+ *
+ *     sb_desktop_surface_t *desktop_surface = sb_desktop_surface_new(
+ *         SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
+ *     sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
+ *
+ *     sb_view_t *root_view = sb_surface_root_view(surface);
+ *
+ *     sb_rect_t geometry;
+ *     geometry.pos.x = 10.0f;
+ *     geometry.pos.y = 10.0f;
+ *     geometry.size.width = 50.0f;
+ *     geometry.size.height = 50.0f;
+ *
+ *     sb_view_t *view = sb_view_new(root_view, &geometry);
+ *
+ *     sb_color_t color;
+ *     color.r = 1.0f;
+ *     color.g = 0.0f;
+ *     color.b = 0.0f;
+ *     color.a = 1.0f;
+ *
+ *     sb_view_set_color(view, &color);
+ *
+ *     sb_desktop_surface_show(desktop_surface);
+ *
+ *     return sb_application_exec(app);
+ * }
+ * ```
+ *
+ */
