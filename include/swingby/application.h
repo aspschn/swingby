@@ -4,12 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#if defined(SB_PLATFORM_WIN32)
-#include <Windows.h>
-#else
-#define WNDCLASS void
-#endif
-
 #include <swingby/common.h>
 #include <swingby/event.h>
 
@@ -20,7 +14,6 @@ typedef struct sb_list_t sb_list_t;
 
 typedef struct sb_egl_t sb_egl_t;
 typedef sb_egl_t sb_egl_context_t;
-typedef struct sb_d3d_global_context_t sb_d3d_global_context_t;
 
 /// \struct sb_application_t
 /// \brief A global application object.
