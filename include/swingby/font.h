@@ -6,11 +6,20 @@ extern "C" {
 #endif // __cplusplus
 
 typedef struct sb_font_t sb_font_t;
+typedef struct sb_font_metrics_t sb_font_metrics_t;
 
 struct sb_font_t {
     const char *path;
     int ttc_index;
     float size;
+};
+
+struct sb_font_metrics_t {
+    float ascent;
+    float descent;
+    float leading;
+    float cap_height;
+    float x_height;
 };
 
 #ifdef __cplusplus

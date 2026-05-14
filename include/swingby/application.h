@@ -1,5 +1,5 @@
-#ifndef _FOUNDATION_APPLICATION_H
-#define _FOUNDATION_APPLICATION_H
+#ifndef _SWINBGY_APPLICATION_H
+#define _SWINBGY_APPLICATION_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -155,4 +155,4 @@ SB_EXPORT
 void sb_application_on_next_tick(sb_application_t *application,
                                  sb_event_t *event);
 
-#endif /* _FOUNDATION_APPLICATION_H */
+#endif /* _SWINBGY_APPLICATION_H */
