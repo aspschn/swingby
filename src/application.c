@@ -31,7 +31,7 @@
 #include "xkb/xkb-context.h"
 #include "xcursor/xcursor.h"
 
-#include "../../helpers/shared.h"
+#include "helpers/shared.h"
 #include "helpers/application.h"
 
 struct sb_application_t {

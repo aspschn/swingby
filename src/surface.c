@@ -26,16 +26,16 @@
 #include <swingby/list.h>
 #include <swingby/event.h>
 
-#include "../../helpers/shared.h"
+#include "helpers/shared.h"
 #include "./helpers/surface.h"
 
 #include "egl-context/egl-context.h"
 
 // #include "../../skia/context.h"
-#include "../../skia/renderer.h"
-#include "../../skia/raster-renderer.h"
-#include "../../skia/gl-renderer.h"
-#include "../../skia/draw.h"
+#include "skia/renderer.h"
+#include "skia/raster-renderer.h"
+#include "skia/gl-renderer.h"
+#include "skia/draw.h"
 
 // #define SWINGBY_BACKEND_DEFAULT "raster"
 #define SWINGBY_BACKEND_DEFAULT "opengl"

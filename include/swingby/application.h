@@ -121,25 +121,13 @@ sb_egl_context_t* sb_application_egl_context(sb_application_t *application)
     __attribute__((deprecated("use sb_application_egl() instead.")));
 
 /// \memberof sb_application_t
-sb_egl_context_t* sb_application_egl(sb_application_t *application);
+sb_egl_t* sb_application_egl(sb_application_t *application);
 
 /// \memberof sb_application_t
-/// \brief Get the `WNDCLASS` of the application.
+/// \brief Run the main event loop.
 ///
-/// This method is available only on win32 platform.
-SB_EXPORT
-WNDCLASS* sb_application_wndclass(sb_application_t *application);
-
-/// \memberof sb_application_t
-/// \brief Get the global D3D context.
-sb_d3d_global_context_t* sb_application_d3d_context(
-    sb_application_t *application);
-
-/// \memberof sb_application_t
-void sb_application_set_nchittest_return(sb_application_t *application,
-                                         int value);
-
-/// \memberof sb_application_t
+/// \return 0 when an application quit without error.
+///         Commonly used to pass return value of a main function.
 SB_EXPORT
 int sb_application_exec(sb_application_t *application);
 
