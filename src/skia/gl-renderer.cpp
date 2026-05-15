@@ -21,7 +21,7 @@
 
 #include <swingby/log.h>
 
-#include "../platform/wayland/egl-context/egl-context.h"
+#include "../egl-context/egl-context.h"
 #include "../impl/image-impl.hpp"
 
 typedef struct sb_skia_gl_renderer_t {

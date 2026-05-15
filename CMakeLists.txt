@@ -47,6 +47,9 @@ endif()
 set(SWINGBY_SOURCES
     ${SWINGBY_HEADERS}
     ${SWINGBY_PLATFORM_SOURCES}
+    src/application.c
+    src/desktop-surface.c
+    src/surface.c
     src/common.c
     src/log.c
     src/bench.c

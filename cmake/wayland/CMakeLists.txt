@@ -7,18 +7,15 @@ set(WAYLAND_PROTOCOLS_SOURCES
 
 set(SWINGBY_PLATFORM_SOURCES
     ${WAYLAND_PROTOCOLS_SOURCES}
-    src/platform/wayland/application.c
-    src/platform/wayland/surface.c
-    src/platform/wayland/desktop-surface.c
-    src/platform/wayland/egl-context/egl-context.h
-    src/platform/wayland/egl-context/egl-context.c
-    src/platform/wayland/xkb/xkb-context.h
-    src/platform/wayland/xkb/xkb-context.c
-    src/platform/wayland/xcursor/xcursor.h
-    src/platform/wayland/xcursor/xcursor.c
-    src/platform/wayland/helpers/application.h
-    src/platform/wayland/helpers/application.c
-    src/platform/wayland/helpers/surface.c
+    src/egl-context/egl-context.h
+    src/egl-context/egl-context.c
+    src/xkb/xkb-context.h
+    src/xkb/xkb-context.c
+    src/xcursor/xcursor.h
+    src/xcursor/xcursor.c
+    src/helpers/application.h
+    src/helpers/application.c
+    src/helpers/surface.c
 
     PARENT_SCOPE
 )
