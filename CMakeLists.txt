@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(swingby
-    VERSION 0.6.0
+    VERSION 0.6.1
     LANGUAGES C CXX
 )
 
