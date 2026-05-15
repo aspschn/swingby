@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(swingby
-    VERSION 0.6.0
+    VERSION 0.7.0
     LANGUAGES C CXX
 )
 
@@ -149,9 +149,9 @@ install(TARGETS swingby
 )
 
 # Examples
-set(FOUNDATION_EXAMPLES_BINARY_DIR ${CMAKE_BINARY_DIR}/examples)
+set(SWINGBY_EXAMPLES_BINARY_DIR ${CMAKE_BINARY_DIR}/examples)
 
-file(MAKE_DIRECTORY ${FOUNDATION_EXAMPLES_BINARY_DIR})
+file(MAKE_DIRECTORY ${SWINGBY_EXAMPLES_BINARY_DIR})
 add_subdirectory(examples)
 
 # Tests
@@ -159,4 +159,3 @@ set(SWINGBY_TESTS_BINARY_DIR ${CMAKE_BINARY_DIR}/tests)
 
 file(MAKE_DIRECTORY ${SWINGBY_TESTS_BINARY_DIR})
 add_subdirectory(tests)
-

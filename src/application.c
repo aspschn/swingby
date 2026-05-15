@@ -412,7 +412,7 @@ static sb_surface_t* _find_surface(sb_application_t *app,
     return found;
 }
 
-/// \brief Linux button to Foundation pointer button.
+/// \brief Linux button to Swingby pointer button.
 sb_pointer_button _from_linux_button(uint32_t button)
 {
     switch (button) {
