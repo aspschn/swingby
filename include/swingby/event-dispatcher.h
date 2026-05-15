@@ -1,5 +1,5 @@
-#ifndef _FOUNDATION_EVENT_DISPATCHER_H
-#define _FOUNDATION_EVENT_DISPATCHER_H
+#ifndef _SWINGBY_EVENT_DISPATCHER_H
+#define _SWINGBY_EVENT_DISPATCHER_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -57,6 +57,9 @@ void sb_event_dispatcher_keyboard_key_repeat_add_event(
 void sb_event_dispatcher_keyboard_key_repeat_remove_event(
     sb_event_dispatcher_t *event_dispatcher, sb_event_t *event);
 
+int sb_event_dispatcher_keyboard_key_repeat_fd(
+    sb_event_dispatcher_t *event_dispatcher);
+
 bool sb_event_dispatcher_timer_has_event(
     sb_event_dispatcher_t *event_dispatcher);
 
@@ -67,8 +70,10 @@ uint32_t sb_event_dispatcher_timer_add_event(
 void sb_event_dispatcher_timer_remove_event(
     sb_event_dispatcher_t *event_dispatcher, uint32_t id);
 
+int sb_event_dispatcher_timer_fd(sb_event_dispatcher_t *event_dispatcher);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _FOUNDATION_EVENT_DISPATCHER_H */
+#endif /* _SWINGBY_EVENT_DISPATCHER_H */

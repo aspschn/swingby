@@ -3,6 +3,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#define __USE_POSIX199309
+#include <time.h>
+
+#include <sys/timerfd.h>
 
 #include <swingby/common.h>
 #include <swingby/log.h>
@@ -116,6 +120,45 @@ void _propagate_pointer_event(sb_view_t *view, sb_event_t *event)
     }
 }
 
+static void _timer_update_timerfd(sb_event_dispatcher_t *event_dispatcher)
+{
+    uint64_t length = sb_list_length(event_dispatcher->timer.events);
+
+    // Return early.
+    if (length == 0) {
+        struct itimerspec reset = {
+            .it_interval = { .tv_sec = 0, .tv_nsec = 0 },
+            .it_value = { .tv_sec = 0, .tv_nsec = 0 },
+        };
+        timerfd_settime(event_dispatcher->timer.fd, 0, &reset, NULL);
+
+        return;
+    }
+
+    // TODO: Don't hard-code.
+    int min_interval = 99999;
+    uint64_t now = sb_time_now_milliseconds();
+
+    // Find minimum interval.
+    sb_list_t *timer_events = event_dispatcher->timer.events;
+    for (int i = 0; i < sb_list_length(timer_events); ++i) {
+        sb_event_t *evt = sb_list_at(timer_events, i);
+        uint64_t remaining = evt->timer.interval - (now - evt->timer.time);
+
+        if (min_interval > remaining) {
+            min_interval = remaining;
+        }
+    }
+
+    //
+    struct itimerspec its = {
+        .it_interval = { .tv_sec = 0, .tv_nsec = 0 },
+        .it_value = sb_time_milliseconds_to_timespec(min_interval),
+    };
+
+    timerfd_settime(event_dispatcher->timer.fd, 0, &its, NULL);
+}
+
 //!<===================
 //!< Event Dispatcher
 //!<===================
@@ -172,10 +215,12 @@ struct sb_event_dispatcher_t {
         uint32_t rate;
         /// \brief List for sb_repeat_event_t.
         sb_list_t *events;
+        int fd;
     } keyboard_key_repeat;
     struct {
         /// \brief List for sb_event_t.
         sb_list_t *events;
+        int fd;
     } timer;
 };
 
@@ -190,8 +235,10 @@ sb_event_dispatcher_t* sb_event_dispatcher_new()
     event_dispatcher->keyboard_key_repeat.delay = 100000;
     event_dispatcher->keyboard_key_repeat.rate = 0;
     event_dispatcher->keyboard_key_repeat.events = sb_list_new();
+    event_dispatcher->keyboard_key_repeat.fd = -1;
 
     event_dispatcher->timer.events = sb_list_new();
+    event_dispatcher->timer.fd = -1;
 
     return event_dispatcher;
 }
@@ -527,6 +574,11 @@ void sb_event_dispatcher_timer_remove_event(
             break;
         }
     }
+}
+
+int sb_event_dispatcher_timer_fd(sb_event_dispatcher_t *event_dispatcher)
+{
+    return event_dispatcher->timer.fd;
 }
 
 #ifdef __cplusplus
