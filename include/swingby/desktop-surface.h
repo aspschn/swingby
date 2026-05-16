@@ -1,5 +1,5 @@
-#ifndef _FOUNDATION_DESKTOP_SURFACE_H
-#define _FOUNDATION_DESKTOP_SURFACE_H
+#ifndef _SWINGBY_DESKTOP_SURFACE_H
+#define _SWINGBY_DESKTOP_SURFACE_H
 
 #include <swingby/common.h>
 #include <swingby/event.h>
@@ -43,6 +43,7 @@ enum sb_desktop_surface_toplevel_state {
 typedef enum sb_desktop_surface_toplevel_state
     sb_desktop_surface_toplevel_state_flags;
 
+/// \struct sb_desktop_surface_t
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
 
 SB_EXPORT
@@ -52,7 +53,8 @@ SB_EXPORT
 void sb_desktop_surface_set_parent(sb_desktop_surface_t *desktop_surface,
                                    sb_desktop_surface_t *parent);
 
-/// \brief Get the surface object of the desktop surface.
+/// \memberof sb_desktop_surface_t
+/// \brief Get the `sb_surface_t` object of the desktop surface.
 SB_EXPORT
 sb_surface_t*
 sb_desktop_surface_surface(sb_desktop_surface_t *desktop_surface);
@@ -67,6 +69,7 @@ SB_EXPORT
 sb_desktop_surface_toplevel_state_flags
 sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface);
 
+/// \memberof sb_desktop_surface_t
 /// \brief Tell the geometry is the actual window area to the compositor.
 ///
 /// A Wayland client is CSD (client side decoration). It means the window
@@ -83,37 +86,44 @@ void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
 const sb_size_t*
 sb_desktop_surface_toplevel_minimum_size(sb_desktop_surface_t *desktop_surface);
 
+/// \memberof sb_desktop_surface_t
 /// \brief Set minimum size of the toplevel desktop surface.
 ///
 /// This changes the field and call `_set_min_size` method in XDG toplevel.
 void sb_desktop_surface_toplevel_set_minimum_size(
     sb_desktop_surface_t *desktop_surface, const sb_size_t *size);
 
+/// \memberof sb_desktop_surface_t
 /// \brief Close if the desktop surface has a toplevel role.
 ///
 /// Close the last toplevel desktop surface may quit the application.
 SB_EXPORT
 void sb_desktop_surface_toplevel_close(sb_desktop_surface_t *desktop_surface);
 
+/// \memberof sb_desktop_surface_t
 /// \brief Start move the toplevel desktop surface.
 SB_EXPORT
 void sb_desktop_surface_toplevel_move(sb_desktop_surface_t *desktop_surface);
 
+/// \memberof sb_desktop_surface_t
 /// \brief Start resize the toplevel desktop surface with the given edge.
 SB_EXPORT
 void sb_desktop_surface_toplevel_resize(sb_desktop_surface_t *desktop_surface,
     sb_desktop_surface_toplevel_resize_edge edge);
 
+/// \memberof sb_desktop_surface_t
 /// \brief Maximize the window.
 SB_EXPORT
 void sb_desktop_surface_toplevel_set_maximized(
     sb_desktop_surface_t *desktop_surface);
 
+/// \memberof sb_desktop_surface_t
 /// \brief Restore the window from maximized state.
 SB_EXPORT
 void sb_desktop_surface_toplevel_unset_maximized(
     sb_desktop_surface_t *desktop_surface);
 
+/// \memberof sb_desktop_surface_t
 /// \brief Minimize the toplevel desktop surface.
 SB_EXPORT
 void sb_desktop_surface_toplevel_set_minimized(
@@ -122,6 +132,7 @@ void sb_desktop_surface_toplevel_set_minimized(
 void sb_desktop_surface_popup_set_position(
     sb_desktop_surface_t *desktop_surface, const sb_point_t *position);
 
+/// \memberof sb_desktop_surface_t
 /// \brief Set grabbable property for popup desktop surface.
 void sb_desktop_surface_popup_set_grabbable(
     sb_desktop_surface_t *desktop_surface, bool value);
@@ -156,4 +167,4 @@ void sb_desktop_surface_on_show(sb_desktop_surface_t *desktop_surface,
 void sb_desktop_surface_on_hide(sb_desktop_surface_t *desktop_surface,
                                 sb_event_t *event);
 
-#endif /* _FOUNDATION_DESKTOP_SURFACE_H */
+#endif /* _SWINGBY_DESKTOP_SURFACE_H */

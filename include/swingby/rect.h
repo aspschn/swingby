@@ -13,9 +13,13 @@ extern "C" {
 
 typedef struct sb_rect_t {
     union {
+        /// Represent the x, y position.
         sb_point_t position;
+        /// \deprecated
+        /// x, y position. Use `position` instead.
         __attribute__((deprecated("use position instead."))) sb_point_t pos;
     };
+    /// Size.
     sb_size_t size;
 } sb_rect_t;
 
