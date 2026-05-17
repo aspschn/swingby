@@ -46,6 +46,11 @@ sb_skia_gl_renderer_t* sb_skia_gl_renderer_new()
     return renderer;
 }
 
+void* sb_skia_gl_renderer_direct_context(sb_skia_gl_renderer_t *renderer)
+{
+    return renderer->direct_context.get();
+}
+
 void* sb_skia_gl_renderer_canvas(sb_skia_gl_renderer_t *renderer)
 {
     return renderer->surface->getCanvas();

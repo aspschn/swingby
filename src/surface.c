@@ -56,6 +56,12 @@ struct sb_surface_t {
     sb_view_t *_root_view;
     uint32_t scale;
     sb_view_t *focused_view;
+    /// Currently only one GL view supported.
+    struct {
+        GLuint fbo;
+        GLuint texture;
+        GLuint depth_rbo;
+    } gl_view;
     bool frame_ready;
     bool update_pending;
     struct wl_callback *frame_callback;
@@ -104,6 +110,48 @@ static const struct wl_surface_listener surface_listener = {
 //!<======================
 //!< Helper Functions
 //!<======================
+
+static void _gl_view_init(sb_surface_t *surface, int width, int height)
+{
+    if (surface->gl_view.fbo != 0) {
+        glDeleteFramebuffers(1, &surface->gl_view.fbo);
+        glDeleteTextures(1, &surface->gl_view.texture);
+        glDeleteRenderbuffers(1, &surface->gl_view.depth_rbo);
+    }
+
+    glGenFramebuffers(1, &surface->gl_view.fbo);
+    glGenTextures(1, &surface->gl_view.texture);
+    glGenRenderbuffers(1, &surface->gl_view.depth_rbo);
+
+    // Texture.
+    glBindTexture(GL_TEXTURE_2D, surface->gl_view.texture);
+    glTexImage2D(GL_TEXTURE_2D, 0,
+        GL_RGBA8,
+        width, height,
+        0,                  // border
+        GL_RGBA,            // format
+        GL_UNSIGNED_BYTE,   // type
+        NULL
+    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Renderbuffer.
+    glBindRenderbuffer(GL_RENDERBUFFER, surface->gl_view.depth_rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+
+    // Framebuffer.
+    glBindFramebuffer(GL_FRAMEBUFFER, surface->gl_view.fbo);
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, surface->gl_view.texture,
+        0   // level
+    );
+    glFramebufferRenderbuffer(
+        GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+        GL_RENDERBUFFER, surface->gl_view.depth_rbo
+    );
+}
 
 void _gl_init(sb_surface_t *surface)
 {
@@ -235,6 +283,9 @@ static void _draw_recursive(sb_surface_t *surface,
         sb_canvas_free(canvas);
         sb_view_set_canvas(view, NULL);
     } else if (render_type == SB_VIEW_RENDER_TYPE_GL) {
+        const sb_rect_t *geometry = sb_view_geometry(view);
+        const sb_size_t *surface_size = sb_surface_size(surface);
+
         // Get renderer.
         void *renderer = sb_skia_renderer_current(surface->skia_renderer);
         sb_skia_gl_renderer_t *gl_renderer = (sb_skia_gl_renderer_t*)renderer;
@@ -242,25 +293,33 @@ static void _draw_recursive(sb_surface_t *surface,
         // Flush and submit.
         sb_skia_gl_renderer_flush_and_submit(gl_renderer);
 
+        // It matters. The reason why is IDK.
+        glUseProgram(0);
+
         // Store GL values.
         GLint vp[4];
         glGetIntegerv(GL_VIEWPORT, vp);
         GLint fbo;
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo);
 
+        // Init GL FBO.
+        _gl_view_init(surface, geometry->size.width, geometry->size.height);
+
         // Set GL context.
-        const sb_rect_t *geometry = sb_view_geometry(view);
-        const sb_size_t *surface_size = sb_surface_size(surface);
+        glBindFramebuffer(GL_FRAMEBUFFER, surface->gl_view.fbo);
+
         glViewport(
-            geometry->position.x,
-            surface_size->height - geometry->position.y - geometry->size.height,
+            // geometry->position.x,
+            // surface_size->height - geometry->position.y - geometry->size.height,
+            0, 0,
             geometry->size.width,
             geometry->size.height
         );
         glEnable(GL_SCISSOR_TEST);
         glScissor(
-            geometry->position.x,
-            surface_size->height - geometry->position.y - geometry->size.height,
+            // geometry->position.x,
+            // surface_size->height - geometry->position.y - geometry->size.height,
+            0, 0,
             geometry->size.width,
             geometry->size.height
         );
@@ -275,6 +334,13 @@ static void _draw_recursive(sb_surface_t *surface,
         glViewport(vp[0], vp[1], vp[2], vp[3]);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glDisable(GL_SCISSOR_TEST);
+
+        //
+        sb_skia_draw_texture(surface->skia_renderer,
+            geometry,
+            surface->scale,
+            surface->gl_view.texture
+        );
 
         // Reset context.
         sb_skia_gl_renderer_reset_context(gl_renderer);
@@ -405,6 +471,8 @@ sb_surface_t* sb_surface_new()
     surface->shm_data.addr = NULL;
     surface->shm_data.size = 0;
     surface->backend = NULL;
+    surface->gl_view.fbo = 0;
+    surface->gl_view.texture = 0;
 
     sb_application_t *app = sb_application_instance();
 

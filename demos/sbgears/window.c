@@ -25,7 +25,10 @@ sbgears_decoration* decoration_new(const sbgears_window *window)
 
     // Create title bar.
     sb_rect_t title_geometry = {
-        .position = { .x = 0.0f, .y = 0.0f },
+        .position = {
+            .x = SBGEARS_WINDOW_BORDER_SIZE,
+            .y = SBGEARS_WINDOW_BORDER_SIZE,
+        },
         .size = {
             .width = border_geometry.size.width
                 - (SBGEARS_WINDOW_BORDER_SIZE * 2),
@@ -34,8 +37,8 @@ sbgears_decoration* decoration_new(const sbgears_window *window)
     };
     sb_color_t title_color = { .r = 0.3f, .g = 0.3f, .b = 1.0f, .a = 1.0f };
     // TODO: This break this demo. Swingby must patched for it.
-    // decoration->title_bar = sb_view_new(window->root_view, &title_geometry);
-    // sb_view_set_color(decoration->title_bar, &title_color);
+    decoration->title_bar = sb_view_new(decoration->border, &title_geometry);
+    sb_view_set_color(decoration->title_bar, &title_color);
 
     return decoration;
 }
