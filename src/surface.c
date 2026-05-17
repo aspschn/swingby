@@ -242,11 +242,39 @@ static void _draw_recursive(sb_surface_t *surface,
         // Flush and submit.
         sb_skia_gl_renderer_flush_and_submit(gl_renderer);
 
+        // Store GL values.
+        GLint vp[4];
+        glGetIntegerv(GL_VIEWPORT, vp);
+        GLint fbo;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo);
+
+        // Set GL context.
+        const sb_rect_t *geometry = sb_view_geometry(view);
+        const sb_size_t *surface_size = sb_surface_size(surface);
+        glViewport(
+            geometry->position.x,
+            surface_size->height - geometry->position.y - geometry->size.height,
+            geometry->size.width,
+            geometry->size.height
+        );
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(
+            geometry->position.x,
+            surface_size->height - geometry->position.y - geometry->size.height,
+            geometry->size.width,
+            geometry->size.height
+        );
+
         // This event must be consumed here. Same as PAINT event type.
         sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
             view, SB_EVENT_TYPE_DIRECT_RENDER);
         sb_view_on_render(view, event);
         sb_event_free(event);
+
+        // Restore GL values.
+        glViewport(vp[0], vp[1], vp[2], vp[3]);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glDisable(GL_SCISSOR_TEST);
 
         // Reset context.
         sb_skia_gl_renderer_reset_context(gl_renderer);
