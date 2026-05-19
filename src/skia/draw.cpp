@@ -1,5 +1,7 @@
 #include "draw.h"
 
+#include <GL/gl.h>
+
 #include "skia/include/core/SkRect.h"
 #include "skia/include/core/SkRRect.h"
 #include "skia/include/core/SkColor.h"
@@ -10,6 +12,13 @@
 #include "skia/include/core/SkTypeface.h"
 #include "skia/include/core/SkFont.h"
 #include "skia/include/core/SkTextBlob.h"
+
+#include "skia/include/gpu/ganesh/GrDirectContext.h"
+// GrBackendRenderTargets::MakeGL
+#include "skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
+// SkImages::BorrowTextureFrom
+#include "skia/include/gpu/ganesh/SkImageGanesh.h"
+
 #include "skia/include/effects/SkImageFilters.h"
 #include "skia/include/ports/SkFontMgr_directory.h"
 
@@ -307,6 +316,49 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
     SkPaint paint;
     paint.setColor(SK_ColorBLACK);
     canvas->drawTextBlob(blob.get(), 0, 24, paint);
+}
+
+void sb_skia_draw_texture(sb_skia_renderer_t *renderer,
+                          const sb_rect_t *rect,
+                          float scale,
+                          uint32_t texture_id)
+{
+    SkCanvas *canvas = _get_canvas(renderer);
+    auto gl_renderer =
+        (sb_skia_gl_renderer_t*)sb_skia_renderer_current(renderer);
+
+    GrGLTextureInfo info;
+    info.fTarget = GL_TEXTURE_2D;
+    info.fID = texture_id;
+    info.fFormat = GL_RGBA8;
+
+    GrBackendTexture backend_texture = GrBackendTextures::MakeGL(
+        rect->size.width, rect->size.height,
+        skgpu::Mipmapped::kNo,
+        info
+    );
+
+    sk_sp<SkImage> image = SkImages::BorrowTextureFrom(
+        static_cast<GrDirectContext*>(
+            sb_skia_gl_renderer_direct_context(gl_renderer)
+        ),
+        backend_texture,
+        kBottomLeft_GrSurfaceOrigin,
+        kRGBA_8888_SkColorType,
+        kPremul_SkAlphaType,
+        nullptr
+    );
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+        rect->position.x * scale,
+        rect->position.y * scale,
+        rect->size.width * scale,
+        rect->size.height * scale
+    );
+    // TODO: What below option for? Add detailed comment.
+    SkSamplingOptions sampling(SkFilterMode::kLinear);
+
+    canvas->drawImageRect(image, sk_rect, sampling);
 }
 
 void sb_skia_clip_rect(sb_skia_renderer_t *renderer,
