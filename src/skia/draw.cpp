@@ -69,7 +69,7 @@ void sb_skia_draw_rect(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x, rect->pos.y,
+        rect->position.x, rect->position.y,
         rect->size.width, rect->size.height);
     SkPaint paint;
     paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
@@ -84,7 +84,7 @@ void sb_skia_draw_rect_with_radius(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x, rect->pos.y,
+        rect->position.x, rect->position.y,
         rect->size.width, rect->size.height);
 
     float top_left = sb_view_radius_top_left(radius);
@@ -117,8 +117,8 @@ void sb_skia_draw_rect2(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x * scale,
-        rect->pos.y * scale,
+        rect->position.x * scale,
+        rect->position.y * scale,
         rect->size.width * scale,
         rect->size.height * scale);
 
@@ -225,8 +225,8 @@ void sb_skia_draw_image(sb_skia_renderer_t *renderer,
     sk_sp<SkImage> sk_image = SkImages::RasterFromBitmap(bitmap);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x * scale,
-        rect->pos.y * scale,
+        rect->position.x * scale,
+        rect->position.y * scale,
         rect->size.width * scale,
         rect->size.height * scale);
 
@@ -252,8 +252,8 @@ void sb_skia_draw_image2(sb_skia_renderer_t *renderer,
     // TODO: RRect.
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x * scale,
-        rect->pos.y * scale,
+        rect->position.x * scale,
+        rect->position.y * scale,
         rect->size.width * scale,
         rect->size.height * scale
     );
@@ -369,8 +369,8 @@ void sb_skia_clip_rect(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x * scale,
-        rect->pos.y * scale,
+        rect->position.x * scale,
+        rect->position.y * scale,
         rect->size.width * scale,
         rect->size.height * scale);
 

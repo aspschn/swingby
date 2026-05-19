@@ -212,8 +212,8 @@ sb_list_t* sb_view_children(sb_view_t *view)
 sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position)
 {
     sb_rect_t local_geo;
-    local_geo.pos.x = 0;
-    local_geo.pos.y = 0;
+    local_geo.position.x = 0;
+    local_geo.position.y = 0;
     local_geo.size = sb_view_geometry(view)->size;
 
     if (sb_rect_contains_point(&local_geo, position) == false) {
@@ -254,13 +254,13 @@ sb_view_t* sb_view_remove_child(sb_view_t *view, sb_view_t *child)
 sb_point_t sb_view_absolute_position(const sb_view_t *view)
 {
     sb_point_t pos;
-    pos.x = view->geometry.pos.x;
-    pos.y = view->geometry.pos.y;
+    pos.x = view->geometry.position.x;
+    pos.y = view->geometry.position.y;
 
     const sb_view_t *it = view->_parent;
     while (it != NULL) {
-        pos.x += it->geometry.pos.x;
-        pos.y += it->geometry.pos.y;
+        pos.x += it->geometry.position.x;
+        pos.y += it->geometry.position.y;
 
         it = it->_parent;
     }
