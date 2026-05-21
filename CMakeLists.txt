@@ -80,9 +80,6 @@ set(SWINGBY_SOURCES
     src/helpers/shared.h
     src/helpers/shared.c
     src/impl/image-impl.cpp
-    src/impl/glyph-impl.h
-    src/impl/glyph-impl.hpp
-    src/impl/glyph-impl.cpp
 )
 
 add_library(swingby SHARED

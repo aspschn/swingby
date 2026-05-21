@@ -55,7 +55,7 @@ void sb_glyph_layout_add_line(sb_glyph_layout_t *layout, sb_glyph_line_t *line);
 
 uint32_t sb_glyph_layout_line_count(const sb_glyph_layout_t *layout);
 
-const sb_glyph_line_t** sb_glyph_layout_lines(const sb_glyph_layout_t *layout);
+const sb_list_t* sb_glyph_layout_lines(const sb_glyph_layout_t *layout);
 
 void sb_glyph_layout_free(sb_glyph_layout_t *layout);
 

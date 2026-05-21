@@ -274,11 +274,12 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
     SkTextBlobBuilder builder;
 
     float total_x = 0.0f;
-    const sb_glyph_line_t **lines = sb_glyph_layout_lines(layout);
+    const sb_list_t *lines = sb_glyph_layout_lines(layout);
     auto line_count = sb_glyph_layout_line_count(layout);
     for (uint32_t i = 0; i < line_count; ++i) {
-        const sb_list_t *runs = sb_glyph_line_runs(lines[i]);
-        auto run_count = sb_glyph_line_run_count(lines[i]);
+        auto *line = (sb_glyph_line_t*)sb_list_at(lines, i);
+        const sb_list_t *runs = sb_glyph_line_runs(line);
+        auto run_count = sb_glyph_line_run_count(line);
         for (uint32_t j = 0; j < run_count; ++j) {
             auto *run = (sb_glyph_run_t*)sb_list_at(runs, j);
             auto glyph_count = sb_glyph_run_count(run);
