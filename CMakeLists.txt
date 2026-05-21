@@ -77,6 +77,7 @@ set(SWINGBY_SOURCES
     src/skia/load-image.h
     src/skia/load-image.cpp
     src/skia/canvas.cpp
+    src/skia/font.cpp
     src/helpers/shared.h
     src/helpers/shared.c
     src/impl/image-impl.cpp

@@ -22,6 +22,10 @@ struct sb_font_metrics_t {
     float x_height;
 };
 
+sb_font_metrics_t* sb_font_metrics_new(const sb_font_t *font);
+
+void sb_font_metrics_free(sb_font_metrics_t *metrics);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
