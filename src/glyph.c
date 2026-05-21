@@ -5,6 +5,7 @@
 
 #include <swingby/font.h>
 #include <swingby/point.h>
+#include <swingby/list.h>
 
 #include "impl/glyph-impl.h"
 
@@ -19,7 +20,7 @@ struct sb_glyph_run_t {
 };
 
 struct sb_glyph_line_t {
-    SbGlyphLineImpl *impl;
+    sb_list_t *runs;
 };
 
 struct sb_glyph_layout_t {
@@ -63,29 +64,35 @@ sb_glyph_line_t* sb_glyph_line_new()
 {
     sb_glyph_line_t *line = malloc(sizeof(sb_glyph_line_t));
 
-    line->impl = sb_glyph_line_impl_new();
+    line->runs = sb_list_new();
 
     return line;
 }
 
 void sb_glyph_line_add_run(sb_glyph_line_t *line, sb_glyph_run_t *run)
 {
-    sb_glyph_line_impl_add_run(line->impl, run);
+    sb_list_push(line->runs, run);
 }
 
 uint32_t sb_glyph_line_run_count(const sb_glyph_line_t *line)
 {
-    return sb_glyph_line_impl_run_count(line->impl);
+    return sb_list_length(line->runs);
 }
 
-const sb_glyph_run_t** sb_glyph_line_runs(const sb_glyph_line_t *line)
+const sb_list_t* sb_glyph_line_runs(const sb_glyph_line_t *line)
 {
-    return sb_glyph_line_impl_runs(line->impl);
+    return line->runs;
 }
 
 void sb_glyph_line_free(sb_glyph_line_t *line)
 {
-    sb_glyph_line_impl_free(line->impl);
+    while (sb_list_length(line->runs) > 0) {
+        uint64_t last = sb_list_length(line->runs) - 1;
+        sb_glyph_run_t *run = sb_list_at(line->runs, last);
+        sb_glyph_run_free(run);
+    }
+    sb_list_free(line->runs);
+
     free(line);
 }
 

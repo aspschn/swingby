@@ -277,14 +277,15 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
     const sb_glyph_line_t **lines = sb_glyph_layout_lines(layout);
     auto line_count = sb_glyph_layout_line_count(layout);
     for (uint32_t i = 0; i < line_count; ++i) {
-        const sb_glyph_run_t **runs = sb_glyph_line_runs(lines[i]);
+        const sb_list_t *runs = sb_glyph_line_runs(lines[i]);
         auto run_count = sb_glyph_line_run_count(lines[i]);
         for (uint32_t j = 0; j < run_count; ++j) {
-            auto glyph_count = sb_glyph_run_count(runs[j]);
-            auto glyphs = sb_glyph_run_glyphs((sb_glyph_run_t*)runs[j]);
+            auto *run = (sb_glyph_run_t*)sb_list_at(runs, j);
+            auto glyph_count = sb_glyph_run_count(run);
+            auto glyphs = sb_glyph_run_glyphs(run);
 
             // Get font.
-            const sb_font_t *font = sb_glyph_run_font(runs[j]);
+            const sb_font_t *font = sb_glyph_run_font(run);
             sk_sp<SkTypeface> typeface = font_manager->makeFromFile(
                 font->path,
                 font->ttc_index
@@ -299,10 +300,10 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
             }
             SkFont sk_font = SkFont(typeface, font->size * scale);
 
-            auto& run = builder.allocRunPos(sk_font, glyph_count);
+            auto& sk_run = builder.allocRunPos(sk_font, glyph_count);
             for (uint32_t i = 0; i < glyph_count; ++i) {
-                run.glyphs[i] = glyphs[i].id;
-                run.points()[i] = SkPoint::Make(
+                sk_run.glyphs[i] = glyphs[i].id;
+                sk_run.points()[i] = SkPoint::Make(
                     total_x + (glyphs[i].offset.x * scale),
                     glyphs[i].offset.y * scale
                 );

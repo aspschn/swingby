@@ -5,19 +5,7 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct SbGlyphLineImpl SbGlyphLineImpl;
-
 typedef struct SbGlyphLayoutImpl SbGlyphLayoutImpl;
-
-SbGlyphLineImpl* sb_glyph_line_impl_new();
-
-void sb_glyph_line_impl_add_run(SbGlyphLineImpl *impl, sb_glyph_run_t *run);
-
-uint32_t sb_glyph_line_impl_run_count(const SbGlyphLineImpl *impl);
-
-const sb_glyph_run_t** sb_glyph_line_impl_runs(const SbGlyphLineImpl *impl);
-
-void sb_glyph_line_impl_free(SbGlyphLineImpl *impl);
 
 
 SbGlyphLayoutImpl* sb_glyph_layout_impl_new();

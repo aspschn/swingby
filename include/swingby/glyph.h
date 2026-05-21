@@ -18,6 +18,8 @@ typedef struct sb_glyph_line_t sb_glyph_line_t;
 
 typedef struct sb_glyph_layout_t sb_glyph_layout_t;
 
+typedef struct sb_list_t sb_list_t;
+
 struct sb_glyph_t {
     uint32_t id;
     float advance;
@@ -42,7 +44,7 @@ void sb_glyph_line_add_run(sb_glyph_line_t *line, sb_glyph_run_t *run);
 
 uint32_t sb_glyph_line_run_count(const sb_glyph_line_t *line);
 
-const sb_glyph_run_t** sb_glyph_line_runs(const sb_glyph_line_t *line);
+const sb_list_t* sb_glyph_line_runs(const sb_glyph_line_t *line);
 
 void sb_glyph_line_free(sb_glyph_line_t *line);
 

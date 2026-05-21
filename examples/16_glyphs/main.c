@@ -183,8 +183,8 @@ int main(int argc, char *argv[])
 
     sb_view_set_clip(view, true);
 
-    geometry.pos.x = 0.0f;
-    geometry.pos.y = 0.0f;
+    geometry.position.x = 0.0f;
+    geometry.position.y = 0.0f;
     geometry.size.width = 60.0f;
     geometry.size.height = 30.0f;
     sb_view_t *glyphs_view = sb_view_new(view, &geometry);
