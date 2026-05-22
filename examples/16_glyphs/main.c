@@ -10,6 +10,14 @@
 
 static int font_index = 0;
 static char font_paths[8][256];
+static sb_font_metrics_t *font_metrics[8];
+
+static const sb_color_t baseline_color = {
+    .r = 1.0f, .g = 0.0f, .b = 0.0f, .a = 0.8f
+};
+static const sb_color_t descent_color = {
+    .r = 0.0f, .g = 1.0f, .b = 0.0f, .a = 0.8f
+};
 
 static void on_preferred_scale(sb_event_t *event, void *user_data)
 {
@@ -20,7 +28,9 @@ static void on_preferred_scale(sb_event_t *event, void *user_data)
     sb_surface_set_scale(surface, event->scale.scale);
 }
 
-static sb_glyph_layout_t* pango_layout(const char *text, float size)
+static sb_glyph_layout_t* pango_layout(const char *text,
+                                       float size,
+                                       sb_view_t *bound_view)
 {
     // Fontconfig init.
     if (!FcInit()) {
@@ -118,11 +128,37 @@ static sb_glyph_layout_t* pango_layout(const char *text, float size)
                 (item->item->analysis.level % 2) ? "RTL" : "LTR");
 
             sb_font_t sb_font;
-            sb_font.path = font_paths[font_index++];
+            sb_font.path = font_paths[font_index];
             sb_font.ttc_index = index;
             sb_font.size = size;
             sb_glyph_run_t *sb_run = sb_glyph_run_new(item->glyphs->num_glyphs, &sb_font);
             sb_glyph_t *sb_glyphs = sb_glyph_run_glyphs(sb_run);
+
+            // Font metrics.
+            {
+                sb_font_metrics_t *metrics = sb_font_metrics_new(&sb_font);
+                printf("    ascent:     %f\n", metrics->ascent);
+                printf("    descent:    %f\n", metrics->descent);
+                printf("    leading:    %f\n", metrics->leading);
+                printf("    cap_height: %f\n", metrics->cap_height);
+                printf("    x_height:   %f\n", metrics->x_height);
+
+                sb_rect_t geometry;
+
+                geometry.position.x = 0.0f;
+                geometry.position.y = metrics->ascent;
+                geometry.size.width = 150.0f;
+                geometry.size.height = 1.0f;
+                sb_view_t *baseline_view = sb_view_new(bound_view, &geometry);
+                sb_view_set_color(baseline_view, &baseline_color);
+
+                geometry.position.x = 0.0f;
+                geometry.position.y = metrics->ascent + metrics->descent;
+                sb_view_t *descent_view = sb_view_new(bound_view, &geometry);
+                sb_view_set_color(descent_view, &descent_color);
+
+                font_metrics[font_index++] = metrics;
+            }
 
             // Get glyph data.
             PangoGlyphString *glyphs = item->glyphs;
@@ -166,23 +202,32 @@ int main(int argc, char *argv[])
 {
     sb_application_t *app = sb_application_new(argc, argv);
 
-    sb_desktop_surface_t *surface = sb_desktop_surface_new(
+    sb_desktop_surface_t *desktop_surface = sb_desktop_surface_new(
         SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
+    sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
 
     sb_surface_add_event_listener(
-        sb_desktop_surface_surface(surface),
+        surface,
         SB_EVENT_TYPE_PREFERRED_SCALE,
         on_preferred_scale,
         NULL);
 
     sb_rect_t geometry = { { 10.0f, 10.0f }, { 140.0f, 100.0f } };
     sb_view_t *view = sb_view_new(
-        sb_surface_root_view(sb_desktop_surface_surface(surface)), &geometry);
+        sb_surface_root_view(surface), &geometry);
     sb_color_t color = { 0.9f, 0.9f, 0.9f, 1.0f };
     sb_view_set_color(view, &color);
 
     sb_view_set_clip(view, true);
 
+    // Text bound.
+    sb_rect_t bound_rect = { { 10.0f, 10.0f }, { 130.0f, 16.0f } };
+    sb_color_t bound_bg = { 0.5f, 0.5f, 1.0f, 0.5f };
+    sb_view_t *bound_view = sb_view_new(sb_surface_root_view(surface),
+        &bound_rect);
+    sb_view_set_color(bound_view, &bound_bg);
+
+    // Glyph layout.
     geometry.position.x = 0.0f;
     geometry.position.y = 0.0f;
     geometry.size.width = 60.0f;
@@ -190,11 +235,12 @@ int main(int argc, char *argv[])
     sb_view_t *glyphs_view = sb_view_new(view, &geometry);
     sb_view_set_render_type(glyphs_view, SB_VIEW_RENDER_TYPE_GLYPHS);
 
-    sb_glyph_layout_t *glyph_layout = pango_layout("Hello مرحبا 你好", 16.0f);
+    sb_glyph_layout_t *glyph_layout = pango_layout("Hello مرحبا 哈囉 xg", 16.0f,
+        bound_view);
 
     sb_view_set_glyph_layout(glyphs_view, glyph_layout);
 
-    sb_desktop_surface_show(surface);
+    sb_desktop_surface_show(desktop_surface);
 
     return sb_application_exec(app);
 }

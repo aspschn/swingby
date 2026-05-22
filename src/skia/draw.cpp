@@ -272,6 +272,7 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
 
     sk_sp<SkFontMgr> font_manager = SkFontMgr_New_Custom_Directory("/usr/share/fonts/");
     SkTextBlobBuilder builder;
+    sb_font_metrics_t *metrics = NULL;
 
     float total_x = 0.0f;
     const sb_list_t *lines = sb_glyph_layout_lines(layout);
@@ -287,6 +288,9 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
 
             // Get font.
             const sb_font_t *font = sb_glyph_run_font(run);
+            if (metrics == NULL) {
+                metrics = sb_font_metrics_new(font);
+            }
             sk_sp<SkTypeface> typeface = font_manager->makeFromFile(
                 font->path,
                 font->ttc_index
@@ -317,7 +321,11 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
 
     SkPaint paint;
     paint.setColor(SK_ColorBLACK);
-    canvas->drawTextBlob(blob.get(), 0, 24, paint);
+    canvas->drawTextBlob(blob.get(), 0, metrics->ascent * scale, paint);
+
+    if (metrics != NULL) {
+        sb_font_metrics_free(metrics);
+    }
 }
 
 void sb_skia_draw_texture(sb_skia_renderer_t *renderer,

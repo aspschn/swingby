@@ -31,7 +31,7 @@ sb_font_metrics_t* sb_font_metrics_new(const sb_font_t *font)
     SkFontMetrics sk_metrics;
     sk_font.getMetrics(&sk_metrics);
 
-    metrics->ascent = sk_metrics.fAscent;
+    metrics->ascent = -sk_metrics.fAscent;
     metrics->descent = sk_metrics.fDescent;
     metrics->leading = sk_metrics.fLeading;
     metrics->cap_height = sk_metrics.fCapHeight;
