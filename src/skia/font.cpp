@@ -21,6 +21,8 @@ sb_font_metrics_t* sb_font_metrics_new(const sb_font_t *font)
         (sb_font_metrics_t*)malloc(sizeof(sb_font_metrics_t));
 
     sk_sp<SkFontMgr> manager = SkFontMgr_New_Custom_Directory("/usr/share/fonts/");
+    // By Skia's documentation,
+    // "The caller must call unref() on the returned object if it is not null."
     sk_sp<SkTypeface> typeface = manager->makeFromFile(
         font->path,
         font->ttc_index
@@ -34,6 +36,8 @@ sb_font_metrics_t* sb_font_metrics_new(const sb_font_t *font)
     metrics->leading = sk_metrics.fLeading;
     metrics->cap_height = sk_metrics.fCapHeight;
     metrics->x_height = sk_metrics.fXHeight;
+
+    typeface->unref();
 
     return metrics;
 }
