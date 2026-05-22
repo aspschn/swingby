@@ -28,6 +28,13 @@ static void on_preferred_scale(sb_event_t *event, void *user_data)
     sb_surface_set_scale(surface, event->scale.scale);
 }
 
+static void on_resize_request(sb_event_t *event, void *user_data)
+{
+    sb_desktop_surface_t *desktop_surface = event->target;
+    sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
+    sb_surface_set_size(surface, &event->resize.size);
+}
+
 static sb_glyph_layout_t* pango_layout(const char *text,
                                        float size,
                                        sb_view_t *bound_view)
@@ -205,6 +212,12 @@ int main(int argc, char *argv[])
     sb_desktop_surface_t *desktop_surface = sb_desktop_surface_new(
         SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
     sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
+
+    sb_desktop_surface_add_event_listener(
+        desktop_surface,
+        SB_EVENT_TYPE_RESIZE_REQUEST,
+        on_resize_request,
+        NULL);
 
     sb_surface_add_event_listener(
         surface,
