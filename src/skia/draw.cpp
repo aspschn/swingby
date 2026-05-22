@@ -31,6 +31,7 @@
 #include <swingby/filter.h>
 #include <swingby/glyph.h>
 #include <swingby/log.h>
+#include <swingby/bench.h>
 
 #include "../impl/image-impl.hpp"
 
@@ -268,6 +269,7 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
                          uint32_t scale,
                          const sb_glyph_layout_t *layout)
 {
+    sb_bench_t *bench = sb_bench_new("sb_skia_draw_glyphs");
     SkCanvas *canvas = _get_canvas(renderer);
 
     sk_sp<SkFontMgr> font_manager = SkFontMgr_New_Custom_Directory("/usr/share/fonts/");
@@ -326,6 +328,7 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
     if (metrics != NULL) {
         sb_font_metrics_free(metrics);
     }
+    sb_bench_end(bench);
 }
 
 void sb_skia_draw_texture(sb_skia_renderer_t *renderer,

@@ -15,15 +15,19 @@
 extern "C" {
 #endif
 
+static sk_sp<SkFontMgr> font_mgr = nullptr;
+
 sb_font_metrics_t* sb_font_metrics_new(const sb_font_t *font)
 {
     sb_font_metrics_t *metrics =
         (sb_font_metrics_t*)malloc(sizeof(sb_font_metrics_t));
 
-    sk_sp<SkFontMgr> manager = SkFontMgr_New_Custom_Directory("/usr/share/fonts/");
+    if (font_mgr == nullptr) {
+        font_mgr = SkFontMgr_New_Custom_Directory("/usr/share/fonts/");
+    }
     // By Skia's documentation,
     // "The caller must call unref() on the returned object if it is not null."
-    sk_sp<SkTypeface> typeface = manager->makeFromFile(
+    sk_sp<SkTypeface> typeface = font_mgr->makeFromFile(
         font->path,
         font->ttc_index
     );
