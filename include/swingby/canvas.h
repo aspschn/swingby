@@ -29,6 +29,12 @@ void sb_canvas_draw_rect(sb_canvas_t *canvas,
                          const sb_paint_t *paint);
 
 SB_EXPORT
+void sb_canvas_draw_line(sb_canvas_t *canvas,
+                         const sb_point_t *p1,
+                         const sb_point_t *p2,
+                         const sb_paint_t *paint);
+
+SB_EXPORT
 void sb_canvas_free(sb_canvas_t *canvas);
 
 #ifdef __cplusplus

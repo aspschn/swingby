@@ -11,6 +11,8 @@ typedef struct sb_paint_t sb_paint_t;
 
 struct sb_paint_t {
     sb_color_t fill_color;
+    sb_color_t stroke_color;
+    float stroke_width;
 };
 
 #ifdef __cplusplus
