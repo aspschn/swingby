@@ -73,16 +73,16 @@ static void on_window_state_change(sb_event_t *event, void *user_data)
         // Set body geometry.
         {
             sb_rect_t geometry;
-            geometry.pos.x = window_body_offset_x(window);
-            geometry.pos.y = window_body_offset_y(window);
+            geometry.position.x = window_body_offset_x(window);
+            geometry.position.y = window_body_offset_y(window);
             geometry.size = window_body_size_for(window, size);
             sb_view_set_geometry(window->body, &geometry);
         }
         // Set WM geometry.
         sb_rect_t geometry;
         geometry.size = event->state_change.size;
-        geometry.pos.x = 0;
-        geometry.pos.y = 0;
+        geometry.position.x = 0;
+        geometry.position.y = 0;
         sb_desktop_surface_set_wm_geometry(window->desktop_surface, &geometry);
     } else if (state == SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
         value == false) {
@@ -96,16 +96,16 @@ static void on_window_state_change(sb_event_t *event, void *user_data)
         // Set body geometry.
         {
             sb_rect_t geometry;
-            geometry.pos.x = window_body_offset_x(window);
-            geometry.pos.y = window_body_offset_y(window);
+            geometry.position.x = window_body_offset_x(window);
+            geometry.position.y = window_body_offset_y(window);
             geometry.size = window_body_size_for(window, size);
             sb_view_set_geometry(window->body, &geometry);
         }
         // Set WM geometry.
         sb_rect_t geometry;
         geometry.size = event->state_change.size;
-        geometry.pos.x = window_decoration_border_offset(window);
-        geometry.pos.y = window_decoration_border_offset(window);
+        geometry.position.x = window_decoration_border_offset(window);
+        geometry.position.y = window_decoration_border_offset(window);
         sb_desktop_surface_set_wm_geometry(window->desktop_surface, &geometry);
     } else if (state == SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED &&
         value == true) {

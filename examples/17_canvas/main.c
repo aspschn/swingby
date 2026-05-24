@@ -53,16 +53,16 @@ static void on_paint(sb_event_t *event, void *user_data)
     printf("on_paint - view: %p, canvas: %p, paint: %p\n", view, canvas, paint);
 
     sb_rect_t rect;
-    rect.pos.x = 0.0f;
-    rect.pos.y = 0.0f;
+    rect.position.x = 0.0f;
+    rect.position.y = 0.0f;
     rect.size.width = 50.0f;
     rect.size.height = 50.0f;
 
     sb_point_t delta = calc_distance();
 
     for (int i = 0; i < sizeof(colors); ++i) {
-        rect.pos.x = (20.0f + (20.0f * i)) * delta.x;
-        rect.pos.y = (20.0f + (20.0f * i)) * delta.y;
+        rect.position.x = (20.0f + (20.0f * i)) * delta.x;
+        rect.position.y = (20.0f + (20.0f * i)) * delta.y;
         paint->fill_color = colors[i];
 
         sb_canvas_draw_rect(canvas, &rect, paint);

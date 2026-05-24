@@ -13,8 +13,8 @@ struct decoration* decoration_new(struct window *window)
         sb_desktop_surface_surface(window->desktop_surface);
 
     sb_rect_t geometry;
-    geometry.pos.x = 0;
-    geometry.pos.y = 0;
+    geometry.position.x = 0;
+    geometry.position.y = 0;
     geometry.size.width = 200;
     geometry.size.height = 200;
     decoration->view = sb_view_new(
@@ -36,8 +36,8 @@ struct decoration* decoration_new(struct window *window)
     // Shadow.
     decoration->shadow.thickness = 40.0f;
     sb_rect_t shadow_geometry;
-    shadow_geometry.pos.x = 0.0f;
-    shadow_geometry.pos.y = 0.0f;
+    shadow_geometry.position.x = 0.0f;
+    shadow_geometry.position.y = 0.0f;
     shadow_geometry.size.width = 200.0f;
     shadow_geometry.size.height = 200.0f;
     decoration->shadow.view = sb_view_new(decoration->view, &shadow_geometry);
@@ -106,23 +106,23 @@ void decoration_set_size(struct decoration *decoration, sb_size_t size)
 
     // Update decoration root.
     sb_rect_t decoration_geometry;
-    decoration_geometry.pos.x = 0.0f;
-    decoration_geometry.pos.y = 0.0f;
+    decoration_geometry.position.x = 0.0f;
+    decoration_geometry.position.y = 0.0f;
     decoration_geometry.size = size;
     sb_view_set_geometry(decoration->view, &decoration_geometry);
 
     // Update shadow.
     sb_rect_t shadow_geometry;
-    shadow_geometry.pos.x = 0.0f;
-    shadow_geometry.pos.y = 0.0f;
+    shadow_geometry.position.x = 0.0f;
+    shadow_geometry.position.y = 0.0f;
     shadow_geometry.size = size;
     sb_view_set_geometry(decoration->shadow.view, &shadow_geometry);
 
     // Update resize.
     sb_rect_t resize_geometry;
-    resize_geometry.pos.x =
+    resize_geometry.position.x =
         decoration->shadow.thickness - decoration->resize.thickness;
-    resize_geometry.pos.y =
+    resize_geometry.position.y =
         decoration->shadow.thickness - decoration->resize.thickness;
     resize_geometry.size.width =
         body_size.width + (decoration->resize.thickness * 2);
@@ -133,9 +133,9 @@ void decoration_set_size(struct decoration *decoration, sb_size_t size)
 
     // Update border.
     sb_rect_t border_geometry;
-    border_geometry.pos.x =
+    border_geometry.position.x =
         window_decoration_border_offset(decoration->window);
-    border_geometry.pos.y =
+    border_geometry.position.y =
         window_decoration_border_offset(decoration->window);
     border_geometry.size.width =
         body_size.width + decoration->border.thickness * 2;
@@ -146,9 +146,9 @@ void decoration_set_size(struct decoration *decoration, sb_size_t size)
 
     // Update title bar.
     sb_rect_t title_bar_geometry;
-    title_bar_geometry.pos.x =
+    title_bar_geometry.position.x =
         window_decoration_title_bar_offset(decoration->window);
-    title_bar_geometry.pos.y =
+    title_bar_geometry.position.y =
         window_decoration_title_bar_offset(decoration->window);
     title_bar_geometry.size.width = body_size.width;
     title_bar_geometry.size.height = decoration->title_bar->height;

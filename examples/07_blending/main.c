@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
     sb_view_set_color(view, &color);
     fprintf(stderr, "First rect: #ff9f9f\n");
 
-    geometry.pos.x = 10.0f;
-    geometry.pos.y = 10.0f;
+    geometry.position.x = 10.0f;
+    geometry.position.y = 10.0f;
     geometry.size.width = 80.0f;
     geometry.size.height = 80.0f;
     sb_view_t *child_view = sb_view_new(view, &geometry);
@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
     sb_view_set_color(child_view, &color);
     fprintf(stderr, "Second rect: #9fc363\n");
 
-    geometry.pos.x = 10.0f;
-    geometry.pos.y = 10.0f;
+    geometry.position.x = 10.0f;
+    geometry.position.y = 10.0f;
     geometry.size.width = 50.0f;
     geometry.size.height = 50.0f;
     sb_view_t *final_view = sb_view_new(child_view, &geometry);

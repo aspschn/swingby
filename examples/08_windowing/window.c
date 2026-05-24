@@ -108,7 +108,7 @@ void on_desktop_surface_resize(sb_event_t *event, void *user_data)
     // Set body geometry.
     const sb_rect_t *old_geometry = sb_view_geometry(window_global->body);
     sb_rect_t new_geometry;
-    new_geometry.pos = old_geometry->pos;
+    new_geometry.position = old_geometry->position;
     new_geometry.size = decoration_border_size(window_global->decoration);
     new_geometry.size.width -=
         (window_global->decoration->border.thickness * 2);
@@ -298,9 +298,9 @@ sb_rect_t window_body_geometry(struct window *window)
 {
     sb_rect_t geometry;
     geometry.size = window_body_size(window);
-    geometry.pos.x = window->decoration->shadow.thickness;
-    geometry.pos.y = window->decoration->shadow.thickness;
-    geometry.pos.y += window->decoration->title_bar->height;
+    geometry.position.x = window->decoration->shadow.thickness;
+    geometry.position.y = window->decoration->shadow.thickness;
+    geometry.position.y += window->decoration->title_bar->height;
 
     return geometry;
 }
@@ -312,8 +312,8 @@ sb_rect_t window_frame_geometry(struct window *window)
 
     sb_rect_t geometry;
     geometry.size = window_frame_size(window);
-    geometry.pos.x = shadow_thickness - border_thickness;
-    geometry.pos.y = shadow_thickness - border_thickness;
+    geometry.position.x = shadow_thickness - border_thickness;
+    geometry.position.y = shadow_thickness - border_thickness;
 
     return geometry;
 }

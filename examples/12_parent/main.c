@@ -26,8 +26,8 @@ int main(int argc, char *argv[])
     // Child content.
     sb_rect_t rect;
     rect.size = size;
-    rect.pos.x = 0;
-    rect.pos.y = 0;
+    rect.position.x = 0;
+    rect.position.y = 0;
     sb_view_t *view = sb_view_new(
         sb_surface_root_view(sb_desktop_surface_surface(child)), &rect);
     sb_color_t color;

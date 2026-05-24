@@ -44,8 +44,8 @@ static void on_resize(sb_event_t *event, void *user_data)
     fprintf(stderr, "on_resize\n");
 
     sb_rect_t geo;
-    geo.pos.x = 10.0f;
-    geo.pos.y = 10.0f;
+    geo.position.x = 10.0f;
+    geo.position.y = 10.0f;
     geo.size.width = sb_surface_size(event->target)->width - 10.0f - 10.0f;
     geo.size.height = sb_surface_size(event->target)->height - 10.0f - 10.0f;
 

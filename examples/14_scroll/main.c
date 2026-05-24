@@ -20,11 +20,11 @@ static void on_scroll(sb_event_t *event, void *user_data)
     sb_rect_t new_geo;
     new_geo.size = prev_geo->size;
     if (event->scroll.axis == SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL) {
-        new_geo.pos.x = prev_geo->pos.x;
-        new_geo.pos.y = prev_geo->pos.y + event->scroll.value;
+        new_geo.position.x = prev_geo->position.x;
+        new_geo.position.y = prev_geo->position.y + event->scroll.value;
     } else if (event->scroll.axis == SB_POINTER_SCROLL_AXIS_HORIZONTAL_SCROLL) {
-        new_geo.pos.x = prev_geo->pos.x + event->scroll.value;
-        new_geo.pos.y = prev_geo->pos.y;
+        new_geo.position.x = prev_geo->position.x + event->scroll.value;
+        new_geo.position.y = prev_geo->position.y;
     }
 
     sb_view_set_geometry(item, &new_geo);
@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
     sb_view_add_event_listener(view, SB_EVENT_TYPE_POINTER_SCROLL, on_scroll,
         NULL);
 
-    geometry.pos.x = 10.0f;
-    geometry.pos.y = 10.0f;
+    geometry.position.x = 10.0f;
+    geometry.position.y = 10.0f;
     geometry.size.width = 50.0f;
     geometry.size.height = 50.0f;
     color.r = 255;
