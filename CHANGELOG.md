@@ -2,7 +2,7 @@
 
 ## v0.7.0-dev
 
-- `sb_rect_t::pos` now deprecated. Use instead `sb_rect_t::position`.
+- `sb_rect_t::pos` now deprecated. Use `sb_rect_t::position` instead.
 
 - Enhance `SB_VIEW_RENDER_TYPE_GL` typed `sb_view_t`.
 
