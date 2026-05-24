@@ -15,18 +15,19 @@
 extern "C" {
 #endif
 
-static sk_sp<SkFontMgr> font_mgr = nullptr;
+static sk_sp<SkFontMgr> _font_mgr_instance = nullptr;
 
 sb_font_metrics_t* sb_font_metrics_new(const sb_font_t *font)
 {
     sb_font_metrics_t *metrics =
         (sb_font_metrics_t*)malloc(sizeof(sb_font_metrics_t));
 
-    if (font_mgr == nullptr) {
-        font_mgr = SkFontMgr_New_Custom_Directory("/usr/share/fonts/");
-    }
+    SkFontMgr *font_mgr = (SkFontMgr*)sb_font_font_mgr_instance();
     // By Skia's documentation,
     // "The caller must call unref() on the returned object if it is not null."
+    // However, from commit `4bf296be2821d2bdd0afabae9fdfe18e7e9b59cb`,
+    // it returns sk_sp rather than raw pointer. But document not changed.
+    // This is now wrong information.
     sk_sp<SkTypeface> typeface = font_mgr->makeFromFile(
         font->path,
         font->ttc_index
@@ -41,14 +42,22 @@ sb_font_metrics_t* sb_font_metrics_new(const sb_font_t *font)
     metrics->cap_height = sk_metrics.fCapHeight;
     metrics->x_height = sk_metrics.fXHeight;
 
-    typeface->unref();
-
     return metrics;
 }
 
 void sb_font_metrics_free(sb_font_metrics_t *metrics)
 {
     free(metrics);
+}
+
+void* sb_font_font_mgr_instance()
+{
+    if (_font_mgr_instance == nullptr) {
+        _font_mgr_instance =
+            SkFontMgr_New_Custom_Directory("");
+    }
+
+    return _font_mgr_instance.get();
 }
 
 #ifdef __cplusplus

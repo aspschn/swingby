@@ -26,6 +26,8 @@ sb_font_metrics_t* sb_font_metrics_new(const sb_font_t *font);
 
 void sb_font_metrics_free(sb_font_metrics_t *metrics);
 
+void* sb_font_font_mgr_instance();
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
