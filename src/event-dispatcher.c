@@ -448,24 +448,6 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
         }
     }
 
-    // Process timer events.
-    sb_list_t *timer_event_list = event_dispatcher->timer.events;
-    for (uint64_t i = 0; i < sb_list_length(timer_event_list); ++i) {
-        sb_event_t *event = sb_list_at(timer_event_list, i);
-        uint64_t now = sb_time_now_milliseconds();
-        if (now - event->timer.time >= event->timer.interval) {
-            sb_log_debug("Timer triggered!\n");
-            // Call on_timeout method of the surface.
-            sb_surface_on_timeout(event->target, event);
-            // If no repeat, remove event.
-            if (event->timer.repeat == false) {
-                sb_event_dispatcher_timer_remove_event(event_dispatcher,
-                    event->timer.id);
-            }
-            event->timer.time = now;
-        }
-    }
-
     // sb_bench_end(bench);
 }
 
@@ -544,6 +526,8 @@ uint32_t sb_event_dispatcher_timer_add_event(
     sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
 {
     sb_list_t *timer_events = event_dispatcher->timer.events;
+
+    // Generate a new timer id.
     uint32_t new_id = 0;
     for (uint64_t i = 0; i < sb_list_length(timer_events); ++i) {
         sb_event_t *iter = sb_list_at(timer_events, i);
@@ -553,10 +537,13 @@ uint32_t sb_event_dispatcher_timer_add_event(
     }
     event->timer.id = new_id;
 
+    // Store when the timer event added.
     uint64_t now = sb_time_now_milliseconds();
     event->timer.time = now;
 
-    sb_list_push(event_dispatcher->timer.events, event);
+    sb_list_push(timer_events, event);
+
+    _timer_update_timerfd(event_dispatcher);
 
     return new_id;
 }
@@ -571,7 +558,32 @@ void sb_event_dispatcher_timer_remove_event(
         if (timer_event->timer.id == id) {
             sb_list_remove(event_list, i);
             sb_event_free(timer_event);
+
+            _timer_update_timerfd(event_dispatcher);
+
             break;
+        }
+    }
+}
+
+void sb_event_dispatcher_timer_process_events(
+    sb_event_dispatcher_t *event_dispatcher)
+{
+    sb_list_t *timer_event_list = event_dispatcher->timer.events;
+
+    for (uint64_t i = 0; i < sb_list_length(timer_event_list); ++i) {
+        sb_event_t *event = sb_list_at(timer_event_list, i);
+        uint64_t now = sb_time_now_milliseconds();
+        if (now - event->timer.time >= event->timer.interval) {
+            sb_log_debug("Timer triggered!\n");
+            // Call on_timeout method of the surface.
+            sb_surface_on_timeout(event->target, event);
+            // If no repeat, remove event.
+            if (event->timer.repeat == false) {
+                sb_event_dispatcher_timer_remove_event(event_dispatcher,
+                    event->timer.id);
+            }
+            event->timer.time = now;
         }
     }
 }

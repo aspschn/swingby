@@ -36,6 +36,7 @@ void sb_event_dispatcher_post_event(sb_event_dispatcher_t *event_dispatcher,
 void
 sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher);
 
+
 void sb_event_dispatcher_keyboard_key_repeat_set_delay(
     sb_event_dispatcher_t *event_dispatcher, uint32_t delay);
 
@@ -60,6 +61,7 @@ void sb_event_dispatcher_keyboard_key_repeat_remove_event(
 int sb_event_dispatcher_keyboard_key_repeat_fd(
     sb_event_dispatcher_t *event_dispatcher);
 
+
 bool sb_event_dispatcher_timer_has_event(
     sb_event_dispatcher_t *event_dispatcher);
 
@@ -69,6 +71,9 @@ uint32_t sb_event_dispatcher_timer_add_event(
 
 void sb_event_dispatcher_timer_remove_event(
     sb_event_dispatcher_t *event_dispatcher, uint32_t id);
+
+void sb_event_dispatcher_timer_process_events(
+    sb_event_dispatcher_t *event_dispatcher);
 
 int sb_event_dispatcher_timer_fd(sb_event_dispatcher_t *event_dispatcher);
 
