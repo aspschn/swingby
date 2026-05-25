@@ -748,9 +748,32 @@ sb_egl_context_t* sb_application_egl(sb_application_t *application)
 
 int sb_application_exec(sb_application_t *application)
 {
-    int err = wl_display_dispatch(application->wl_display);
+    sb_event_dispatcher_t *dispatcher = application->event_dispatcher;
+
+    struct pollfd poll_fds[] = {
+        { wl_display_get_fd(application->wl_display), POLLIN },
+        { sb_event_dispatcher_timer_fd(dispatcher), POLLIN },
+        // { sb_event_dispatcher_keyboard_key_repeat_fd(dispatcher), POLLIN },
+    };
+
+    int err = 0; // wl_display_dispatch(application->wl_display);
     while (err != -1) {
-        sb_event_dispatcher_process_events(application->event_dispatcher);
+        int ret = poll(poll_fds, 2, -1);
+
+        if (poll_fds[0].revents == POLLIN) {
+            err = wl_display_dispatch(application->wl_display);
+
+            sb_event_dispatcher_process_events(dispatcher);
+        }
+
+        if (poll_fds[1].revents == POLLIN) {
+            sb_event_dispatcher_timer_process_events(dispatcher);
+
+            sb_event_dispatcher_process_events(dispatcher);
+            // continue;
+        }
+
+        // err = wl_display_dispatch(application->wl_display);
 
         sb_event_t *tick_event = sb_event_new(SB_EVENT_TARGET_TYPE_APPLICATION,
             application,
@@ -765,17 +788,12 @@ int sb_application_exec(sb_application_t *application)
 
         wl_display_flush(application->wl_display);
 
-        struct pollfd poll_fds[] = {
-            { wl_display_get_fd(application->wl_display), POLLIN },
-        };
+        continue;
+
         // Keyboard key repeat.
         bool has_event = sb_event_dispatcher_keyboard_key_repeat_has_event(
             application->event_dispatcher);
-        has_event = has_event || sb_event_dispatcher_timer_has_event(
-            application->event_dispatcher);
-        if (has_event != true) {
-            err = wl_display_dispatch(application->wl_display);
-        } else {
+        if (has_event == true) {
             err = wl_display_dispatch_pending(application->wl_display);
             // Throttle to prevent 100% CPU usage.
             usleep(500);

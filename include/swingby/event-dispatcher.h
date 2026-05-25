@@ -36,6 +36,8 @@ void sb_event_dispatcher_post_event(sb_event_dispatcher_t *event_dispatcher,
 void
 sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher);
 
+void sb_event_dispatcher_free(sb_event_dispatcher_t *event_dispatcher);
+
 
 void sb_event_dispatcher_keyboard_key_repeat_set_delay(
     sb_event_dispatcher_t *event_dispatcher, uint32_t delay);

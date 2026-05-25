@@ -81,6 +81,23 @@ void* sb_queue_dequeue(sb_queue_t *queue)
     return data;
 }
 
+
+struct sb_event_dispatcher_t {
+    sb_queue_t *queue;
+    struct {
+        uint32_t delay;
+        uint32_t rate;
+        /// \brief List for sb_repeat_event_t.
+        sb_list_t *events;
+        int fd;
+    } keyboard_key_repeat;
+    struct {
+        /// \brief List for sb_event_t.
+        sb_list_t *events;
+        int fd;
+    } timer;
+};
+
 //!<===================
 //!< Helper Functions
 //!<===================
@@ -208,22 +225,6 @@ static void _print_repeat_event_list(sb_list_t *list)
     }
 }
 
-struct sb_event_dispatcher_t {
-    sb_queue_t *queue;
-    struct {
-        uint32_t delay;
-        uint32_t rate;
-        /// \brief List for sb_repeat_event_t.
-        sb_list_t *events;
-        int fd;
-    } keyboard_key_repeat;
-    struct {
-        /// \brief List for sb_event_t.
-        sb_list_t *events;
-        int fd;
-    } timer;
-};
-
 sb_event_dispatcher_t* sb_event_dispatcher_new()
 {
     sb_event_dispatcher_t *event_dispatcher = malloc(
@@ -238,7 +239,7 @@ sb_event_dispatcher_t* sb_event_dispatcher_new()
     event_dispatcher->keyboard_key_repeat.fd = -1;
 
     event_dispatcher->timer.events = sb_list_new();
-    event_dispatcher->timer.fd = -1;
+    event_dispatcher->timer.fd = timerfd_create(CLOCK_MONOTONIC, 0);;
 
     return event_dispatcher;
 }
