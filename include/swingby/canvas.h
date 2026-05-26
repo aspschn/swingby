@@ -19,6 +19,10 @@ sb_canvas_t* sb_canvas_new(void *sk_canvas);
 SB_EXPORT
 void sb_canvas_set_scale(sb_canvas_t *canvas, float scale);
 
+/// \brief Set the origin position to the canvas.
+SB_EXPORT
+void sb_canvas_set_position(sb_canvas_t *canvas, const sb_point_t *position);
+
 /// \brief Get the default paint of the canvas.
 SB_EXPORT
 sb_paint_t* sb_canvas_paint(sb_canvas_t *canvas);

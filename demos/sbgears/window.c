@@ -28,10 +28,15 @@ static void button_on_paint(sb_event_t *event, void *user_data)
     sb_canvas_t *canvas = sb_view_canvas(button);
     sb_paint_t *paint = sb_canvas_paint(canvas);
 
+    const sb_rect_t *src = sb_view_geometry(button);
+    sb_rect_t rect = {
+        .position = { .x = 0.0f, .y = 0.0f },
+        .size = { .width = src->size.width, .height = src->size.height },
+    };
     paint->fill_color = (sb_color_t){
         .r = 0.5f, .g = 0.5f, .b = 0.5f, .a = 1.0f
     };
-    sb_canvas_draw_rect(canvas, sb_view_geometry(button), paint);
+    sb_canvas_draw_rect(canvas, &rect, paint);
 
     paint->stroke_color = (sb_color_t){
         .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f

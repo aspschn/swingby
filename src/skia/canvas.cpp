@@ -13,6 +13,7 @@ extern "C" {
 struct sb_canvas_t {
     SkCanvas *sk_canvas;
     sb_paint_t paint;
+    sb_point_t position;
     float scale;
 };
 
@@ -34,6 +35,11 @@ void sb_canvas_set_scale(sb_canvas_t *canvas, float scale)
     canvas->scale = scale;
 }
 
+void sb_canvas_set_position(sb_canvas_t *canvas, const sb_point_t *position)
+{
+    canvas->position = *position;
+}
+
 sb_paint_t* sb_canvas_paint(sb_canvas_t *canvas)
 {
     return &canvas->paint;
@@ -46,8 +52,11 @@ void sb_canvas_draw_rect(sb_canvas_t *canvas,
     const float scale = canvas->scale;
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->position.x * scale, rect->position.y * scale,
-        rect->size.width * scale, rect->size.height * scale);
+        (rect->position.x + canvas->position.x) * scale,
+        (rect->position.y + canvas->position.y) * scale,
+        rect->size.width * scale,
+        rect->size.height * scale
+    );
 
     SkPaint sk_paint;
 
@@ -81,7 +90,13 @@ void sb_canvas_draw_line(sb_canvas_t *canvas,
     sk_paint.setColor4f(color);
     sk_paint.setStrokeWidth(paint->stroke_width);
 
-    canvas->sk_canvas->drawLine(p1->x, p1->y, p2->x, p2->y, sk_paint);
+    canvas->sk_canvas->drawLine(
+        (p1->x + canvas->position.x) * scale,
+        (p1->y + canvas->position.y) * scale,
+        (p2->x + canvas->position.x) * scale,
+        (p2->y + canvas->position.y) * scale,
+        sk_paint
+    );
 }
 
 void sb_canvas_free(sb_canvas_t *canvas)

@@ -269,6 +269,10 @@ static void _draw_recursive(sb_surface_t *surface,
 
         // Set the canvas to the view.
         sb_canvas_t *canvas = sb_canvas_new(sk_canvas);
+        {
+            const sb_point_t *pos = &sb_view_geometry(view)->position;
+            sb_canvas_set_position(canvas, pos);
+        }
         sb_canvas_set_scale(canvas, surface->scale);
         sb_view_set_canvas(view, canvas);
 
