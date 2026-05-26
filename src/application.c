@@ -7,6 +7,7 @@
 
 #include <unistd.h>
 #include <sys/mman.h>
+#include <poll.h>
 
 #include <linux/input.h>
 
@@ -37,7 +38,7 @@
 struct sb_application_t {
     sb_egl_context_t *egl_context;
     /// `struct wl_display`.
-    struct wl_display *_wl_display;
+    struct wl_display *wl_display;
     /// `struct wl_registry`.
     struct wl_registry *_wl_registry;
     struct wl_compositor *_wl_compositor;
@@ -528,7 +529,7 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 {
     sb_application_t *app = malloc(sizeof(sb_application_t));
 
-    app->_wl_display = wl_display_connect(NULL);
+    app->wl_display = wl_display_connect(NULL);
 
     // Null initializations.
     app->_wl_seat = NULL;
@@ -565,12 +566,12 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     // Init xkb context as NULL.
     app->xkb_context = NULL;
 
-    app->_wl_registry = wl_display_get_registry(app->_wl_display);
+    app->_wl_registry = wl_display_get_registry(app->wl_display);
     wl_registry_add_listener(app->_wl_registry, &app_registry_listener,
         (void*)app);
 
-    wl_display_dispatch(app->_wl_display);
-    wl_display_roundtrip(app->_wl_display);
+    wl_display_dispatch(app->wl_display);
+    wl_display_roundtrip(app->wl_display);
 
     xdg_wm_base_add_listener(app->_xdg_wm_base, &app_xdg_wm_base_listener,
         NULL);
@@ -705,7 +706,7 @@ void sb_application_unregister_desktop_surface(sb_application_t *application,
 struct wl_display* sb_application_wl_display(
     sb_application_t *application)
 {
-    return application->_wl_display;
+    return application->wl_display;
 }
 
 struct wl_compositor* sb_application_wl_compositor(
@@ -747,9 +748,32 @@ sb_egl_context_t* sb_application_egl(sb_application_t *application)
 
 int sb_application_exec(sb_application_t *application)
 {
-    int err = wl_display_dispatch(application->_wl_display);
+    sb_event_dispatcher_t *dispatcher = application->event_dispatcher;
+
+    struct pollfd poll_fds[] = {
+        { wl_display_get_fd(application->wl_display), POLLIN },
+        { sb_event_dispatcher_timer_fd(dispatcher), POLLIN },
+        { sb_event_dispatcher_keyboard_key_repeat_fd(dispatcher), POLLIN },
+    };
+
+    int err = 0; // wl_display_dispatch(application->wl_display);
     while (err != -1) {
-        sb_event_dispatcher_process_events(application->event_dispatcher);
+        int ret = poll(poll_fds, 3, -1);
+
+        if (poll_fds[0].revents == POLLIN) {
+            err = wl_display_dispatch(application->wl_display);
+        }
+
+        if (poll_fds[1].revents == POLLIN) {
+            sb_event_dispatcher_timer_process_events(dispatcher);
+        }
+
+        if (poll_fds[2].revents == POLLIN) {
+            sb_event_dispatcher_keyboard_key_repeat_process_events(dispatcher);
+        }
+
+        sb_event_dispatcher_process_events(dispatcher);
+        // err = wl_display_dispatch(application->wl_display);
 
         sb_event_t *tick_event = sb_event_new(SB_EVENT_TARGET_TYPE_APPLICATION,
             application,
@@ -762,25 +786,7 @@ int sb_application_exec(sb_application_t *application)
             break;
         }
 
-        wl_display_flush(application->_wl_display);
-
-        // Keyboard key repeat.
-        bool has_event = sb_event_dispatcher_keyboard_key_repeat_has_event(
-            application->event_dispatcher);
-        has_event = has_event || sb_event_dispatcher_timer_has_event(
-            application->event_dispatcher);
-        if (has_event != true) {
-            err = wl_display_dispatch(application->_wl_display);
-        } else {
-            err = wl_display_dispatch_pending(application->_wl_display);
-            // Throttle to prevent 100% CPU usage.
-            usleep(500);
-            int prepare = wl_display_prepare_read(application->_wl_display);
-            if (prepare == 0) {
-                wl_display_read_events(application->_wl_display);
-                err = wl_display_dispatch_pending(application->_wl_display);
-            }
-        }
+        wl_display_flush(application->wl_display);
     }
 
     if (err == -1) {
