@@ -202,7 +202,7 @@ sb_repeat_event_t* sb_repeat_event_new(sb_event_t *event)
 
 void sb_repeat_event_free(sb_repeat_event_t *repeat_event)
 {
-    repeat_event->event = NULL;
+    // repeat_event->event = NULL;
 
     if (repeat_event->event != NULL) {
         sb_event_free(repeat_event->event);
@@ -236,10 +236,11 @@ sb_event_dispatcher_t* sb_event_dispatcher_new()
     event_dispatcher->keyboard_key_repeat.delay = 100000;
     event_dispatcher->keyboard_key_repeat.rate = 0;
     event_dispatcher->keyboard_key_repeat.events = sb_list_new();
-    event_dispatcher->keyboard_key_repeat.fd = -1;
+    event_dispatcher->keyboard_key_repeat.fd = timerfd_create(CLOCK_MONOTONIC,
+        0);
 
     event_dispatcher->timer.events = sb_list_new();
-    event_dispatcher->timer.fd = timerfd_create(CLOCK_MONOTONIC, 0);;
+    event_dispatcher->timer.fd = timerfd_create(CLOCK_MONOTONIC, 0);
 
     return event_dispatcher;
 }
@@ -393,7 +394,83 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
         }
     }
 
-    // Process keyboard key repeat.
+    // sb_bench_end(bench);
+}
+
+//!<=======================
+//!< Keyboard Key Event
+//!<=======================
+
+void sb_event_dispatcher_keyboard_key_repeat_set_delay(
+    sb_event_dispatcher_t *event_dispatcher, uint32_t delay)
+{
+    event_dispatcher->keyboard_key_repeat.delay = delay;
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_set_rate(
+    sb_event_dispatcher_t *event_dispatcher, uint32_t rate)
+{
+    event_dispatcher->keyboard_key_repeat.rate = rate;
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_add_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
+{
+    sb_repeat_event_t *repeat_event = sb_repeat_event_new(event);
+    sb_log_debug("_add_event - Add: %d\n", event->keyboard.keycode);
+
+    uint64_t now = sb_time_now_milliseconds();
+    repeat_event->time = now;
+
+    {
+        if (sb_list_length(event_dispatcher->keyboard_key_repeat.events) == 0) {
+        } else {
+            sb_repeat_event_t *repeat_event = sb_list_at(event_dispatcher->keyboard_key_repeat.events, 0);
+            sb_log_debug(" === First keycode: %d\n", repeat_event->event->keyboard.keycode);
+        }
+    }
+    sb_list_push(event_dispatcher->keyboard_key_repeat.events, repeat_event);
+    // DEBUG //
+    // _print_repeat_event_list(event_dispatcher->keyboard_key_repeat.events);
+    // DEBUG END //
+
+    const uint32_t delay = event_dispatcher->keyboard_key_repeat.delay;
+    struct itimerspec its = {
+        .it_interval = { .tv_sec = 0, .tv_nsec = 0 },
+        .it_value = sb_time_milliseconds_to_timespec(delay),
+    };
+    timerfd_settime(event_dispatcher->keyboard_key_repeat.fd,
+        0, &its, NULL);
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_remove_event(
+    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
+{
+    sb_list_t *event_list = event_dispatcher->keyboard_key_repeat.events;
+
+    // Do not remove initial release event.
+    if (sb_list_length(event_list) == 0) {
+        return;
+    }
+
+    sb_log_debug("_remove_event\n");
+    // _print_repeat_event_list(event_list);
+    for (int i = 0; i < sb_list_length(event_list); ++i) {
+        sb_repeat_event_t *repeat_event = sb_list_at(event_list, i);
+        if (repeat_event->event->keyboard.keycode == event->keyboard.keycode) {
+            // Remove the repeat event info from the list and free it.
+            sb_list_remove(event_list, i);
+            sb_log_debug("Remove: %d\n", event->keyboard.keycode);
+            sb_repeat_event_free(repeat_event);
+            return;
+        }
+    }
+    sb_log_warn("Not removed!\n");
+}
+
+void sb_event_dispatcher_keyboard_key_repeat_process_events(
+    sb_event_dispatcher_t *event_dispatcher)
+{
     sb_list_t *event_list = event_dispatcher->keyboard_key_repeat.events;
     uint64_t delay = event_dispatcher->keyboard_key_repeat.delay;
     uint64_t rate = event_dispatcher->keyboard_key_repeat.rate;
@@ -448,80 +525,17 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
             }
         }
     }
-
-    // sb_bench_end(bench);
 }
 
-void sb_event_dispatcher_keyboard_key_repeat_set_delay(
-    sb_event_dispatcher_t *event_dispatcher, uint32_t delay)
-{
-    event_dispatcher->keyboard_key_repeat.delay = delay;
-}
-
-void sb_event_dispatcher_keyboard_key_repeat_set_rate(
-    sb_event_dispatcher_t *event_dispatcher, uint32_t rate)
-{
-    event_dispatcher->keyboard_key_repeat.rate = rate;
-}
-
-bool sb_event_dispatcher_keyboard_key_repeat_has_event(
+int sb_event_dispatcher_keyboard_key_repeat_fd(
     sb_event_dispatcher_t *event_dispatcher)
 {
-    return sb_list_length(event_dispatcher->keyboard_key_repeat.events) > 0;
+    return event_dispatcher->keyboard_key_repeat.fd;
 }
 
-void sb_event_dispatcher_keyboard_key_repeat_add_event(
-    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
-{
-    sb_repeat_event_t *repeat_event = sb_repeat_event_new(event);
-    sb_log_debug("_add_event - Add: %d\n", event->keyboard.keycode);
-
-    uint64_t now = sb_time_now_milliseconds();
-    repeat_event->time = now;
-
-    {
-        if (sb_list_length(event_dispatcher->keyboard_key_repeat.events) == 0) {
-        } else {
-            sb_repeat_event_t *repeat_event = sb_list_at(event_dispatcher->keyboard_key_repeat.events, 0);
-            sb_log_debug(" === First keycode: %d\n", repeat_event->event->keyboard.keycode);
-        }
-    }
-    sb_list_push(event_dispatcher->keyboard_key_repeat.events, repeat_event);
-    // DEBUG //
-    // _print_repeat_event_list(event_dispatcher->keyboard_key_repeat.events);
-    // DEBUG END //
-}
-
-void sb_event_dispatcher_keyboard_key_repeat_remove_event(
-    sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)
-{
-    sb_list_t *event_list = event_dispatcher->keyboard_key_repeat.events;
-
-    // Do not remove initial release event.
-    if (sb_list_length(event_list) == 0) {
-        return;
-    }
-
-    sb_log_debug("_remove_event\n");
-    // _print_repeat_event_list(event_list);
-    for (int i = 0; i < sb_list_length(event_list); ++i) {
-        sb_repeat_event_t *repeat_event = sb_list_at(event_list, i);
-        if (repeat_event->event->keyboard.keycode == event->keyboard.keycode) {
-            // Remove the repeat event info from the list and free it.
-            sb_list_remove(event_list, i);
-            sb_log_debug("Remove: %d\n", event->keyboard.keycode);
-            sb_repeat_event_free(repeat_event);
-            return;
-        }
-    }
-    sb_log_warn("Not removed!\n");
-}
-
-bool sb_event_dispatcher_timer_has_event(
-    sb_event_dispatcher_t *event_dispatcher)
-{
-    return sb_list_length(event_dispatcher->timer.events) > 0;
-}
+//!<================
+//!< Timer Event
+//!<================
 
 uint32_t sb_event_dispatcher_timer_add_event(
     sb_event_dispatcher_t *event_dispatcher, sb_event_t *event)

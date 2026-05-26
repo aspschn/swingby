@@ -753,26 +753,26 @@ int sb_application_exec(sb_application_t *application)
     struct pollfd poll_fds[] = {
         { wl_display_get_fd(application->wl_display), POLLIN },
         { sb_event_dispatcher_timer_fd(dispatcher), POLLIN },
-        // { sb_event_dispatcher_keyboard_key_repeat_fd(dispatcher), POLLIN },
+        { sb_event_dispatcher_keyboard_key_repeat_fd(dispatcher), POLLIN },
     };
 
     int err = 0; // wl_display_dispatch(application->wl_display);
     while (err != -1) {
-        int ret = poll(poll_fds, 2, -1);
+        int ret = poll(poll_fds, 3, -1);
 
         if (poll_fds[0].revents == POLLIN) {
             err = wl_display_dispatch(application->wl_display);
-
-            sb_event_dispatcher_process_events(dispatcher);
         }
 
         if (poll_fds[1].revents == POLLIN) {
             sb_event_dispatcher_timer_process_events(dispatcher);
-
-            sb_event_dispatcher_process_events(dispatcher);
-            // continue;
         }
 
+        if (poll_fds[2].revents == POLLIN) {
+            sb_event_dispatcher_keyboard_key_repeat_process_events(dispatcher);
+        }
+
+        sb_event_dispatcher_process_events(dispatcher);
         // err = wl_display_dispatch(application->wl_display);
 
         sb_event_t *tick_event = sb_event_new(SB_EVENT_TARGET_TYPE_APPLICATION,
@@ -787,22 +787,6 @@ int sb_application_exec(sb_application_t *application)
         }
 
         wl_display_flush(application->wl_display);
-
-        continue;
-
-        // Keyboard key repeat.
-        bool has_event = sb_event_dispatcher_keyboard_key_repeat_has_event(
-            application->event_dispatcher);
-        if (has_event == true) {
-            err = wl_display_dispatch_pending(application->wl_display);
-            // Throttle to prevent 100% CPU usage.
-            usleep(500);
-            int prepare = wl_display_prepare_read(application->wl_display);
-            if (prepare == 0) {
-                wl_display_read_events(application->wl_display);
-                err = wl_display_dispatch_pending(application->wl_display);
-            }
-        }
     }
 
     if (err == -1) {
