@@ -1,5 +1,7 @@
 #include "draw.h"
 
+#include <GL/gl.h>
+
 #include "skia/include/core/SkRect.h"
 #include "skia/include/core/SkRRect.h"
 #include "skia/include/core/SkColor.h"
@@ -10,6 +12,13 @@
 #include "skia/include/core/SkTypeface.h"
 #include "skia/include/core/SkFont.h"
 #include "skia/include/core/SkTextBlob.h"
+
+#include "skia/include/gpu/ganesh/GrDirectContext.h"
+// GrBackendRenderTargets::MakeGL
+#include "skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
+// SkImages::BorrowTextureFrom
+#include "skia/include/gpu/ganesh/SkImageGanesh.h"
+
 #include "skia/include/effects/SkImageFilters.h"
 #include "skia/include/ports/SkFontMgr_directory.h"
 
@@ -22,6 +31,7 @@
 #include <swingby/filter.h>
 #include <swingby/glyph.h>
 #include <swingby/log.h>
+#include <swingby/bench.h>
 
 #include "../impl/image-impl.hpp"
 
@@ -60,7 +70,7 @@ void sb_skia_draw_rect(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x, rect->pos.y,
+        rect->position.x, rect->position.y,
         rect->size.width, rect->size.height);
     SkPaint paint;
     paint.setColor(SkColorSetARGB(color->a, color->r, color->g, color->b));
@@ -75,7 +85,7 @@ void sb_skia_draw_rect_with_radius(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x, rect->pos.y,
+        rect->position.x, rect->position.y,
         rect->size.width, rect->size.height);
 
     float top_left = sb_view_radius_top_left(radius);
@@ -108,8 +118,8 @@ void sb_skia_draw_rect2(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x * scale,
-        rect->pos.y * scale,
+        rect->position.x * scale,
+        rect->position.y * scale,
         rect->size.width * scale,
         rect->size.height * scale);
 
@@ -216,8 +226,8 @@ void sb_skia_draw_image(sb_skia_renderer_t *renderer,
     sk_sp<SkImage> sk_image = SkImages::RasterFromBitmap(bitmap);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x * scale,
-        rect->pos.y * scale,
+        rect->position.x * scale,
+        rect->position.y * scale,
         rect->size.width * scale,
         rect->size.height * scale);
 
@@ -243,8 +253,8 @@ void sb_skia_draw_image2(sb_skia_renderer_t *renderer,
     // TODO: RRect.
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x * scale,
-        rect->pos.y * scale,
+        rect->position.x * scale,
+        rect->position.y * scale,
         rect->size.width * scale,
         rect->size.height * scale
     );
@@ -259,24 +269,31 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
                          uint32_t scale,
                          const sb_glyph_layout_t *layout)
 {
+    sb_bench_t *bench = sb_bench_new("sb_skia_draw_glyphs");
     SkCanvas *canvas = _get_canvas(renderer);
 
-    sk_sp<SkFontMgr> font_manager = SkFontMgr_New_Custom_Directory("/usr/share/fonts/");
+    SkFontMgr *font_mgr = (SkFontMgr*)sb_font_font_mgr_instance();
     SkTextBlobBuilder builder;
+    sb_font_metrics_t *metrics = NULL;
 
     float total_x = 0.0f;
-    const sb_glyph_line_t **lines = sb_glyph_layout_lines(layout);
+    const sb_list_t *lines = sb_glyph_layout_lines(layout);
     auto line_count = sb_glyph_layout_line_count(layout);
     for (uint32_t i = 0; i < line_count; ++i) {
-        const sb_glyph_run_t **runs = sb_glyph_line_runs(lines[i]);
-        auto run_count = sb_glyph_line_run_count(lines[i]);
+        auto *line = (sb_glyph_line_t*)sb_list_at(lines, i);
+        const sb_list_t *runs = sb_glyph_line_runs(line);
+        auto run_count = sb_glyph_line_run_count(line);
         for (uint32_t j = 0; j < run_count; ++j) {
-            auto glyph_count = sb_glyph_run_count(runs[j]);
-            auto glyphs = sb_glyph_run_glyphs((sb_glyph_run_t*)runs[j]);
+            auto *run = (sb_glyph_run_t*)sb_list_at(runs, j);
+            auto glyph_count = sb_glyph_run_count(run);
+            auto glyphs = sb_glyph_run_glyphs(run);
 
             // Get font.
-            const sb_font_t *font = sb_glyph_run_font(runs[j]);
-            sk_sp<SkTypeface> typeface = font_manager->makeFromFile(
+            const sb_font_t *font = sb_glyph_run_font(run);
+            if (metrics == NULL) {
+                metrics = sb_font_metrics_new(font);
+            }
+            sk_sp<SkTypeface> typeface = font_mgr->makeFromFile(
                 font->path,
                 font->ttc_index
             );
@@ -290,10 +307,10 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
             }
             SkFont sk_font = SkFont(typeface, font->size * scale);
 
-            auto& run = builder.allocRunPos(sk_font, glyph_count);
+            auto& sk_run = builder.allocRunPos(sk_font, glyph_count);
             for (uint32_t i = 0; i < glyph_count; ++i) {
-                run.glyphs[i] = glyphs[i].id;
-                run.points()[i] = SkPoint::Make(
+                sk_run.glyphs[i] = glyphs[i].id;
+                sk_run.points()[i] = SkPoint::Make(
                     total_x + (glyphs[i].offset.x * scale),
                     glyphs[i].offset.y * scale
                 );
@@ -306,7 +323,55 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
 
     SkPaint paint;
     paint.setColor(SK_ColorBLACK);
-    canvas->drawTextBlob(blob.get(), 0, 24, paint);
+    canvas->drawTextBlob(blob.get(), 0, metrics->ascent * scale, paint);
+
+    if (metrics != NULL) {
+        sb_font_metrics_free(metrics);
+    }
+    sb_bench_end(bench);
+}
+
+void sb_skia_draw_texture(sb_skia_renderer_t *renderer,
+                          const sb_rect_t *rect,
+                          float scale,
+                          uint32_t texture_id)
+{
+    SkCanvas *canvas = _get_canvas(renderer);
+    auto gl_renderer =
+        (sb_skia_gl_renderer_t*)sb_skia_renderer_current(renderer);
+
+    GrGLTextureInfo info;
+    info.fTarget = GL_TEXTURE_2D;
+    info.fID = texture_id;
+    info.fFormat = GL_RGBA8;
+
+    GrBackendTexture backend_texture = GrBackendTextures::MakeGL(
+        rect->size.width, rect->size.height,
+        skgpu::Mipmapped::kNo,
+        info
+    );
+
+    sk_sp<SkImage> image = SkImages::BorrowTextureFrom(
+        static_cast<GrDirectContext*>(
+            sb_skia_gl_renderer_direct_context(gl_renderer)
+        ),
+        backend_texture,
+        kBottomLeft_GrSurfaceOrigin,
+        kRGBA_8888_SkColorType,
+        kPremul_SkAlphaType,
+        nullptr
+    );
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+        rect->position.x * scale,
+        rect->position.y * scale,
+        rect->size.width * scale,
+        rect->size.height * scale
+    );
+    // TODO: What below option for? Add detailed comment.
+    SkSamplingOptions sampling(SkFilterMode::kLinear);
+
+    canvas->drawImageRect(image, sk_rect, sampling);
 }
 
 void sb_skia_clip_rect(sb_skia_renderer_t *renderer,
@@ -317,8 +382,8 @@ void sb_skia_clip_rect(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->pos.x * scale,
-        rect->pos.y * scale,
+        rect->position.x * scale,
+        rect->position.y * scale,
         rect->size.width * scale,
         rect->size.height * scale);
 

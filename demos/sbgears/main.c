@@ -32,6 +32,7 @@
  * Port by Aspen Schneider 9 May 2026
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -39,6 +40,17 @@
 #include <EGL/egl.h>
 
 #include <swingby/swingby.h>
+
+#include "window.h"
+
+//=============
+// DEBUG
+//=============
+
+static void window_body_on_pointer_enter(sb_event_t *event, void *user_data)
+{
+    printf("Pointer entered to the body.\n");
+}
 
 static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 static GLint gear1, gear2, gear3;
@@ -187,6 +199,7 @@ static void
 draw(void)
 {
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    glClear(GL_DEPTH_BUFFER_BIT);
 
    glPushMatrix();
    glRotatef(view_rotx, 1.0, 0.0, 0.0);
@@ -299,55 +312,72 @@ static void on_render(sb_event_t *event, void *user_data)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     draw();
 
+    // int s[4];
+    // glGetIntegerv(GL_VIEWPORT, s);
+    // printf("(%d, %d) %dx%d\n", s[0], s[1], s[2], s[3]);
+
     sb_surface_update(surface);
 }
 
-static void on_resize_request(sb_event_t *event, void *user_data)
+static void window_on_resize_request(sb_event_t *event, void *user_data)
 {
-    sb_desktop_surface_t *desktop_surface = user_data;
-    sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
+    sbgears_window *window = user_data;
 
-    sb_size_t new_size = {
+    sb_size_i_t size = {
         .width = event->resize.size.width,
         .height = event->resize.size.height,
     };
-    sb_surface_set_size(surface, &new_size);
 
-    reshape(new_size.width, new_size.height);
+    window_set_size(window, &size);
+
+    // Body geometry.
+    const sb_rect_t *body_geometry = sb_view_geometry(window->body);
+
+    reshape(body_geometry->size.width, body_geometry->size.height);
 }
 
 int
 main(int argc, char *argv[])
 {
+    setenv("MESA_GL_VERSION_OVERRIDE", "4.6COMPAT", 0);
+
     sb_application_t *app = sb_application_new(argc, argv);
 
-    sb_desktop_surface_t *desktop_surface = sb_desktop_surface_new(
-        SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
+    sbgears_window *window = window_new();
 
-    sb_desktop_surface_add_event_listener(desktop_surface,
-        SB_EVENT_TYPE_RESIZE_REQUEST,
-        on_resize_request,
-        desktop_surface);
-
-    sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
     sb_size_t initial_size = { .width = 300, .height = 300 };
-    sb_surface_set_size(surface, &initial_size);
 
     sb_rect_t geometry;
-    geometry.pos.x = 0;
-    geometry.pos.y = 0;
+    geometry.position.x = 0;
+    geometry.position.y = 0;
     geometry.size = initial_size;
-    sb_view_t *view = sb_view_new(sb_surface_root_view(surface), &geometry);
+    sb_view_t *view = sb_view_new(window->root_view, &geometry);
     sb_view_set_render_type(view, SB_VIEW_RENDER_TYPE_GL);
     sb_view_add_event_listener(view, SB_EVENT_TYPE_DIRECT_RENDER,
         on_render, view);
+
+    window->body = view;
+
+    sb_size_i_t initial_surface_size = {
+        .width = 320,
+        .height = 300 + SBGEARS_WINDOW_TITLE_BAR_SIZE,
+    };
+    window_set_size(window, &initial_surface_size);
+
+    sb_desktop_surface_add_event_listener(window->sb_desktop_surface,
+        SB_EVENT_TYPE_RESIZE_REQUEST,
+        window_on_resize_request,
+        window);
+
+    // DEBUG
+    sb_view_add_event_listener(view, SB_EVENT_TYPE_POINTER_ENTER, window_body_on_pointer_enter, NULL);
 
     init();
     glDrawBuffer(GL_BACK);
 
     reshape(300, 300);
 
-    sb_desktop_surface_show(desktop_surface);
+    sb_desktop_surface_show(window->sb_desktop_surface);
 
     return sb_application_exec(app);
 }

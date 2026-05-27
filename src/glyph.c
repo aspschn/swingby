@@ -5,8 +5,7 @@
 
 #include <swingby/font.h>
 #include <swingby/point.h>
-
-#include "impl/glyph-impl.h"
+#include <swingby/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,11 +18,11 @@ struct sb_glyph_run_t {
 };
 
 struct sb_glyph_line_t {
-    SbGlyphLineImpl *impl;
+    sb_list_t *runs;
 };
 
 struct sb_glyph_layout_t {
-    SbGlyphLayoutImpl *impl;
+    sb_list_t *lines;
 };
 
 sb_glyph_run_t* sb_glyph_run_new(uint32_t count, const sb_font_t *font)
@@ -63,29 +62,35 @@ sb_glyph_line_t* sb_glyph_line_new()
 {
     sb_glyph_line_t *line = malloc(sizeof(sb_glyph_line_t));
 
-    line->impl = sb_glyph_line_impl_new();
+    line->runs = sb_list_new();
 
     return line;
 }
 
 void sb_glyph_line_add_run(sb_glyph_line_t *line, sb_glyph_run_t *run)
 {
-    sb_glyph_line_impl_add_run(line->impl, run);
+    sb_list_push(line->runs, run);
 }
 
 uint32_t sb_glyph_line_run_count(const sb_glyph_line_t *line)
 {
-    return sb_glyph_line_impl_run_count(line->impl);
+    return sb_list_length(line->runs);
 }
 
-const sb_glyph_run_t** sb_glyph_line_runs(const sb_glyph_line_t *line)
+const sb_list_t* sb_glyph_line_runs(const sb_glyph_line_t *line)
 {
-    return sb_glyph_line_impl_runs(line->impl);
+    return line->runs;
 }
 
 void sb_glyph_line_free(sb_glyph_line_t *line)
 {
-    sb_glyph_line_impl_free(line->impl);
+    while (sb_list_length(line->runs) > 0) {
+        uint64_t last = sb_list_length(line->runs) - 1;
+        sb_glyph_run_t *run = sb_list_remove(line->runs, last);
+        sb_glyph_run_free(run);
+    }
+    sb_list_free(line->runs);
+
     free(line);
 }
 
@@ -94,29 +99,33 @@ sb_glyph_layout_t* sb_glyph_layout_new()
 {
     sb_glyph_layout_t *layout = malloc(sizeof(sb_glyph_layout_t));
 
-    layout->impl = sb_glyph_layout_impl_new();
+    layout->lines = sb_list_new();
 
     return layout;
 }
 
 void sb_glyph_layout_add_line(sb_glyph_layout_t *layout, sb_glyph_line_t *line)
 {
-    sb_glyph_layout_impl_add_line(layout->impl, line);
+    sb_list_push(layout->lines, line);
 }
 
 uint32_t sb_glyph_layout_line_count(const sb_glyph_layout_t *layout)
 {
-    return sb_glyph_layout_impl_line_count(layout->impl);
+    return sb_list_length(layout->lines);
 }
 
-const sb_glyph_line_t** sb_glyph_layout_lines(const sb_glyph_layout_t *layout)
+const sb_list_t* sb_glyph_layout_lines(const sb_glyph_layout_t *layout)
 {
-    return sb_glyph_layout_impl_lines(layout->impl);
+    return layout->lines;
 }
 
 void sb_glyph_layout_free(sb_glyph_layout_t *layout)
 {
-    sb_glyph_layout_impl_free(layout->impl);
+    while (sb_list_length(layout->lines) > 0) {
+        uint64_t last = sb_list_length(layout->lines) - 1;
+        sb_glyph_line_t *line = sb_list_remove(layout->lines, last);
+        sb_glyph_line_free(line);
+    }
     free(layout);
 }
 

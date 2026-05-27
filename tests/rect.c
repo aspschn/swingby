@@ -7,8 +7,8 @@ static void rect_contains_point()
     // Test case 1.
     {
         sb_rect_t r1;
-        r1.pos.x = 0.0f;
-        r1.pos.y = 0.0f;
+        r1.position.x = 0.0f;
+        r1.position.y = 0.0f;
         r1.size.width = 100.0f;
         r1.size.height = 100.0f;
         sb_point_t p1;
@@ -24,8 +24,8 @@ static void rect_contains_point()
     // Test case 2.
     {
         sb_rect_t r1;
-        r1.pos.x = 0.0f;
-        r1.pos.y = 0.0f;
+        r1.position.x = 0.0f;
+        r1.position.y = 0.0f;
         r1.size.width = 100.0f;
         r1.size.height = 100.0f;
         sb_point_t p1;
@@ -44,13 +44,13 @@ static void rect_intersects()
     // Test case 1.
     {
         sb_rect_t r1;
-        r1.pos.x = 0.0f;
-        r1.pos.y = 0.0f;
+        r1.position.x = 0.0f;
+        r1.position.y = 0.0f;
         r1.size.width = 50.0f;
         r1.size.height = 50.0f;
         sb_rect_t r2;
-        r2.pos.x = 100.0f;
-        r2.pos.y = 100.0f;
+        r2.position.x = 100.0f;
+        r2.position.y = 100.0f;
         r2.size.width = 50.0f;
         r2.size.height = 59.0f;
 
@@ -63,13 +63,13 @@ static void rect_intersects()
     // Test case 2.
     {
         sb_rect_t r1;
-        r1.pos.x = 0.0f;
-        r1.pos.y = 0.0f;
+        r1.position.x = 0.0f;
+        r1.position.y = 0.0f;
         r1.size.width = 50.0f;
         r1.size.height = 50.0f;
         sb_rect_t r2;
-        r2.pos.x = 49.0f;
-        r2.pos.y = 0.0f;
+        r2.position.x = 49.0f;
+        r2.position.y = 0.0f;
         r2.size.width = 50.0f;
         r2.size.height = 50.0f;
 

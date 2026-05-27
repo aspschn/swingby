@@ -40,8 +40,8 @@ int main(int argc, char *argv[])
         SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
 
     sb_rect_t geo;
-    geo.pos.x = 10.0f;
-    geo.pos.y = 10.0f;
+    geo.position.x = 10.0f;
+    geo.position.y = 10.0f;
     geo.size.width = 50.0f;
     geo.size.height = 50.0f;
 

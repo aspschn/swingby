@@ -34,8 +34,8 @@ sb_view_t* _find_most_child(sb_view_t *view,
         return view;
     }
 
-    position->x = position->x - sb_view_geometry(child)->pos.x;
-    position->y = position->y - sb_view_geometry(child)->pos.y;
+    position->x = position->x - sb_view_geometry(child)->position.x;
+    position->y = position->y - sb_view_geometry(child)->position.y;
 
     return _find_most_child(child, position);
 }

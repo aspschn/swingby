@@ -41,8 +41,8 @@ int main(int argc, char *argv[])
     sb_color_t color = { 255, 0, 0, 255 };
     sb_view_set_color(view, &color);
 
-    geometry.pos.x = 10.0f;
-    geometry.pos.y = 10.0f;
+    geometry.position.x = 10.0f;
+    geometry.position.y = 10.0f;
     geometry.size.width = 30.0f;
     geometry.size.height = 30.0f;
     sb_view_t *child_view = sb_view_new(view, &geometry);
@@ -50,8 +50,8 @@ int main(int argc, char *argv[])
     color.g = 255;
     sb_view_set_color(child_view, &color);
 
-    geometry.pos.x = 60.0f;
-    geometry.pos.y = 10.0f;
+    geometry.position.x = 60.0f;
+    geometry.position.y = 10.0f;
     geometry.size.width = 30.0f;
     geometry.size.height = 30.0f;
     sb_view_t *double_click_view = sb_view_new(

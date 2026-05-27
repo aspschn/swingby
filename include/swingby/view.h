@@ -1,5 +1,5 @@
-#ifndef _FOUNDATION_VIEW_H
-#define _FOUNDATION_VIEW_H
+#ifndef _SWINGBY_VIEW_H
+#define _SWINGBY_VIEW_H
 
 #include <stdbool.h>
 
@@ -28,20 +28,33 @@ typedef struct sb_view_radius_t {
     float bottom_left;
 } sb_view_radius_t;
 
+/// \brief View's render type property.
 enum sb_view_render_type {
+    /// View has a single color. (default)
     SB_VIEW_RENDER_TYPE_SINGLE_COLOR,
+    /// View has an image.
     SB_VIEW_RENDER_TYPE_IMAGE,
+    /// View has a glyph layout.
     SB_VIEW_RENDER_TYPE_GLYPHS,
+    /// Canvas drawing mode.
     SB_VIEW_RENDER_TYPE_CANVAS,
+    /// Embed an OpenGL code.
     SB_VIEW_RENDER_TYPE_GL,
 };
 
+/// \struct sb_view_t
+/// \brief A minimum render unit.
 typedef struct sb_view_t sb_view_t;
 
+/// \memberof sb_view_t
 /// \brief Create a new view with the parent and the geometry.
 ///
 /// The parent must not be NULL. Pass a surface's root view for top level view.
 /// Pass parent as NULL used in creation surface's root view.
+///
+/// \param parent Parent of new view. Always non-null value.
+/// \param geometry Initial position of new view.
+/// \return The view created.
 SB_EXPORT
 sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry);
 
@@ -68,6 +81,7 @@ const sb_color_t* sb_view_color(const sb_view_t *view);
 SB_EXPORT
 void sb_view_set_color(sb_view_t *view, const sb_color_t *color);
 
+/// \memberof sb_view_t
 /// \brief Get the render type of the view.
 SB_EXPORT
 enum sb_view_render_type sb_view_render_type(const sb_view_t *view);
@@ -201,4 +215,4 @@ void sb_view_on_render(sb_view_t *view, sb_event_t *event);
 }
 #endif
 
-#endif /* _FOUNDATION_VIEW_H */
+#endif /* _SWINGBY_VIEW_H */

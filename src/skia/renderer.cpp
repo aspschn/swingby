@@ -3,6 +3,8 @@
 #include "./raster-renderer.h"
 #include "./gl-renderer.h"
 
+#include <swingby/log.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,6 +48,9 @@ void* sb_skia_renderer_current(sb_skia_renderer_t *renderer)
     } else if (renderer->backend == SB_SKIA_BACKEND_GL) {
         return static_cast<void*>(renderer->gl_renderer);
     }
+
+    sb_log_error("sb_skia_renderer_current - (%d) invalid backend!\n",
+        renderer->backend);
 
     return nullptr;
 }

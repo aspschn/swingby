@@ -47,8 +47,8 @@ static void on_click(sb_event_t *event, void *user_data)
     color.a = 255;
 
     sb_rect_t geometry;
-    geometry.pos.x = 0;
-    geometry.pos.y = 0;
+    geometry.position.x = 0;
+    geometry.position.y = 0;
     geometry.size.width = 50;
     geometry.size.height = 50;
 
@@ -118,8 +118,8 @@ int main(int argc, char *argv[])
     // Pointer press area.
     {
         sb_rect_t geometry;
-        geometry.pos.x = 10.0f;
-        geometry.pos.y = 10.0f;
+        geometry.position.x = 10.0f;
+        geometry.position.y = 10.0f;
         geometry.size.width = 50.0f;
         geometry.size.height = 50.0f;
 
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     // Tooltip area.
     {
         sb_rect_t geometry = {
-            .pos = { 80.0f, 10.0f },
+            .position = { 80.0f, 10.0f },
             .size = { 50.0f, 50.0f },
         };
 

@@ -1,5 +1,5 @@
-#ifndef _FOUNDATION_SURFACE_H
-#define _FOUNDATION_SURFACE_H
+#ifndef _SWINGBY_SURFACE_H
+#define _SWINGBY_SURFACE_H
 
 #include <swingby/common.h>
 #include <swingby/size.h>
@@ -11,9 +11,7 @@ typedef struct sb_event_t sb_event_t;
 
 struct wl_surface;
 
-struct HWND__;
-typedef struct HWND__* HWND;
-
+/// \struct sb_surface_t
 /// \brief A basic rectangular region.
 typedef struct sb_surface_t sb_surface_t;
 
@@ -26,6 +24,7 @@ void sb_surface_set_wl_surface(sb_surface_t *surface,
 SB_EXPORT
 const sb_size_t* sb_surface_size(sb_surface_t *surface);
 
+/// \memberof sb_surface_t
 /// \brief Set the surface size.
 ///
 /// Surface size is always integer values. Values below the decimal point
@@ -52,6 +51,7 @@ uint32_t sb_surface_scale(const sb_surface_t *surface);
 SB_EXPORT
 void sb_surface_set_scale(sb_surface_t *surface, uint32_t scale);
 
+/// \memberof sb_surface_t
 /// \brief Set the valid input geometry of the surface.
 ///
 /// Pointer events outside of the input geoemetry will be ignored.
@@ -100,10 +100,4 @@ void sb_surface_on_timeout(sb_surface_t *surface,
 
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface);
 
-/// \brief Get the hwnd of this surface.
-///
-/// This method is available only on win32 platform.
-SB_EXPORT
-HWND sb_surface_hwnd(sb_surface_t *surface);
-
-#endif /* _FOUNDATION_SURFACE_H */
+#endif /* _SWINGBY_SURFACE_H */

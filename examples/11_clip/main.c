@@ -40,8 +40,8 @@ int main(int argc, char *argv[])
     // First view is clipping.
     sb_view_set_clip(view, true);
 
-    geometry.pos.x = -10.0f;
-    geometry.pos.y = -10.0f;
+    geometry.position.x = -10.0f;
+    geometry.position.y = -10.0f;
     geometry.size.width = 50.0f;
     geometry.size.height = 50.0f;
     color.r = 0;
@@ -51,8 +51,8 @@ int main(int argc, char *argv[])
     sb_view_set_color(child, &color);
 
     // Last view is not clipping.
-    geometry.pos.x = 20.0f;
-    geometry.pos.y = 20.0f;
+    geometry.position.x = 20.0f;
+    geometry.position.y = 20.0f;
     color.r = 0;
     color.g = 0;
     color.b = 255;

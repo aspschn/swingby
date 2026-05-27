@@ -12,8 +12,8 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     title_bar->window = NULL;
 
     sb_rect_t geometry;
-    geometry.pos.x = 0;
-    geometry.pos.y = 0;
+    geometry.position.x = 0;
+    geometry.position.y = 0;
     geometry.size.width = 10.0;
     geometry.size.height = TITLE_BAR_HEIGHT;
 
@@ -30,8 +30,8 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     title_bar->view = view;
 
     // Close button.
-    geometry.pos.x = 3;
-    geometry.pos.y = 3;
+    geometry.position.x = 3;
+    geometry.position.y = 3;
     geometry.size.width = TITLE_BAR_BUTTON_SIZE;
     geometry.size.height = TITLE_BAR_BUTTON_SIZE;
     title_bar->close_button = sb_view_new(title_bar->view, &geometry);
@@ -57,13 +57,13 @@ struct title_bar* title_bar_new(sb_view_t *parent)
                                NULL);
 
     // Minimize button.
-    geometry.pos.x += TITLE_BAR_BUTTON_SIZE + 3;
+    geometry.position.x += TITLE_BAR_BUTTON_SIZE + 3;
     title_bar->minimize_button = sb_view_new(title_bar->view, &geometry);
     button_color = minimize_button_color();
     sb_view_set_color(title_bar->minimize_button, &button_color);
 
     // Maximize/Restore button.
-    geometry.pos.x += TITLE_BAR_BUTTON_SIZE + 3;
+    geometry.position.x += TITLE_BAR_BUTTON_SIZE + 3;
     title_bar->maximize_restore_button = sb_view_new(title_bar->view,
         &geometry);
     button_color.r = 0.0f;
