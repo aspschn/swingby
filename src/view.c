@@ -50,7 +50,7 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     view->_surface = NULL;
     view->_parent = parent;
     sb_log_debug("sb_view_new() - view: %p, parent: %p\n", view, parent);
-    view->geometry.pos = geometry->pos;
+    view->geometry.position = geometry->position;
     view->geometry.size = geometry->size;
     view->_color.r = 1.0f;
     view->_color.g = 1.0f;
@@ -120,11 +120,11 @@ void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
 
         sb_application_post_event(sb_application_instance(), size_event);
     }
-    if (!sb_point_equals(&old_geo.pos, &new_geo.pos)) {
+    if (!sb_point_equals(&old_geo.position, &new_geo.position)) {
         sb_event_t *move_event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
             view, SB_EVENT_TYPE_MOVE);
-        move_event->move.old_position = old_geo.pos;
-        move_event->move.position = new_geo.pos;
+        move_event->move.old_position = old_geo.position;
+        move_event->move.position = new_geo.position;
 
         sb_application_post_event(sb_application_instance(), move_event);
     }
@@ -199,7 +199,7 @@ sb_canvas_t* sb_view_canvas(const sb_view_t *view)
     return view->canvas;
 }
 
-void sb_view_set_canvas(sb_view_t *view, const sb_canvas_t *canvas)
+void sb_view_set_canvas(sb_view_t *view, sb_canvas_t *canvas)
 {
     view->canvas = canvas;
 }

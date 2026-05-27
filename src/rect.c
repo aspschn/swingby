@@ -7,19 +7,19 @@ extern "C" {
 bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point)
 {
     // Check top-left.
-    if (point->x < rect->pos.x || point->y < rect->pos.y) {
+    if (point->x < rect->position.x || point->y < rect->position.y) {
         return false;
     }
 
     // Check bottom-right.
-    if (point->x > rect->pos.x + rect->size.width ||
-        point->y > rect->pos.y + rect->size.height) {
+    if (point->x > rect->position.x + rect->size.width ||
+        point->y > rect->position.y + rect->size.height) {
         return false;
     }
 
     // Check width and height.
-    if (point->x <= rect->pos.x + rect->size.width &&
-        point->y <= rect->pos.y + rect->size.height) {
+    if (point->x <= rect->position.x + rect->size.width &&
+        point->y <= rect->position.y + rect->size.height) {
         return true;
     }
 
@@ -28,16 +28,16 @@ bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point)
 
 bool sb_rect_intersects(const sb_rect_t *rect, const sb_rect_t *other)
 {
-    if (rect->pos.x + rect->size.width <= other->pos.x) {
+    if (rect->position.x + rect->size.width <= other->position.x) {
         return false;
     }
-    if (rect->pos.x >= other->pos.x + other->size.width) {
+    if (rect->position.x >= other->position.x + other->size.width) {
         return false;
     }
-    if (rect->pos.y + rect->size.height <= other->pos.y) {
+    if (rect->position.y + rect->size.height <= other->position.y) {
         return false;
     }
-    if (rect->pos.y >= other->pos.y + other->size.height) {
+    if (rect->position.y >= other->position.y + other->size.height) {
         return false;
     }
 
@@ -46,7 +46,8 @@ bool sb_rect_intersects(const sb_rect_t *rect, const sb_rect_t *other)
 
 bool sb_rect_equals(const sb_rect_t *rect, const sb_rect_t *other)
 {
-    if (rect->pos.x == other->pos.x && rect->pos.y == other->pos.y &&
+    if (rect->position.x == other->position.x &&
+        rect->position.y == other->position.y &&
         rect->size.width == other->size.width &&
         rect->size.height == other->size.height) {
         return true;

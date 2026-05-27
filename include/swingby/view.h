@@ -128,7 +128,7 @@ sb_canvas_t* sb_view_canvas(const sb_view_t *view);
 
 /// \brief Set the canvas of the view.
 SB_EXPORT
-void sb_view_set_canvas(sb_view_t *view, const sb_canvas_t *canvas);
+void sb_view_set_canvas(sb_view_t *view, sb_canvas_t *canvas);
 
 /// \brief Get the clip property of the view.
 SB_EXPORT

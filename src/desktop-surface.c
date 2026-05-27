@@ -149,8 +149,8 @@ sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
     d_surface->_xdg_toplevel = NULL;
     d_surface->xdg_popup = NULL;
 
-    d_surface->wm_geometry.pos.x = 0;
-    d_surface->wm_geometry.pos.y = 0;
+    d_surface->wm_geometry.position.x = 0;
+    d_surface->wm_geometry.position.y = 0;
     d_surface->wm_geometry.size.width = 0;
     d_surface->wm_geometry.size.height = 0;
 
@@ -313,7 +313,7 @@ void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
     }
 
     xdg_surface_set_window_geometry(desktop_surface->_xdg_surface,
-        geometry->pos.x, geometry->pos.y,
+        geometry->position.x, geometry->position.y,
         geometry->size.width, geometry->size.height);
 }
 

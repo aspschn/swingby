@@ -106,8 +106,8 @@ void _propagate_pointer_event(sb_view_t *view, sb_event_t *event)
 {
     sb_view_t *parent = sb_view_parent(view);
 
-    float x = event->pointer.position.x + sb_view_geometry(view)->pos.x;
-    float y = event->pointer.position.y + sb_view_geometry(view)->pos.y;
+    float x = event->pointer.position.x + sb_view_geometry(view)->position.x;
+    float y = event->pointer.position.y + sb_view_geometry(view)->position.y;
     while (parent != NULL) {
         if (event->propagation == false) {
             break;
@@ -130,8 +130,8 @@ void _propagate_pointer_event(sb_view_t *view, sb_event_t *event)
             sb_view_on_pointer_scroll(parent, event);
         }
 
-        x = event->pointer.position.x + sb_view_geometry(parent)->pos.x;
-        y = event->pointer.position.y + sb_view_geometry(parent)->pos.y;
+        x = event->pointer.position.x + sb_view_geometry(parent)->position.x;
+        y = event->pointer.position.y + sb_view_geometry(parent)->position.y;
 
         parent = sb_view_parent(parent);
     }

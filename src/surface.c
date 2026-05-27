@@ -288,7 +288,6 @@ static void _draw_recursive(sb_surface_t *surface,
         sb_view_set_canvas(view, NULL);
     } else if (render_type == SB_VIEW_RENDER_TYPE_GL) {
         const sb_rect_t *geometry = sb_view_geometry(view);
-        const sb_size_t *surface_size = sb_surface_size(surface);
 
         // Get renderer.
         void *renderer = sb_skia_renderer_current(surface->skia_renderer);
@@ -368,7 +367,7 @@ static void _draw_recursive(sb_surface_t *surface,
         }
 
         if (sb_view_parent(view) != NULL) {
-            const sb_point_t view_pos = sb_view_geometry(view)->pos;
+            const sb_point_t view_pos = sb_view_geometry(view)->position;
             sb_point_t scaled_pos;
             scaled_pos.x = view_pos.x * surface->scale;
             scaled_pos.y = view_pos.y * surface->scale;
@@ -410,10 +409,10 @@ void _draw_frame(sb_surface_t *surface)
     if (backend == SB_SKIA_BACKEND_GL) {
         sb_skia_gl_renderer_t *renderer =
             sb_skia_renderer_current(surface->skia_renderer);
-        sb_egl_context_t *egl_context = sb_application_egl_context(app);
+        sb_egl_t *egl = sb_application_egl(app);
 
         sb_skia_gl_renderer_begin(renderer,
-            egl_context,
+            egl,
             surface->_egl_surface,
             surface->_size.width * surface->scale,
             surface->_size.height * surface->scale
@@ -426,7 +425,7 @@ void _draw_frame(sb_surface_t *surface)
 
         sb_skia_gl_renderer_end(renderer);
 
-        eglSwapBuffers(egl_context->egl_display, surface->_egl_surface);
+        eglSwapBuffers(egl->egl_display, surface->_egl_surface);
     }
 
     if (backend == SB_SKIA_BACKEND_RASTER) {
@@ -504,7 +503,7 @@ sb_surface_t* sb_surface_new()
 
     if (strcmp(surface->backend, "opengl") == 0) {
         // Get global EGL context.
-        sb_egl_context_t *egl_context = sb_application_egl_context(app);
+        sb_egl_t *egl = sb_application_egl(app);
 
         // Create wl_egl_window.
         surface->_wl_egl_window = wl_egl_window_create(surface->_wl_surface,
@@ -513,16 +512,16 @@ sb_surface_t* sb_surface_new()
 
         // Create EGL surface.
         surface->_egl_surface = eglCreateWindowSurface(
-            egl_context->egl_display,
-            egl_context->egl_config,
+            egl->egl_display,
+            egl->egl_config,
             surface->_wl_egl_window,
             NULL);
 
         EGLBoolean res = eglMakeCurrent(
-            egl_context->egl_display,
+            egl->egl_display,
             surface->_egl_surface,
             surface->_egl_surface,
-            egl_context->egl_context
+            egl->egl_context
         );
         if (!res) {
             EGLint err = eglGetError();
@@ -538,8 +537,8 @@ sb_surface_t* sb_surface_new()
 
     // Root view.
     sb_rect_t geo;
-    geo.pos.x = 0.0f;
-    geo.pos.y = 0.0f;
+    geo.position.x = 0.0f;
+    geo.position.y = 0.0f;
     geo.size.width = surface->_size.width;
     geo.size.height = surface->_size.height;
     surface->_root_view = sb_view_new(NULL, &geo);
@@ -578,8 +577,8 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
 
     // Set the root view's size.
     sb_rect_t new_geo;
-    new_geo.pos.x = 0;
-    new_geo.pos.y = 0;
+    new_geo.position.x = 0;
+    new_geo.position.y = 0;
     new_geo.size.width = size->width;
     new_geo.size.height = size->height;
     sb_view_set_geometry(surface->_root_view, &new_geo);
@@ -687,7 +686,7 @@ void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry)
 
     struct wl_region *region = wl_compositor_create_region(wl_compositor);
     wl_region_add(region,
-        geometry->pos.x, geometry->pos.y,
+        geometry->position.x, geometry->position.y,
         geometry->size.width, geometry->size.height);
     wl_surface_set_input_region(wl_surface, region);
     wl_region_destroy(region);
@@ -703,7 +702,7 @@ void sb_surface_enable_text_input(sb_surface_t *surface,
 
     zwp_text_input_v3_enable(text_input);
     zwp_text_input_v3_set_cursor_rectangle(text_input,
-        rect->pos.x, rect->pos.y,
+        rect->position.x, rect->position.y,
         rect->size.width, rect->size.height);
     zwp_text_input_v3_commit(text_input);
 }

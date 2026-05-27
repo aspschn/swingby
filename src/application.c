@@ -36,7 +36,7 @@
 #include "helpers/application.h"
 
 struct sb_application_t {
-    sb_egl_context_t *egl_context;
+    sb_egl_t *egl;
     /// `struct wl_display`.
     struct wl_display *wl_display;
     /// `struct wl_registry`.
@@ -588,7 +588,7 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     _sb_application_instance = app;
 
-    app->egl_context = sb_egl_context_new();
+    app->egl = sb_egl_new();
 
     // Event listeners.
     app->event_listeners = sb_list_new();
@@ -738,12 +738,12 @@ struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
 
 sb_egl_context_t* sb_application_egl_context(sb_application_t *application)
 {
-    return application->egl_context;
+    return application->egl;
 }
 
 sb_egl_context_t* sb_application_egl(sb_application_t *application)
 {
-    return application->egl_context;
+    return application->egl;
 }
 
 int sb_application_exec(sb_application_t *application)
@@ -795,7 +795,7 @@ int sb_application_exec(sb_application_t *application)
     }
 
     sb_log_debug("Destroying application resources ...\n");
-    sb_egl_context_free(application->egl_context);
+    sb_egl_free(application->egl);
 
     sb_log_debug("Quit application.\n");
 
