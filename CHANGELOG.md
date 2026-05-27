@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.7.0-dev
+## v0.7.0
 
 - `sb_rect_t::pos` now deprecated. Use `sb_rect_t::position` instead.
 
