@@ -5,6 +5,23 @@ with [Skia](https://skia.org/).
 
 Swingby is not a full-featured framework. It is an engine for minimal GUI.
 
+## Installation & Demo
+
+### Arch Linux
+
+![AUR Version](https://img.shields.io/aur/version/swingby?style=flat&logo=archlinux&link=https%3A%2F%2Faur.archlinux.org%2Fpackages%2Fswingby)
+
+You can install and run the demo with below commands.
+
+```sh
+$ yay -S swingby
+$ sbgears
+```
+
+![sbgears](https://raw.githubusercontent.com/aspschn/swingby/main/docs/sbgears.png)
+
+- Minimal requirements: At least 2GiB RAM for build Skia.
+
 
 ## Features
 
