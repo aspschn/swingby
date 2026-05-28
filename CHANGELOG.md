@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.8.0-dev
+
+No public updates in this version.
+
+
 ## v0.7.0
 
 - `sb_rect_t::pos` now deprecated. Use `sb_rect_t::position` instead.
@@ -10,9 +15,11 @@
 
 - Glyphs type view now rendering better. But still is in experimental.
 
+
 ## v0.6.1
 
 No public patches in this version.
+
 
 ## v0.6.0
 
