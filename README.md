@@ -9,7 +9,7 @@ Swingby is not a full-featured framework. It is an engine for minimal GUI.
 
 ### Arch Linux
 
-![AUR Version](https://img.shields.io/aur/version/swingby?style=flat&logo=archlinux&link=https%3A%2F%2Faur.archlinux.org%2Fpackages%2Fswingby)
+[![AUR Version](https://img.shields.io/aur/version/swingby?style=flat&logo=archlinux)](https://aur.archlinux.org/packages/swingby)
 
 You can install and run the demo with below commands.
 
