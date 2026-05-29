@@ -88,7 +88,7 @@ void sb_canvas_draw_line(sb_canvas_t *canvas,
 
     sk_paint.setStyle(SkPaint::Style::kStroke_Style);
     sk_paint.setColor4f(color);
-    sk_paint.setStrokeWidth(paint->stroke_width);
+    sk_paint.setStrokeWidth(paint->stroke_width * scale);
 
     canvas->sk_canvas->drawLine(
         (p1->x + canvas->position.x) * scale,
