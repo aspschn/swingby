@@ -119,13 +119,19 @@ const sb_list_t* sb_glyph_layout_lines(const sb_glyph_layout_t *layout)
     return layout->lines;
 }
 
-void sb_glyph_layout_free(sb_glyph_layout_t *layout)
+void sb_glyph_layout_clear_lines(sb_glyph_layout_t *layout)
 {
     while (sb_list_length(layout->lines) > 0) {
         uint64_t last = sb_list_length(layout->lines) - 1;
         sb_glyph_line_t *line = sb_list_remove(layout->lines, last);
         sb_glyph_line_free(line);
     }
+}
+
+void sb_glyph_layout_free(sb_glyph_layout_t *layout)
+{
+    sb_glyph_layout_clear_lines(layout);
+
     free(layout);
 }
 

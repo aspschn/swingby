@@ -57,6 +57,10 @@ uint32_t sb_glyph_layout_line_count(const sb_glyph_layout_t *layout);
 
 const sb_list_t* sb_glyph_layout_lines(const sb_glyph_layout_t *layout);
 
+/// \brief Clear all contents inside the layout, keeping the layout itself.
+void sb_glyph_layout_clear_lines(sb_glyph_layout_t *layout);
+
+/// \brief Free the layout. Lines and runs will automatically be freed.
 void sb_glyph_layout_free(sb_glyph_layout_t *layout);
 
 #ifdef __cplusplus
