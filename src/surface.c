@@ -229,6 +229,10 @@ static void _draw_recursive(sb_surface_t *surface,
 {
     enum sb_view_render_type render_type = sb_view_render_type(view);
 
+    if (sb_view_visible(view) == false) {
+        return;
+    }
+
     if (render_type == SB_VIEW_RENDER_TYPE_SINGLE_COLOR) {
         const sb_view_radius_t *radius = NULL;
         const sb_list_t *filters = NULL;
@@ -242,15 +246,10 @@ static void _draw_recursive(sb_surface_t *surface,
                 filters = sb_view_filters(view);
             }
         }
-        sb_skia_draw_rect2(
+        sb_skia_draw_rect3(
             surface->skia_renderer,
-            sb_view_geometry(view),
-            surface->scale,
-            sb_view_color(view),
-            radius,
-            filters,
-            sb_view_clip(view)
-        );
+            view,
+            surface->scale);
     } else if (render_type == SB_VIEW_RENDER_TYPE_IMAGE) {
         sb_skia_draw_image2(surface->skia_renderer,
             sb_view_geometry(view), surface->scale, sb_view_image(view));

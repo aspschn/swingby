@@ -11,6 +11,7 @@ extern "C" {
 
 typedef struct sb_skia_renderer_t sb_skia_renderer_t;
 
+typedef struct sb_view_t sb_view_t;
 typedef struct sb_view_radius_t sb_view_radius_t;
 typedef struct sb_list_t sb_list_t;
 typedef struct sb_glyph_layout_t sb_glyph_layout_t;
@@ -43,6 +44,10 @@ void sb_skia_draw_rect2(sb_skia_renderer_t *renderer,
                         const sb_view_radius_t *radius,
                         const sb_list_t *filters,
                         bool clip);
+
+void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
+                        const sb_view_t *view,
+                        float scale);
 
 void sb_skia_draw_image(sb_skia_renderer_t *renderer,
                         const sb_rect_t *rect,

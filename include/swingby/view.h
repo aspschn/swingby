@@ -138,6 +138,14 @@ bool sb_view_clip(const sb_view_t *view);
 SB_EXPORT
 void sb_view_set_clip(sb_view_t *view, bool clip);
 
+/// \brief Returns true if property `visible` is true. Else returns false.
+SB_EXPORT
+bool sb_view_visible(const sb_view_t *view);
+
+/// \brief Set the `visible` property of the view.
+SB_EXPORT
+void sb_view_set_visible(sb_view_t *view, bool value);
+
 SB_EXPORT
 enum sb_cursor_shape sb_view_cursor_shape(const sb_view_t *view);
 

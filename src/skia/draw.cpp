@@ -202,6 +202,104 @@ void sb_skia_draw_rect2(sb_skia_renderer_t *renderer,
     }
 }
 
+void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
+                        const sb_view_t *view,
+                        float scale)
+{
+    SkCanvas *canvas = _get_canvas(renderer);
+
+    // View's properties.
+    const sb_rect_t *rect = sb_view_geometry(view);
+    const sb_color_t *color = sb_view_color(view);
+    const sb_view_radius_t *radius = sb_view_radius(view);
+    const sb_list_t *filters = sb_view_filters(view);
+    bool clip = sb_view_clip(view);
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+        rect->position.x * scale,
+        rect->position.y * scale,
+        rect->size.width * scale,
+        rect->size.height * scale);
+
+    SkPaint paint;
+    SkColor4f sk_color_4f;
+    sk_color_4f.fR = color->r;
+    sk_color_4f.fG = color->g;
+    sk_color_4f.fB = color->b;
+    sk_color_4f.fA = color->a;
+    paint.setColor(sk_color_4f);
+
+    // For restore stack.
+    int save_count = 0;
+
+    if (filters != NULL) {
+        SkPaint filter_paint;
+        sk_sp<SkImageFilter> prev_filter = nullptr; // For multiple filters,
+                                                    // store the previous one.
+        for (uint64_t i = 0; i < sb_list_length((sb_list_t*)filters); ++i) {
+            const sb_filter_t *filter = (sb_filter_t*)sb_list_at((sb_list_t*)filters, i);
+            if (sb_filter_type(filter) == SB_FILTER_TYPE_BLUR) {
+                float radius = sb_filter_blur_radius(filter);
+
+                sk_sp<SkImageFilter> blur_filter = SkImageFilters::Blur(
+                    radius, radius, SkTileMode::kClamp, prev_filter, {});
+                filter_paint.setImageFilter(blur_filter);
+
+                prev_filter = blur_filter;
+            } else if (sb_filter_type(filter) == SB_FILTER_TYPE_DROP_SHADOW) {
+                const sb_point_t *offset = sb_filter_drop_shadow_offset(filter);
+                float radius = sb_filter_drop_shadow_radius(filter);
+                const sb_color_t *color = sb_filter_drop_shadow_color(filter);
+
+                SkColor4f sk_color;
+                sk_color.fR = color->r;
+                sk_color.fG = color->g;
+                sk_color.fB = color->b;
+                sk_color.fA = color->a;
+                sk_sp<SkImageFilter> shadow_filter = SkImageFilters::DropShadow(
+                    offset->x, offset->y,
+                    radius, radius,
+                    sk_color.toSkColor(),
+                    prev_filter,
+                    {}
+                );
+                filter_paint.setImageFilter(shadow_filter);
+
+                prev_filter = shadow_filter;
+            }
+        }
+        canvas->saveLayer(nullptr, &filter_paint);
+        ++save_count;
+    }
+
+    if (radius != NULL) {
+        float top_left = sb_view_radius_top_left(radius) * scale;
+        float top_right = sb_view_radius_top_right(radius) * scale;
+        float bottom_right = sb_view_radius_bottom_right(radius) * scale;
+        float bottom_left = sb_view_radius_bottom_left(radius) * scale;
+        SkVector radii[] = {
+            { top_left, top_left },
+            { top_right, top_right },
+            { bottom_right, bottom_right },
+            { bottom_left, bottom_left },
+        };
+
+        SkRRect rrect;
+        rrect.setRectRadii(sk_rect, radii);
+
+        canvas->drawRRect(rrect, paint);
+        for (int i = 0; i < save_count; ++i) {
+            canvas->restore();
+        }
+        return;
+    }
+
+    canvas->drawRect(sk_rect, paint);
+    for (int i = 0; i < save_count; ++i) {
+        canvas->restore();
+    }
+}
+
 void sb_skia_draw_image(sb_skia_renderer_t *renderer,
                         const sb_rect_t *rect,
                         uint32_t scale,
