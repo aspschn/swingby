@@ -640,8 +640,12 @@ void sb_surface_detach(sb_surface_t *surface)
     wl_surface_commit(surface->_wl_surface);
 
     // Destroy frame callback.
-    wl_callback_destroy(surface->frame_callback);
-    surface->frame_callback = NULL;
+    if (surface->frame_callback != NULL) {
+        wl_callback_destroy(surface->frame_callback);
+        surface->frame_callback = NULL;
+    } else {
+        sb_log_warn("sb_surface_detach() - frame_callback is already NULL\n");
+    }
 }
 
 void sb_surface_update(sb_surface_t *surface)
