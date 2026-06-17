@@ -90,6 +90,11 @@ static void on_pointer_enter(sb_event_t *event, void *user_data)
         &color
     );
 
+    // Set position.
+    const sb_view_t *view = user_data;
+    const sb_point_t position = sb_view_absolute_position(view);
+    sb_desktop_surface_popup_set_position(tooltip, &position);
+
     sb_desktop_surface_show(tooltip);
 }
 
@@ -144,7 +149,7 @@ int main(int argc, char *argv[])
         sb_view_set_color(tooltip_item, &color);
 
         sb_view_add_event_listener(tooltip_item,
-            SB_EVENT_TYPE_POINTER_ENTER, on_pointer_enter, NULL);
+            SB_EVENT_TYPE_POINTER_ENTER, on_pointer_enter, tooltip_item);
         sb_view_add_event_listener(tooltip_item,
             SB_EVENT_TYPE_POINTER_LEAVE, on_pointer_leave, NULL);
     }

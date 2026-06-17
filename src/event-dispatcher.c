@@ -295,7 +295,7 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
         } else if (event->target_type == SB_EVENT_TARGET_TYPE_SURFACE) {
             switch (event->type) {
             case SB_EVENT_TYPE_POINTER_ENTER:
-                sb_log_debug("Surface pointer enter!\n");
+                // sb_log_debug("Surface pointer enter!\n");
                 break;
             case SB_EVENT_TYPE_POINTER_LEAVE:
                 break;
@@ -335,9 +335,9 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
         } else if (event->target_type == SB_EVENT_TARGET_TYPE_VIEW) {
             switch (event->type) {
             case SB_EVENT_TYPE_POINTER_ENTER:
-                sb_log_debug("View pointer enter: (%f, %f) view: %p\n",
-                    event->pointer.position.x, event->pointer.position.y,
-                    event->target);
+                // sb_log_debug("View pointer enter: (%f, %f) view: %p\n",
+                //     event->pointer.position.x, event->pointer.position.y,
+                //     event->target);
                 sb_view_on_pointer_enter(event->target, event);
                 break;
             case SB_EVENT_TYPE_POINTER_LEAVE:

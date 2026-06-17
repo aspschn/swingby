@@ -54,6 +54,18 @@ void sb_desktop_surface_set_parent(sb_desktop_surface_t *desktop_surface,
                                    sb_desktop_surface_t *parent);
 
 /// \memberof sb_desktop_surface_t
+/// \brief Returns true if the desktop surface is a toplevel.
+SB_EXPORT
+bool
+sb_desktop_surface_is_toplevel(const sb_desktop_surface_t *desktop_surface);
+
+/// \memberof sb_desktop_surface_t
+/// \brief Returns true if the desktop surface is a popup.
+SB_EXPORT
+bool
+sb_desktop_surface_is_popup(const sb_desktop_surface_t *desktop_surface);
+
+/// \memberof sb_desktop_surface_t
 /// \brief Get the `sb_surface_t` object of the desktop surface.
 SB_EXPORT
 sb_surface_t*

@@ -367,7 +367,6 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
                          uint32_t scale,
                          const sb_glyph_layout_t *layout)
 {
-    sb_bench_t *bench = sb_bench_new("sb_skia_draw_glyphs");
     SkCanvas *canvas = _get_canvas(renderer);
 
     SkFontMgr *font_mgr = (SkFontMgr*)sb_font_font_mgr_instance();
@@ -439,7 +438,6 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
     if (metrics != NULL) {
         sb_font_metrics_free(metrics);
     }
-    sb_bench_end(bench);
 }
 
 void sb_skia_draw_texture(sb_skia_renderer_t *renderer,

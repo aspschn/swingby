@@ -106,8 +106,10 @@ struct sb_application_t {
         const char *commit_text;
     } text_input;
     struct sb_xkb_context_t *xkb_context;
-    /// \brief List of the desktop surfaces.
-    sb_list_t *desktop_surfaces;
+    /// \brief List of the toplevel desktop surfaces.
+    sb_list_t *toplevels;
+    /// \brief List of the popup desktop surfaces.
+    sb_list_t *popups;
     struct {
         sb_xcursor_theme_manager_t *manager;
         char current[256];
@@ -400,7 +402,8 @@ static sb_surface_t* _find_surface(sb_application_t *app,
                                    struct wl_surface *wl_surface)
 {
     sb_surface_t *found = NULL;
-    sb_list_t *list = app->desktop_surfaces;
+    // Search toplevels.
+    sb_list_t *list = app->toplevels;
     for (int i = 0; i < sb_list_length(list); ++i) {
         sb_desktop_surface_t *desktop_surface = sb_list_at(list, i);
         sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
@@ -408,6 +411,24 @@ static sb_surface_t* _find_surface(sb_application_t *app,
             found = surface;
             break;
         }
+    }
+    if (found != NULL) {
+        return found;
+    }
+    // Search popups.
+    list = app->popups;
+    for (int i = 0; i < sb_list_length(list); ++i) {
+        sb_desktop_surface_t *desktop_surface = sb_list_at(list, i);
+        sb_surface_t *surface = sb_desktop_surface_surface(desktop_surface);
+        if (sb_surface_wl_surface(surface) == wl_surface) {
+            found = surface;
+            break;
+        }
+    }
+    // Surface must not be null.
+    if (found == NULL) {
+        sb_log_error("_find_surface() - Not found surface for wl_surface: %p\n",
+            wl_surface);
     }
 
     return found;
@@ -577,7 +598,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
         NULL);
 
     // Desktop surface list.
-    app->desktop_surfaces = sb_list_new();
+    app->toplevels = sb_list_new();
+    app->popups = sb_list_new();
 
     // Event dispatcher.
     app->event_dispatcher = sb_event_dispatcher_new();
@@ -682,24 +704,42 @@ void sb_application_post_event(sb_application_t *application,
 void sb_application_register_desktop_surface(sb_application_t *application,
     sb_desktop_surface_t *desktop_surface)
 {
-    sb_list_push(application->desktop_surfaces, (void*)desktop_surface);
+    if (sb_desktop_surface_is_toplevel(desktop_surface)) {
+        sb_list_push(application->toplevels, (void*)desktop_surface);
+    } else if (sb_desktop_surface_is_popup(desktop_surface)) {
+        sb_list_push(application->popups, (void*)desktop_surface);
+    }
 }
 
 void sb_application_unregister_desktop_surface(sb_application_t *application,
     sb_desktop_surface_t *desktop_surface)
 {
-    // TODO: Implementation.
-    sb_list_t *list = application->desktop_surfaces;
-    uint64_t length = sb_list_length(list);
-    int64_t index = -1;
-    for (uint64_t i = 0; i < length; ++i) {
-        if (sb_list_at(list, i) == desktop_surface) {
-            index = i;
-            break;
+    if (sb_desktop_surface_is_toplevel(desktop_surface)) {
+        sb_list_t *list = application->toplevels;
+        uint64_t length = sb_list_length(list);
+        int64_t index = -1;
+        for (uint64_t i = 0; i < length; ++i) {
+            if (sb_list_at(list, i) == desktop_surface) {
+                index = i;
+                break;
+            }
         }
-    }
-    if (index != -1) {
-        sb_list_remove(list, index);
+        if (index != -1) {
+            sb_list_remove(list, index);
+        }
+    } else if (sb_desktop_surface_is_popup(desktop_surface)) {
+        sb_list_t *list = application->popups;
+        uint64_t length = sb_list_length(list);
+        int64_t index = -1;
+        for (uint64_t i = 0; i < length; ++i) {
+            if (sb_list_at(list, i) == desktop_surface) {
+                index = i;
+                break;
+            }
+        }
+        if (index != -1) {
+            sb_list_remove(list, index);
+        }
     }
 }
 
@@ -780,9 +820,9 @@ int sb_application_exec(sb_application_t *application)
             SB_EVENT_TYPE_NEXT_TICK);
         sb_application_post_event(application, tick_event);
 
-        // Exit event loop when last desktop surface closed.
-        if (sb_list_length(application->desktop_surfaces) == 0) {
-            sb_log_debug("Last desktop surface closed.\n");
+        // Exit event loop when last toplevel desktop surface closed.
+        if (sb_list_length(application->toplevels) == 0) {
+            sb_log_debug("Last toplevel desktop surface closed.\n");
             break;
         }
 

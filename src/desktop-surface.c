@@ -178,6 +178,18 @@ void sb_desktop_surface_set_parent(sb_desktop_surface_t *desktop_surface,
     desktop_surface->parent = parent;
 }
 
+bool
+sb_desktop_surface_is_toplevel(const sb_desktop_surface_t *desktop_surface)
+{
+    return desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL;
+}
+
+bool
+sb_desktop_surface_is_popup(const sb_desktop_surface_t *desktop_surface)
+{
+    return desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP;
+}
+
 sb_surface_t*
 sb_desktop_surface_surface(sb_desktop_surface_t *desktop_surface)
 {
@@ -232,7 +244,7 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
             y = desktop_surface->popup.position.y;
         }
         xdg_positioner_set_anchor_rect(positioner, x, y,
-            parent_size->width, parent_size->height);
+            1, 1);
         xdg_positioner_set_gravity(positioner,
             XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
 
