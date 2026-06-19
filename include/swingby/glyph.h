@@ -46,6 +46,11 @@ uint32_t sb_glyph_line_run_count(const sb_glyph_line_t *line);
 
 const sb_list_t* sb_glyph_line_runs(const sb_glyph_line_t *line);
 
+const sb_point_t* sb_glyph_line_baseline(const sb_glyph_line_t *line);
+
+void sb_glyph_line_set_baseline(sb_glyph_line_t *line,
+                                const sb_point_t *baseline);
+
 void sb_glyph_line_free(sb_glyph_line_t *line);
 
 

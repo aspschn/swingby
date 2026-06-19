@@ -373,13 +373,14 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
     SkTextBlobBuilder builder;
     sb_font_metrics_t *metrics = NULL;
 
-    float total_x = 0.0f;
+    // float total_x = 0.0f;
     const sb_list_t *lines = sb_glyph_layout_lines(layout);
     auto line_count = sb_glyph_layout_line_count(layout);
     if (line_count <= 0) {
         return;
     }
     for (uint32_t i = 0; i < line_count; ++i) {
+        float total_x = 0.0f;
         auto *line = (sb_glyph_line_t*)sb_list_at(lines, i);
         const sb_list_t *runs = sb_glyph_line_runs(line);
         auto run_count = sb_glyph_line_run_count(line);

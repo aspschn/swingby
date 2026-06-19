@@ -19,6 +19,7 @@ struct sb_glyph_run_t {
 
 struct sb_glyph_line_t {
     sb_list_t *runs;
+    sb_point_t baseline;
 };
 
 struct sb_glyph_layout_t {
@@ -63,6 +64,8 @@ sb_glyph_line_t* sb_glyph_line_new()
     sb_glyph_line_t *line = malloc(sizeof(sb_glyph_line_t));
 
     line->runs = sb_list_new();
+    line->baseline.x = 0.0f;
+    line->baseline.y = 0.0f;
 
     return line;
 }
@@ -80,6 +83,17 @@ uint32_t sb_glyph_line_run_count(const sb_glyph_line_t *line)
 const sb_list_t* sb_glyph_line_runs(const sb_glyph_line_t *line)
 {
     return line->runs;
+}
+
+const sb_point_t* sb_glyph_line_baseline(const sb_glyph_line_t *line)
+{
+    return &line->baseline;
+}
+
+void sb_glyph_line_set_baseline(sb_glyph_line_t *line,
+                                const sb_point_t *baseline)
+{
+    line->baseline = *baseline;
 }
 
 void sb_glyph_line_free(sb_glyph_line_t *line)
