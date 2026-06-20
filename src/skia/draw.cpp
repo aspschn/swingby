@@ -410,10 +410,11 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
 
             auto& sk_run = builder.allocRunPos(sk_font, glyph_count);
             for (uint32_t i = 0; i < glyph_count; ++i) {
+                const sb_point_t *baseline = sb_glyph_line_baseline(line);
                 sk_run.glyphs[i] = glyphs[i].id;
                 sk_run.points()[i] = SkPoint::Make(
                     total_x + (glyphs[i].offset.x * scale),
-                    glyphs[i].offset.y * scale
+                    (baseline->y + glyphs[i].offset.y) * scale
                 );
                 total_x += (glyphs[i].advance * scale); // + (glyphs[i].offset.x * scale);
             }
