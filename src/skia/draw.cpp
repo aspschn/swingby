@@ -394,10 +394,12 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
             if (metrics == NULL) {
                 metrics = sb_font_metrics_new(font);
             }
-            sk_sp<SkTypeface> typeface = font_mgr->makeFromFile(
-                font->path,
-                font->ttc_index
-            );
+            // sk_sp<SkTypeface> typeface = font_mgr->makeFromFile(
+            //     font->path,
+            //     font->ttc_index
+            // );
+            sk_sp<SkTypeface> typeface =
+                *(sk_sp<SkTypeface>*)sb_font_font_cache_find(font->path);
             // Null check.
             if (typeface == nullptr) {
                 sb_log_warn(
@@ -428,6 +430,7 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
         return;
     }
 
+    sb_bench_t *bench = sb_bench_new("sb_skia_draw_glyphs");
     SkPaint paint;
     paint.setColor(SK_ColorBLACK);
     canvas->drawTextBlob(
@@ -436,6 +439,7 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
         metrics->ascent * scale,
         paint
     );
+    sb_bench_end(bench);
 
     if (metrics != NULL) {
         sb_font_metrics_free(metrics);

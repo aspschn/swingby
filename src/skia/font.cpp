@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 
+#include <unordered_map>
+
 #include <skia/include/core/SkTypeface.h>
 #include <skia/include/core/SkFontMgr.h>
 #include <skia/include/core/SkFont.h>
@@ -16,6 +18,12 @@ extern "C" {
 #endif
 
 static sk_sp<SkFontMgr> _font_mgr_instance = nullptr;
+
+struct _font_cache {
+    std::unordered_map<std::string, sk_sp<SkTypeface>> map;
+};
+
+static struct _font_cache _font_cache;
 
 sb_font_metrics_t* sb_font_metrics_new(const sb_font_t *font)
 {
@@ -58,6 +66,16 @@ void* sb_font_font_mgr_instance()
     }
 
     return _font_mgr_instance.get();
+}
+
+void* sb_font_font_cache_find(const char *font_path)
+{
+    std::string str = font_path;
+    auto found = _font_cache.map.find(str);
+    if (found == _font_cache.map.end()) {
+        _font_cache.map[str] = _font_mgr_instance->makeFromFile(str.c_str(), 0);
+    }
+    return (void*)(&_font_cache.map[str]);
 }
 
 #ifdef __cplusplus

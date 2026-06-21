@@ -15,7 +15,7 @@ void sb_bench_end_F(sb_bench_t *bench);
 #define sb_bench_new(message) sb_bench_new_F(message)
 #define sb_bench_end(bench) sb_bench_end_F(bench)
 #else
-#define sb_bench_new() NULL
+#define sb_bench_new(message) NULL
 #define sb_bench_end(bench)
 #endif
 
