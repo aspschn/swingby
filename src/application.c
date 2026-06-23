@@ -46,7 +46,6 @@ struct sb_application_t {
     struct wl_compositor *_wl_compositor;
     struct xdg_wm_base *_xdg_wm_base;
     struct wl_seat *_wl_seat;
-    struct wl_pointer *_wl_pointer;
     struct wl_keyboard *_wl_keyboard;
     struct wl_touch *_wl_touch;
     struct wl_shm *wl_shm;
@@ -374,7 +373,6 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     // Null initializations.
     app->_wl_seat = NULL;
-    app->_wl_pointer = NULL;
     app->_wl_keyboard = NULL;
     app->_wl_touch = NULL;
     app->zwp_text_input_manager_v3 = NULL;
