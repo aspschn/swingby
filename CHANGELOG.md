@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.0-dev
+
+
 ## v0.8.0
 
 - Enhanced glyph rendering. Specifically multiline glyphs.
