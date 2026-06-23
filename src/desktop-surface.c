@@ -434,6 +434,13 @@ void sb_desktop_surface_toplevel_set_minimized(
     xdg_toplevel_set_minimized(desktop_surface->_xdg_toplevel);
 }
 
+void sb_desktop_surface_toplevel_set_title(
+    sb_desktop_surface_t *desktop_surface, const char *title)
+{
+    xdg_toplevel_set_title(desktop_surface->_xdg_toplevel, title);
+}
+
+
 void sb_desktop_surface_popup_set_position(
     sb_desktop_surface_t *desktop_surface, const sb_point_t *position)
 {

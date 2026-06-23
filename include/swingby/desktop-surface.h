@@ -141,6 +141,11 @@ SB_EXPORT
 void sb_desktop_surface_toplevel_set_minimized(
     sb_desktop_surface_t *desktop_surface);
 
+SB_EXPORT
+void sb_desktop_surface_toplevel_set_title(
+    sb_desktop_surface_t *desktop_surface, const char *title);
+
+
 void sb_desktop_surface_popup_set_position(
     sb_desktop_surface_t *desktop_surface, const sb_point_t *position);
 
