@@ -35,6 +35,8 @@
 #include "helpers/shared.h"
 #include "helpers/application.h"
 
+#include "private/pointer-priv.h"
+
 struct sb_application_t {
     sb_egl_t *egl;
     /// `struct wl_display`.
@@ -48,54 +50,9 @@ struct sb_application_t {
     struct wl_keyboard *_wl_keyboard;
     struct wl_touch *_wl_touch;
     struct wl_shm *wl_shm;
-    struct wp_cursor_shape_manager_v1 *wp_cursor_shape_manager_v1;
     struct zwp_text_input_manager_v3 *zwp_text_input_manager_v3;
     struct zwp_text_input_v3 *zwp_text_input_v3;
-    struct {
-        /// \brief Current pointer surface.
-        ///
-        /// Pointer motion handler not pass `struct wl_surface` object.
-        /// Store this information when pointer entered to the surface.
-        struct wl_surface *wl_surface;
-        /// \brief Current pointer view.
-        ///
-        /// Store the position of the view under the pointer.
-        /// Usefull when check differences in motion event.
-        sb_view_t *view;
-        /// \brief Pointer event position.
-        ///
-        /// Pointer button and axis event not pass the position.
-        /// Store this information when pointer moved.
-        sb_point_t pos;
-        /// \brief Pointer button event serial.
-        uint32_t button_serial;
-        /// \brief Pointer enter event information.
-        ///
-        /// Currently used only when change cursor shape.
-        uint32_t enter_serial;
-    } pointer;
-    /// \brief Click event information.
-    struct {
-        sb_view_t *view;
-        sb_pointer_button button;
-    } click;
-    struct {
-        sb_view_t *view;
-        uint32_t click_count;
-        uint32_t time;
-        sb_pointer_button button;
-    } double_click;
-    struct {
-        enum sb_pointer_scroll_axis axis;
-        enum sb_pointer_scroll_source source;
-        float value;
-        /// \brief Vertical stop.
-        bool ver_stop;
-        /// \brief Horizontal stop.
-        bool hor_stop;
-        enum sb_pointer_scroll_axis stop_axis;
-        bool frame;
-    } scroll;
+    sb_pointer_priv_t pointer;
     struct {
         /// \brief Current keyboard surface.
         sb_surface_t *surface;
@@ -114,8 +71,6 @@ struct sb_application_t {
         sb_xcursor_theme_manager_t *manager;
         char current[256];
     } xcursor;
-    /// \brief Default cursor when view not set cursor.
-    sb_cursor_t *cursor;
     /// \brief Output list.
     sb_list_t *outputs;
     /// \brief An event dispatcher.
@@ -201,70 +156,6 @@ static const struct wl_output_listener output_listener = {
     .scale = output_scale_handler,
     .name = output_name_handler,
     .description = output_description_handler,
-};
-
-//!<===========
-//!< Pointer
-//!<===========
-
-static void pointer_enter_handler(void *data,
-                                  struct wl_pointer *wl_pointer,
-                                  uint32_t serial,
-                                  struct wl_surface *surface,
-                                  wl_fixed_t sx,
-                                  wl_fixed_t sy);
-
-static void pointer_leave_handler(void *data,
-                                  struct wl_pointer *pointer,
-                                  uint32_t serial,
-                                  struct wl_surface *surface);
-
-static void pointer_motion_handler(void *data,
-                                   struct wl_pointer *wl_pointer,
-                                   uint32_t time,
-                                   wl_fixed_t sx,
-                                   wl_fixed_t sy);
-
-static void pointer_button_handler(void *data,
-                                   struct wl_pointer *pointer,
-                                   uint32_t serial,
-                                   uint32_t time,
-                                   uint32_t button,
-                                   uint32_t state);
-
-static void pointer_axis_handler(void *data,
-                                 struct wl_pointer *wl_pointer,
-                                 uint32_t time,
-                                 uint32_t axis,
-                                 wl_fixed_t value);
-
-static void pointer_frame_handler(void *data,
-                                  struct wl_pointer *wl_pointer);
-
-static void pointer_axis_source_handler(void *data,
-                                        struct wl_pointer *wl_pointer,
-                                        uint32_t axis_source);
-
-static void pointer_axis_stop_handler(void *data,
-                                      struct wl_pointer *wl_pointer,
-                                      uint32_t time,
-                                      uint32_t axis);
-
-static void pointer_axis_discrete_handler(void *data,
-                                          struct wl_pointer *wl_pointer,
-                                          uint32_t axis,
-                                          int32_t discrete);
-
-static const struct wl_pointer_listener pointer_listener = {
-    .enter = pointer_enter_handler,
-    .leave = pointer_leave_handler,
-    .motion = pointer_motion_handler,
-    .button = pointer_button_handler,
-    .axis = pointer_axis_handler,
-    .frame = pointer_frame_handler,
-    .axis_source = pointer_axis_source_handler,
-    .axis_stop = pointer_axis_stop_handler,
-    .axis_discrete = pointer_axis_discrete_handler, // Deprecated since 8.
 };
 
 //!<============
@@ -434,21 +325,6 @@ static sb_surface_t* _find_surface(sb_application_t *app,
     return found;
 }
 
-/// \brief Linux button to Swingby pointer button.
-sb_pointer_button _from_linux_button(uint32_t button)
-{
-    switch (button) {
-    case BTN_LEFT:
-        return SB_POINTER_BUTTON_LEFT;
-    case BTN_RIGHT:
-        return SB_POINTER_BUTTON_RIGHT;
-    case BTN_MIDDLE:
-        return SB_POINTER_BUTTON_MIDDLE;
-    default:
-        return SB_POINTER_BUTTON_UNIMPLEMENTED;
-    }
-}
-
 static void _post_pointer_enter_event(sb_view_t *view,
                                       float x,
                                       float y)
@@ -500,14 +376,6 @@ bool _is_child_of(sb_view_t *view, sb_view_t *other)
     return false;
 }
 
-static void _reset_double_click(sb_application_t *application)
-{
-    application->double_click.view = NULL;
-    application->double_click.click_count = 0;
-    application->double_click.time = 0;
-    application->double_click.button = SB_POINTER_BUTTON_NONE;
-}
-
 /// \brief Get the output object.
 static sb_output_t* _get_output(sb_application_t *application,
                                 struct wl_output *wl_output)
@@ -525,23 +393,6 @@ static sb_output_t* _get_output(sb_application_t *application,
     return ret;
 }
 
-static void _change_cursor_shape(sb_application_t *application,
-                                 struct wl_pointer *wl_pointer,
-                                 enum sb_cursor_shape shape)
-{
-    if (application->wp_cursor_shape_manager_v1 != NULL) {
-        struct wp_cursor_shape_device_v1 *device =
-            wp_cursor_shape_manager_v1_get_pointer(
-                application->wp_cursor_shape_manager_v1,
-                wl_pointer
-            );
-        wp_cursor_shape_device_v1_set_shape(device,
-            application->pointer.enter_serial,
-            _to_wp_cursor_shape(shape));
-        wp_cursor_shape_device_v1_destroy(device);
-    }
-}
-
 //!<===============
 //!< Application
 //!<===============
@@ -557,28 +408,15 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->_wl_pointer = NULL;
     app->_wl_keyboard = NULL;
     app->_wl_touch = NULL;
-    app->wp_cursor_shape_manager_v1 = NULL;
     app->zwp_text_input_manager_v3 = NULL;
     app->zwp_text_input_v3 = NULL;
 
-    app->pointer.wl_surface = NULL;
-    app->pointer.view = NULL;
-    app->pointer.pos.x = 0;
-    app->pointer.pos.y = 0;
-
-    app->click.view = NULL;
-    app->click.button = SB_POINTER_BUTTON_NONE;
+    // Pointer internals.
+    sb_pointer_priv_init(&app->pointer);
+    app->pointer.sb_application = app;
 
     // Create output list.
     app->outputs = sb_list_new();
-
-    _reset_double_click(app);
-
-    // Init scroll info.
-    app->scroll.value = 0.0f;
-    app->scroll.ver_stop = false;
-    app->scroll.hor_stop = false;
-    app->scroll.frame = false;
 
     app->text_input.wl_surface = NULL;
     app->text_input.preedit_text = NULL;
@@ -606,7 +444,6 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 
     app->xcursor.manager = NULL;
     app->xcursor.current[0] = '\0';
-    app->cursor = NULL;
 
     _sb_application_instance = app;
 
@@ -902,7 +739,7 @@ static void app_global_handler(void *data,
             name, &wl_shm_interface, 1);
         wl_shm_add_listener(app->wl_shm, &shm_listener, (void*)app);
     } else if (strcmp(interface, "wp_cursor_shape_manager_v1") == 0) {
-        app->wp_cursor_shape_manager_v1 = wl_registry_bind(wl_registry,
+        app->pointer.wp_cursor_shape_manager_v1 = wl_registry_bind(wl_registry,
             name, &wp_cursor_shape_manager_v1_interface, 1);
     } else if (strcmp(interface, "zwp_text_input_manager_v3") == 0) {
         app->zwp_text_input_manager_v3 = wl_registry_bind(wl_registry,
@@ -1001,371 +838,6 @@ static void output_description_handler(void *data,
                                        const char *description)
 {
     sb_log_debug("outout_description_handler() - %p\n", wl_output);
-}
-
-//!<============
-//!< Pointer
-//!<============
-
-static void pointer_enter_handler(void *data,
-                                  struct wl_pointer *wl_pointer,
-                                  uint32_t serial,
-                                  struct wl_surface *wl_surface,
-                                  wl_fixed_t sx,
-                                  wl_fixed_t sy)
-{
-    sb_application_t *app = (sb_application_t*)data;
-
-    app->pointer.wl_surface = wl_surface;
-
-    // Set the serial.
-    app->pointer.enter_serial = serial;
-
-    // Cursor shape.
-    if (app->wp_cursor_shape_manager_v1 != NULL) {
-        struct wp_cursor_shape_device_v1 *device =
-            wp_cursor_shape_manager_v1_get_pointer(
-                app->wp_cursor_shape_manager_v1,
-                wl_pointer
-            );
-        wp_cursor_shape_device_v1_set_shape(device, serial,
-            WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT);
-
-        wp_cursor_shape_device_v1_destroy(device);
-    } else {
-        // TEST cursor.
-        // Set default cursor.
-        if (app->cursor == NULL) {
-            sb_point_t hot_spot;
-            hot_spot.x = 0;
-            hot_spot.y = 0;
-            app->cursor = sb_cursor_new(SB_CURSOR_SHAPE_DEFAULT, &hot_spot);
-        }
-
-        sb_surface_t *cursor_surface = sb_cursor_surface(app->cursor);
-        wl_pointer_set_cursor(wl_pointer,
-            serial, sb_surface_wl_surface(cursor_surface), 0, 0);
-    }
-
-    float x = wl_fixed_to_double(sx);
-    float y = wl_fixed_to_double(sy);
-
-    // Store the pointer position.
-    // Since while resizing the desktop surface, there is no motion event.
-    // Instead the surface enter event is fired. So this is important to
-    // re-assign pointer position when enter event.
-    //
-    // Remember: The pointer enter event could be fired even mouse pointer is
-    // already in the surface area.
-    app->pointer.pos.x = x;
-    app->pointer.pos.y = y;
-
-    // Find the surface.
-    sb_surface_t *found = _find_surface(app, wl_surface);
-
-    // Make an event.
-    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
-        (void*)found,
-        SB_EVENT_TYPE_POINTER_ENTER);
-    event->pointer.button = SB_POINTER_BUTTON_NONE;
-    event->pointer.position.x = x;
-    event->pointer.position.y = y;
-
-    // Post the event.
-    sb_application_post_event(app, event);
-
-    // Find most child.
-    sb_view_t *root_view = sb_surface_root_view(found);
-    sb_point_t position;
-    position.x = x;
-    position.y = y;
-    sb_log_debug(" == root view: %p ==\n", root_view);
-    sb_view_t *view = _find_most_child(root_view, &position);
-
-    app->pointer.view = view;
-
-    // Change cursor shape.
-    _change_cursor_shape(app, wl_pointer, sb_view_cursor_shape(view));
-
-    // Post the event (view).
-    _post_pointer_enter_event(view, position.x, position.y);
-}
-
-static void pointer_leave_handler(void *data,
-                                  struct wl_pointer *pointer,
-                                  uint32_t serial,
-                                  struct wl_surface *surface)
-{
-    //
-}
-
-static void pointer_motion_handler(void *data,
-                                   struct wl_pointer *wl_pointer,
-                                   uint32_t time,
-                                   wl_fixed_t sx,
-                                   wl_fixed_t sy)
-{
-    sb_application_t *app = (sb_application_t*)data;
-
-    float x = wl_fixed_to_double(sx);
-    float y = wl_fixed_to_double(sy);
-
-    // Store the position.
-    app->pointer.pos.x = x;
-    app->pointer.pos.y = y;
-
-    // Find the surface.
-    sb_surface_t *surface = _find_surface(app, app->pointer.wl_surface);
-
-    // Find most child view.
-    sb_point_t pos;
-    pos.x = x;
-    pos.y = y;
-    sb_view_t *view = _find_most_child(sb_surface_root_view(surface), &pos);
-
-    // Pointer move event.
-    {
-        sb_event_t *move_event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
-            (void*)view,
-            SB_EVENT_TYPE_POINTER_MOVE);
-        move_event->pointer.button = SB_POINTER_BUTTON_NONE;
-        move_event->pointer.position.x = pos.x;
-        move_event->pointer.position.y = pos.y;
-
-        sb_application_post_event(app, move_event);
-    }
-
-    // Check difference.
-    if (view != app->pointer.view) {
-        // Post the leave event for the previous view.
-        // TODO: Leave position.
-        _post_pointer_leave_event(app->pointer.view, 0.0f, 0.0f);
-
-        app->pointer.view = view;
-
-        // Cursor shape.
-        _change_cursor_shape(app, wl_pointer, sb_view_cursor_shape(view));
-
-        // Post the event.
-        _post_pointer_enter_event(view, pos.x, pos.y);
-    }
-}
-
-static void pointer_button_handler(void *data,
-                                   struct wl_pointer *pointer,
-                                   uint32_t serial,
-                                   uint32_t time,
-                                   uint32_t button,
-                                   uint32_t state)
-{
-    sb_application_t *app = (sb_application_t*)data;
-
-    app->pointer.button_serial = serial;
-
-    float x = app->pointer.pos.x;
-    float y = app->pointer.pos.y;
-
-    // Find the surface.
-    sb_surface_t *surface = _find_surface(app, app->pointer.wl_surface);
-
-    // Find most child view.
-    sb_point_t pos = { .x = x, .y = y };
-    sb_view_t *view = _find_most_child(sb_surface_root_view(surface), &pos);
-
-    // Set the event type.
-    enum sb_event_type evt_type = SB_EVENT_TYPE_POINTER_PRESS;
-    if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
-        evt_type = SB_EVENT_TYPE_POINTER_PRESS;
-    } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
-        evt_type = SB_EVENT_TYPE_POINTER_RELEASE;
-    }
-    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
-        (void*)view,
-        evt_type);
-
-    event->pointer.button = _from_linux_button(button);
-    event->pointer.position = pos;
-
-    // Post the event.
-    sb_application_post_event(app, event);
-
-    // Click event.
-    if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
-        app->click.view = view;
-        app->click.button = _from_linux_button(button);
-    } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
-        if (view == app->click.view) {
-            sb_event_t *click_event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
-                (void*)view,
-                SB_EVENT_TYPE_POINTER_CLICK);
-            click_event->pointer.button = app->click.button;
-            click_event->pointer.position = pos;
-
-            app->click.view = NULL;
-
-            sb_application_post_event(app, click_event);
-
-            // Double click.
-            app->double_click.click_count += 1;
-
-            if (app->double_click.view == NULL) {
-                app->double_click.view = view;
-                app->double_click.button = _from_linux_button(button);
-            }
-            // Reset double click info if different view or button.
-            if (app->double_click.view != view &&
-                app->double_click.button != _from_linux_button(button)) {
-                _reset_double_click(app);
-            }
-            // Store time if click count is 1.
-            if (app->double_click.click_count == 1) {
-                app->double_click.time = time;
-            }
-            if (app->double_click.click_count == 2 &&
-                app->double_click.view == view) {
-                uint32_t diff = time - app->double_click.time;
-                if (diff <= 1000) {
-                    sb_log_debug("DOUBLE CLICK! %p\n", view);
-                    sb_event_t *dbl_click_event = sb_event_new(
-                        SB_EVENT_TARGET_TYPE_VIEW,
-                        view,
-                        SB_EVENT_TYPE_POINTER_DOUBLE_CLICK);
-                    sb_application_post_event(app, dbl_click_event);
-                }
-                _reset_double_click(app);
-            }
-            if (app->double_click.click_count > 2) {
-                _reset_double_click(app);
-            }
-        }
-    }
-}
-
-static void pointer_axis_handler(void *data,
-                                 struct wl_pointer *wl_pointer,
-                                 uint32_t time,
-                                 uint32_t axis,
-                                 wl_fixed_t value)
-{
-    sb_application_t *app = (sb_application_t*)data;
-
-    float val = wl_fixed_to_double(value);
-    sb_log_debug("pointer_axis_handler() - value: %.2f, axis: %d\n", val, axis);
-
-    enum sb_pointer_scroll_axis sb_axis =
-        SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
-    switch (axis) {
-    case WL_POINTER_AXIS_VERTICAL_SCROLL:
-        sb_axis = SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
-        break;
-    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-        sb_axis = SB_POINTER_SCROLL_AXIS_HORIZONTAL_SCROLL;
-        break;
-    default:
-        break;
-    }
-
-    app->scroll.frame = false;
-    app->scroll.axis = sb_axis;
-    app->scroll.value = val;
-}
-
-static void pointer_frame_handler(void *data,
-                                  struct wl_pointer *wl_pointer)
-{
-    sb_application_t *app = (sb_application_t*)data;
-
-    // sb_log_debug("pointer_frame_handler()\n");
-    if (app->scroll.frame == false && app->scroll.value != 0.0f) {
-        sb_log_debug(" = Pointer frame for scroll.\n");
-        // Post scroll event.
-        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
-            app->pointer.view, SB_EVENT_TYPE_POINTER_SCROLL);
-        event->scroll.axis = app->scroll.axis;
-        event->scroll.source = app->scroll.source;
-        event->scroll.value = app->scroll.value;
-
-        sb_application_post_event(app, event);
-
-        // Reset scroll info.
-        app->scroll.frame = true;
-        app->scroll.value = 0.0f;
-    }
-    if (app->scroll.ver_stop == true || app->scroll.hor_stop == true) {
-        sb_log_debug(" == Pointer frame for stop!\n");
-        app->scroll.ver_stop = false;
-        app->scroll.hor_stop = false;
-    }
-    // sb_log_debug("pointer_frame_handler()\n");
-}
-
-static void pointer_axis_source_handler(void *data,
-                                        struct wl_pointer *wl_pointer,
-                                        uint32_t axis_source)
-{
-    sb_application_t *app = (sb_application_t*)data;
-
-    enum sb_pointer_scroll_source source;
-    switch (axis_source) {
-    case WL_POINTER_AXIS_SOURCE_WHEEL:
-        source = SB_POINTER_SCROLL_SOURCE_WHEEL;
-        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_WHEEL\n");
-        break;
-    case WL_POINTER_AXIS_SOURCE_FINGER:
-        source = SB_POINTER_SCROLL_SOURCE_FINGER;
-        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_FINGER\n");
-        break;
-    case WL_POINTER_AXIS_SOURCE_CONTINUOUS:
-        source = SB_POINTER_SCROLL_SOURCE_CONTINUOUS;
-        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_CONTINUOUS\n");
-        break;
-    case WL_POINTER_AXIS_SOURCE_WHEEL_TILT:
-        source = SB_POINTER_SCROLL_SOURCE_WHEEL_TILT;
-        sb_log_debug("pointer_axis_source_handler() - SB_POINTER_SCROLL_SOURCE_WHEEL_TILT\n");
-        break;
-    default:
-        source = SB_POINTER_SCROLL_SOURCE_WHEEL;
-        break;
-    }
-
-    app->scroll.frame = false;
-    app->scroll.source = source;
-}
-
-static void pointer_axis_stop_handler(void *data,
-                                      struct wl_pointer *wl_pointer,
-                                      uint32_t time,
-                                      uint32_t axis)
-{
-    sb_application_t *app = (sb_application_t*)data;
-
-    enum sb_pointer_scroll_axis sb_axis =
-        SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
-    switch (axis) {
-    case WL_POINTER_AXIS_VERTICAL_SCROLL:
-        app->scroll.ver_stop = true;
-        sb_axis = SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL;
-        break;
-    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-        app->scroll.hor_stop = true;
-        sb_axis = SB_POINTER_SCROLL_AXIS_HORIZONTAL_SCROLL;
-        break;
-    default:
-        break;
-    }
-
-    app->scroll.stop_axis = sb_axis;
-    app->scroll.frame = false;
-    sb_log_debug("pointer_axis_stop_handler() - axis: %d\n", axis);
-
-}
-
-static void pointer_axis_discrete_handler(void *data,
-                                          struct wl_pointer *wl_pointer,
-                                          uint32_t axis,
-                                          int32_t discrete)
-{
-    // Deprecated.
 }
 
 //!<============
@@ -1533,9 +1005,8 @@ static void seat_capabilities_handler(void *data,
     sb_application_t *app = (sb_application_t*)data;
 
     if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
-        app->_wl_pointer = wl_seat_get_pointer(wl_seat);
-        wl_pointer_add_listener(app->_wl_pointer, &pointer_listener,
-            (void*)app);
+        app->pointer.wl_pointer = wl_seat_get_pointer(wl_seat);
+        sb_pointer_priv_add_listener(&app->pointer, wl_seat);
     }
     if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
         app->_wl_keyboard = wl_seat_get_keyboard(wl_seat);
@@ -1662,4 +1133,11 @@ static void text_input_done_handler(void *data,
     sb_log_debug("text_input_done_handler\n");
     // sb_log_debug(" |- preedit: %s\n", app->text_input.preedit_text);
     // sb_log_debug(" |- commit:  %s\n", app->text_input.commit_text);
+}
+
+
+sb_surface_t* sb_application_find_surface_by_wl_surface(
+    sb_application_t *application, struct wl_surface *wl_surface)
+{
+    return _find_surface(application, wl_surface);
 }

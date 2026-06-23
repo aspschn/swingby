@@ -14,6 +14,8 @@
 #define SB_EXPORT
 #endif
 
+#define SB_INTERNAL __attribute__((visibility("hidden")))
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
