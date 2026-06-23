@@ -325,37 +325,6 @@ static sb_surface_t* _find_surface(sb_application_t *app,
     return found;
 }
 
-static void _post_pointer_enter_event(sb_view_t *view,
-                                      float x,
-                                      float y)
-{
-    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
-        view,
-        SB_EVENT_TYPE_POINTER_ENTER);
-
-    event->pointer.button = SB_POINTER_BUTTON_NONE;
-    event->pointer.position.x = x;
-    event->pointer.position.y = y;
-
-    sb_application_post_event(sb_application_instance(), event);
-}
-
-static void _post_pointer_leave_event(sb_view_t *view,
-                                      float x,
-                                      float y)
-{
-    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_VIEW,
-        view,
-        SB_EVENT_TYPE_POINTER_LEAVE);
-
-    event->pointer.button = SB_POINTER_BUTTON_NONE;
-    // TODO: How to get pointer leave position?
-    event->pointer.position.x = x;
-    event->pointer.position.y = y;
-
-    sb_application_post_event(sb_application_instance(), event);
-}
-
 /// \brief What is this function's purpose?
 bool _is_child_of(sb_view_t *view, sb_view_t *other)
 {
