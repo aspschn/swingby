@@ -2,7 +2,9 @@
 
 ## v0.8.0-dev
 
-No public updates in this version.
+- Enhanced glyph rendering. Specifically multiline glyphs.
+
+- `visible` property in `sb_view_t` type.
 
 
 ## v0.7.0
