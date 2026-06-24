@@ -362,6 +362,54 @@ void sb_skia_draw_image2(sb_skia_renderer_t *renderer,
     canvas->drawImageRect(impl->sk_image(), sk_rect, sampling, nullptr);
 }
 
+void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
+                         const sb_view_t *view,
+                         float scale)
+{
+    SkCanvas *canvas = _get_canvas(renderer);
+    sb_image_t *image = sb_view_image((sb_view_t*)view);
+    if (image == NULL) {
+        sb_log_warn("Image is NULL!\n");
+        return;
+    }
+
+    SbImageImpl *impl = sb_image_impl(image);
+    const sb_rect_t *rect = sb_view_geometry(view);
+    const sb_size_i_t *image_size = sb_image_size(image);
+
+    // Make texture.
+    auto gl_renderer =
+        (sb_skia_gl_renderer_t*)sb_skia_renderer_current(renderer);
+
+    sb_skia_gl_renderer_make_image_texture(gl_renderer, impl);
+
+    // TODO: RRect.
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+        rect->position.x * scale,
+        rect->position.y * scale,
+        rect->size.width * scale,
+        rect->size.height * scale
+    );
+
+    SkSamplingOptions sampling;
+    if (sb_view_antialiased(view)) {
+        if (rect->size.width > image_size->width &&
+            rect->size.height > image_size->height) {
+            // Upscale.
+            sampling = SkSamplingOptions(
+                SkFilterMode::kLinear,
+                SkMipmapMode::kLinear
+            );
+        } else {
+            // Downscale.
+            sampling = SkSamplingOptions(SkCubicResampler::Mitchell());
+        }
+    }
+
+    canvas->drawImageRect(impl->sk_image(), sk_rect, sampling, nullptr);
+}
+
 void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
                          const sb_rect_t *rect,
                          uint32_t scale,

@@ -32,6 +32,7 @@ struct sb_view_t {
     bool clip;
     /// \brief View's visibility.
     bool visible;
+    bool antialiased;
     enum sb_cursor_shape cursor_shape;
     sb_list_t *event_listeners;
 };
@@ -76,6 +77,7 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 
     view->clip = false;
     view->visible = true;
+    view->antialiased = false;
 
     view->cursor_shape = SB_CURSOR_SHAPE_DEFAULT;
 
@@ -300,6 +302,16 @@ bool sb_view_visible(const sb_view_t *view)
 void sb_view_set_visible(sb_view_t *view, bool value)
 {
     view->visible = value;
+}
+
+bool sb_view_antialiased(const sb_view_t *view)
+{
+    return view->antialiased;
+}
+
+void sb_view_set_antialiased(sb_view_t *view, bool value)
+{
+    view->antialiased = value;
 }
 
 enum sb_cursor_shape sb_view_cursor_shape(const sb_view_t *view)

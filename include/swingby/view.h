@@ -147,6 +147,12 @@ SB_EXPORT
 void sb_view_set_visible(sb_view_t *view, bool value);
 
 SB_EXPORT
+bool sb_view_antialiased(const sb_view_t *view);
+
+SB_EXPORT
+void sb_view_set_antialiased(sb_view_t *view, bool value);
+
+SB_EXPORT
 enum sb_cursor_shape sb_view_cursor_shape(const sb_view_t *view);
 
 SB_EXPORT

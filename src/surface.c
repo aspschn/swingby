@@ -251,8 +251,9 @@ static void _draw_recursive(sb_surface_t *surface,
             view,
             surface->scale);
     } else if (render_type == SB_VIEW_RENDER_TYPE_IMAGE) {
-        sb_skia_draw_image2(surface->skia_renderer,
-            sb_view_geometry(view), surface->scale, sb_view_image(view));
+        // sb_skia_draw_image2(surface->skia_renderer,
+        //     sb_view_geometry(view), surface->scale, sb_view_image(view));
+        sb_skia_draw_image3(surface->skia_renderer, view, surface->scale);
     } else if (render_type == SB_VIEW_RENDER_TYPE_GLYPHS) {
         sb_skia_draw_glyphs(
             surface->skia_renderer,
