@@ -101,6 +101,7 @@ typedef struct sb_keyboard_event_t {
 
 typedef struct sb_scale_event_t {
     uint32_t scale;
+    float scale_f;
 } sb_scale_event_t;
 
 typedef struct sb_timer_event_t {

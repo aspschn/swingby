@@ -10,6 +10,8 @@
 
 #include <wayland-client.h>
 #include <wayland-egl.h>
+#include <wayland-protocols/stable/viewporter.h>
+#include <wayland-protocols/staging/fractional-scale-v1.h>
 #include <wayland-protocols/unstable/text-input-unstable-v3.h>
 
 #include <EGL/egl.h>
@@ -45,6 +47,7 @@ struct sb_surface_t {
     EGLSurface _egl_surface;
     struct wl_shm_pool *wl_shm_pool;
     struct wl_buffer *wl_buffer;
+    struct wp_fractional_scale_v1 *wp_fractional_scale_v1;
     struct {
         void *addr;
         uint32_t size;
@@ -55,6 +58,8 @@ struct sb_surface_t {
     sb_size_t _size;
     sb_view_t *_root_view;
     uint32_t scale;
+    float scale_f;
+    bool is_fractional_scale;
     sb_view_t *focused_view;
     /// Currently only one GL view supported.
     struct {
@@ -105,6 +110,18 @@ static const struct wl_surface_listener surface_listener = {
     .leave = leave_handler,
     .preferred_buffer_scale = preferred_buffer_scale_handler,
     .preferred_buffer_transform = preferred_buffer_transform_handler,
+};
+
+//!<======================
+//!< Fractional Scale
+//!<======================
+
+static void preferred_scale_handler(void *data,
+                                    struct wp_fractional_scale_v1 *wp_scale,
+                                    uint32_t scale);
+
+static const struct wp_fractional_scale_v1_listener scale_listener = {
+    .preferred_scale = preferred_scale_handler,
 };
 
 //!<======================
@@ -467,6 +484,8 @@ sb_surface_t* sb_surface_new()
     surface->_size.width = 200.0f;
     surface->_size.height = 200.0f;
     surface->scale = 1;
+    surface->scale_f = 1.0f;
+    surface->is_fractional_scale = false;
     surface->frame_ready = false;
     surface->update_pending = false;
     surface->frame_callback = NULL;
@@ -476,6 +495,7 @@ sb_surface_t* sb_surface_new()
     surface->backend = NULL;
     surface->gl_view.fbo = 0;
     surface->gl_view.texture = 0;
+    surface->wp_fractional_scale_v1 = NULL;
 
     sb_application_t *app = sb_application_instance();
 
@@ -483,9 +503,22 @@ sb_surface_t* sb_surface_new()
     surface->_wl_surface = wl_compositor_create_surface(
         sb_application_wl_compositor(app));
 
-    // Add surface listener.
+    // Add surface listeners.
     wl_surface_add_listener(surface->_wl_surface, &surface_listener,
         (void*)surface);
+
+    struct wp_fractional_scale_manager_v1 *scale_manager =
+        sb_application_wp_fractional_scale_manager_v1(app);
+    if (scale_manager != NULL) {
+        surface->wp_fractional_scale_v1 =
+            wp_fractional_scale_manager_v1_get_fractional_scale(
+                scale_manager,
+                surface->_wl_surface
+            );
+
+        wp_fractional_scale_v1_add_listener(surface->wp_fractional_scale_v1,
+            &scale_listener, (void*)surface);
+    }
 
     // Detect Swingby rendering backend.
     surface->backend = getenv("SWINGBY_BACKEND");
@@ -862,6 +895,12 @@ static void preferred_buffer_scale_handler(void *data,
     sb_surface_t *surface = (sb_surface_t*)data;
     sb_log_debug("preferred_buffer_scale_handler - factor: %d\n", factor);
 
+    if (surface->is_fractional_scale) {
+        sb_log_debug("preferred_buffer_scale_handler() - "
+                     "fractional scale available. ignored.\n");
+        return;
+    }
+
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE, surface,
         SB_EVENT_TYPE_PREFERRED_SCALE);
     event->scale.scale = factor;
@@ -874,4 +913,26 @@ static void preferred_buffer_transform_handler(void *data,
                                                struct wl_surface *wl_surface,
                                                uint32_t transform)
 {
+}
+
+//!<======================
+//!< Fractional Scale
+//!<======================
+
+static void preferred_scale_handler(void *data,
+                                    struct wp_fractional_scale_v1 *wp_scale,
+                                    uint32_t scale)
+{
+    sb_surface_t *surface = (sb_surface_t*)data;
+
+    sb_log_debug("preferred_scale_handler - scale: %d (%f)\n",
+        scale, (float)scale / (float)120);
+    surface->is_fractional_scale = true;
+
+    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE, surface,
+        SB_EVENT_TYPE_PREFERRED_SCALE);
+    event->scale.scale_f = (float)scale / (float)120;
+
+    sb_application_t *app = sb_application_instance();
+    sb_application_post_event(app, event);
 }
