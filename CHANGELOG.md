@@ -2,6 +2,12 @@
 
 ## v0.9.0-dev
 
+- `set_title` method in `sb_desktop_surface_t` type.
+
+- Anti-aliasing property added to image typed `sb_view_t`.
+
+- Some performance improvements.
+
 
 ## v0.8.0
 
