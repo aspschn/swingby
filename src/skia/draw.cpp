@@ -232,7 +232,7 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
     // For restore stack.
     int save_count = 0;
 
-    if (filters != NULL) {
+    if (sb_list_length(filters) > 0) {
         SkPaint filter_paint;
         sk_sp<SkImageFilter> prev_filter = nullptr; // For multiple filters,
                                                     // store the previous one.
