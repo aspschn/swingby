@@ -36,6 +36,7 @@
 #include "helpers/shared.h"
 #include "helpers/application.h"
 
+#include "private/output-priv.h"
 #include "private/pointer-priv.h"
 
 struct sb_application_t {
@@ -72,8 +73,8 @@ struct sb_application_t {
         sb_xcursor_theme_manager_t *manager;
         char current[256];
     } xcursor;
-    /// \brief Output list.
-    sb_list_t *outputs;
+    /// \brief Output impl.
+    sb_output_priv_t output;
     /// \brief An event dispatcher.
     sb_event_dispatcher_t *event_dispatcher;
     sb_list_t *event_listeners;
@@ -111,52 +112,6 @@ static void xdg_wm_base_ping_handler(void *data,
 
 static const struct xdg_wm_base_listener app_xdg_wm_base_listener = {
     .ping = xdg_wm_base_ping_handler,
-};
-
-//!<===========
-//!< Output
-//!<===========
-
-static void output_geometry_handler(void *data,
-                                       struct wl_output *wl_output,
-                                       int32_t x,
-                                       int32_t y,
-                                       int32_t physical_width,
-                                       int32_t physical_height,
-                                       int32_t subpixel,
-                                       const char *make,
-                                       const char *model,
-                                       int32_t transform);
-
-static void output_mode_handler(void *data,
-                                struct wl_output *wl_output,
-                                uint32_t flags,
-                                int32_t width,
-                                int32_t height,
-                                int32_t refresh);
-
-static void output_done_handler(void *data,
-                                struct wl_output *wl_output);
-
-static void output_scale_handler(void *data,
-                                 struct wl_output *wl_output,
-                                 int32_t factor);
-
-static void output_name_handler(void *data,
-                                struct wl_output *wl_output,
-                                const char *name);
-
-static void output_description_handler(void *data,
-                                       struct wl_output *wl_output,
-                                       const char *description);
-
-static const struct wl_output_listener output_listener = {
-    .geometry = output_geometry_handler,
-    .mode = output_mode_handler,
-    .done = output_done_handler,
-    .scale = output_scale_handler,
-    .name = output_name_handler,
-    .description = output_description_handler,
 };
 
 //!<============
@@ -346,23 +301,6 @@ bool _is_child_of(sb_view_t *view, sb_view_t *other)
     return false;
 }
 
-/// \brief Get the output object.
-static sb_output_t* _get_output(sb_application_t *application,
-                                struct wl_output *wl_output)
-{
-    sb_output_t *ret = NULL;
-
-    for (int i = 0; i < sb_list_length(application->outputs); ++i) {
-        sb_output_t *output = sb_list_at(application->outputs, i);
-        if (sb_output_wl_output(output) == wl_output) {
-            ret = output;
-            break;
-        }
-    }
-
-    return ret;
-}
-
 //!<===============
 //!< Application
 //!<===============
@@ -385,8 +323,9 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     sb_pointer_priv_init(&app->pointer);
     app->pointer.sb_application = app;
 
-    // Create output list.
-    app->outputs = sb_list_new();
+    // Output internals.
+    sb_output_priv_init(&app->output);
+    app->output.sb_application = app;
 
     app->text_input.wl_surface = NULL;
     app->text_input.preedit_text = NULL;
@@ -707,9 +646,9 @@ static void app_global_handler(void *data,
         // Add the output.
         {
             sb_output_t *output = sb_output_new(wl_output, name);
-            sb_list_push(app->outputs, output);
+            sb_list_push(app->output.outputs, output);
         }
-        wl_output_add_listener(wl_output, &output_listener, (void*)app);
+        sb_output_priv_add_listener(&app->output, wl_output);
     } else if (strcmp(interface, "wl_shm") == 0) {
         app->wl_shm = wl_registry_bind(wl_registry,
             name, &wl_shm_interface, 1);
@@ -742,81 +681,6 @@ static void xdg_wm_base_ping_handler(void *data,
                                      uint32_t serial)
 {
     xdg_wm_base_pong(xdg_wm_base, serial);
-}
-
-//!<===========
-//!< Output
-//!<===========
-
-static void output_geometry_handler(void *data,
-                                    struct wl_output *wl_output,
-                                    int32_t x,
-                                    int32_t y,
-                                    int32_t physical_width,
-                                    int32_t physical_height,
-                                    int32_t subpixel,
-                                    const char *make,
-                                    const char *model,
-                                    int32_t transform)
-{
-    sb_log_debug("output_geometry_handler() - %p\n", wl_output);
-    sb_log_debug(" - make: %s\n", make);
-    sb_log_debug(" - model: %s\n", model);
-}
-
-static void output_mode_handler(void *data,
-                                struct wl_output *wl_output,
-                                uint32_t flags,
-                                int32_t width,
-                                int32_t height,
-                                int32_t refresh)
-{
-    sb_log_debug("output_mode_handler() - %p\n", wl_output);
-}
-
-static void output_done_handler(void *data,
-                                struct wl_output *wl_output)
-{
-    sb_application_t *application = (sb_application_t*)data;
-    sb_output_t *output = _get_output(application, wl_output);
-    if (output == NULL) {
-        sb_log_warn("output_done_handler() - output is NULL!\n");
-        return;
-    }
-    sb_output_set_done(output, true);
-}
-
-static void output_scale_handler(void *data,
-                                 struct wl_output *wl_output,
-                                 int32_t factor)
-{
-    sb_application_t *application = (sb_application_t*)data;
-    sb_output_t *output = _get_output(application, wl_output);
-    if (output == NULL) {
-        sb_log_warn("output_scale_handler() - output is NULL!\n");
-        return;
-    }
-    sb_output_set_scale(output, factor);
-}
-
-static void output_name_handler(void *data,
-                                struct wl_output *wl_output,
-                                const char *name)
-{
-    sb_application_t *application = (sb_application_t*)data;
-    sb_output_t *output = _get_output(application, wl_output);
-    if (output == NULL) {
-        sb_log_warn("output_name_handler() - output is NULL!\n");
-        return;
-    }
-    sb_output_set_name(output, name);
-}
-
-static void output_description_handler(void *data,
-                                       struct wl_output *wl_output,
-                                       const char *description)
-{
-    sb_log_debug("outout_description_handler() - %p\n", wl_output);
 }
 
 //!<============

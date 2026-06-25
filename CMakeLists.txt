@@ -69,6 +69,8 @@ set(SWINGBY_SOURCES
     src/event-dispatcher.c
     src/private/pointer-priv.h
     src/private/pointer-priv.c
+    src/private/output-priv.h
+    src/private/output-priv.c
     src/skia/gl-renderer.h
     src/skia/gl-renderer.cpp
     src/skia/raster-renderer.cpp
