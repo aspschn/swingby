@@ -14,6 +14,7 @@
 #include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
 #include <wayland-protocols/staging/cursor-shape-v1.h>
+#include <wayland-protocols/staging/fractional-scale-v1.h>
 #include <wayland-protocols/unstable/text-input-unstable-v3.h>
 
 #include <swingby/log.h>
@@ -51,6 +52,7 @@ struct sb_application_t {
     struct wl_shm *wl_shm;
     struct zwp_text_input_manager_v3 *zwp_text_input_manager_v3;
     struct zwp_text_input_v3 *zwp_text_input_v3;
+    struct wp_fractional_scale_manager_v1 *wp_fractional_scale_manager_v1;
     sb_pointer_priv_t pointer;
     struct {
         /// \brief Current keyboard surface.
@@ -377,6 +379,7 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->_wl_touch = NULL;
     app->zwp_text_input_manager_v3 = NULL;
     app->zwp_text_input_v3 = NULL;
+    app->wp_fractional_scale_manager_v1 = NULL;
 
     // Pointer internals.
     sb_pointer_priv_init(&app->pointer);
@@ -580,6 +583,12 @@ struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
     return application->zwp_text_input_v3;
 }
 
+struct wp_fractional_scale_manager_v1*
+sb_application_wp_fractional_scale_manager_v1(sb_application_t *application)
+{
+    return application->wp_fractional_scale_manager_v1;
+}
+
 sb_egl_context_t* sb_application_egl_context(sb_application_t *application)
 {
     return application->egl;
@@ -711,6 +720,9 @@ static void app_global_handler(void *data,
     } else if (strcmp(interface, "zwp_text_input_manager_v3") == 0) {
         app->zwp_text_input_manager_v3 = wl_registry_bind(wl_registry,
             name, &zwp_text_input_manager_v3_interface, 1);
+    } else if (strcmp(interface, "wp_fractional_scale_manager_v1") == 0) {
+        app->wp_fractional_scale_manager_v1 = wl_registry_bind(wl_registry,
+            name, &wp_fractional_scale_manager_v1_interface, 1);
     }
 }
 

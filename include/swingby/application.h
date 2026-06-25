@@ -112,6 +112,10 @@ struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
     sb_application_t *application);
 
 /// \memberof sb_application_t
+struct wp_fractional_scale_manager_v1*
+sb_application_wp_fractional_scale_manager_v1(sb_application_t *application);
+
+/// \memberof sb_application_t
 sb_egl_context_t* sb_application_egl_context(sb_application_t *application)
     __attribute__((deprecated("use sb_application_egl() instead.")));
 
