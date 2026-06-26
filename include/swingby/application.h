@@ -108,6 +108,11 @@ struct xdg_wm_base* sb_application_xdg_wm_base(
 struct wl_seat* sb_application_wl_seat(sb_application_t *application);
 
 /// \memberof sb_application_t
+/// \brief Get the `struct wp_viewporter` of the application.
+struct wp_viewporter*
+sb_application_wp_viewporter(sb_application_t *application);
+
+/// \memberof sb_application_t
 struct zwp_text_input_v3* sb_application_zwp_text_input_v3(
     sb_application_t *application);
 

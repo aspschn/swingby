@@ -2,11 +2,15 @@
 
 ## v0.9.0-dev
 
+**Breaking changes**
+
 - `set_title` method in `sb_desktop_surface_t` type.
 
 - Anti-aliasing property added to image typed `sb_view_t`.
 
 - Some performance improvements.
+
+- Fractional scale factor. This breaks API/ABIs.
 
 
 ## v0.8.0

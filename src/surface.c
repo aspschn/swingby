@@ -48,6 +48,7 @@ struct sb_surface_t {
     struct wl_shm_pool *wl_shm_pool;
     struct wl_buffer *wl_buffer;
     struct wp_fractional_scale_v1 *wp_fractional_scale_v1;
+    struct wp_viewport *wp_viewport;
     struct {
         void *addr;
         uint32_t size;
@@ -57,8 +58,7 @@ struct sb_surface_t {
     sb_skia_renderer_t *skia_renderer;
     sb_size_t _size;
     sb_view_t *_root_view;
-    uint32_t scale;
-    float scale_f;
+    float scale;
     bool is_fractional_scale;
     sb_view_t *focused_view;
     /// Currently only one GL view supported.
@@ -473,6 +473,27 @@ void _draw_frame(sb_surface_t *surface)
     }
 }
 
+static void _fit_viewport(sb_surface_t *surface)
+{
+    if (surface->is_fractional_scale) {
+        sb_log_debug("_fit_viewport - %fx%f\n",
+            surface->_size.width, surface->_size.height);
+        if (surface->wp_viewport == NULL) {
+            sb_application_t *app = sb_application_instance();
+            struct wp_viewporter *viewporter =
+                sb_application_wp_viewporter(app);
+
+            surface->wp_viewport = wp_viewporter_get_viewport(viewporter,
+                surface->_wl_surface);
+        }
+
+        wp_viewport_set_destination(surface->wp_viewport,
+            surface->_size.width, surface->_size.height);
+
+        // wp_viewport_destroy(vp);
+    }
+}
+
 //!<===============
 //!< Surface
 //!<===============
@@ -483,8 +504,7 @@ sb_surface_t* sb_surface_new()
 
     surface->_size.width = 200.0f;
     surface->_size.height = 200.0f;
-    surface->scale = 1;
-    surface->scale_f = 1.0f;
+    surface->scale = 1.0f;
     surface->is_fractional_scale = false;
     surface->frame_ready = false;
     surface->update_pending = false;
@@ -496,6 +516,7 @@ sb_surface_t* sb_surface_new()
     surface->gl_view.fbo = 0;
     surface->gl_view.texture = 0;
     surface->wp_fractional_scale_v1 = NULL;
+    surface->wp_viewport = NULL;
 
     sb_application_t *app = sb_application_instance();
 
@@ -629,6 +650,7 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
 
     sb_surface_update(surface);
 
+    _fit_viewport(surface);
     if (strcmp(surface->backend, "opengl") == 0) {
         wl_egl_window_resize(surface->_wl_egl_window,
             surface->_size.width * surface->scale,
@@ -697,16 +719,20 @@ void sb_surface_update(sb_surface_t *surface)
     }
 }
 
-uint32_t sb_surface_scale(const sb_surface_t *surface)
+float sb_surface_scale(const sb_surface_t *surface)
 {
     return surface->scale;
 }
 
-void sb_surface_set_scale(sb_surface_t *surface, uint32_t scale)
+void sb_surface_set_scale(sb_surface_t *surface, float scale)
 {
     surface->scale = scale;
-    wl_surface_set_buffer_scale(surface->_wl_surface, scale);
+    sb_log_debug("scale == %f\n", scale);
+    if (surface->is_fractional_scale == false) {
+        wl_surface_set_buffer_scale(surface->_wl_surface, scale);
+    }
 
+    _fit_viewport(surface);
     wl_egl_window_resize(surface->_wl_egl_window,
         surface->_size.width * surface->scale,
         surface->_size.height * surface->scale,
@@ -931,7 +957,7 @@ static void preferred_scale_handler(void *data,
 
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE, surface,
         SB_EVENT_TYPE_PREFERRED_SCALE);
-    event->scale.scale_f = (float)scale / (float)120;
+    event->scale.scale = (float)scale / (float)120;
 
     sb_application_t *app = sb_application_instance();
     sb_application_post_event(app, event);

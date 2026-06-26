@@ -65,7 +65,7 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
 
 void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
                          const sb_rect_t *rect,
-                         uint32_t scale,
+                         float scale,
                          const sb_glyph_layout_t *layout);
 
 void sb_skia_draw_texture(sb_skia_renderer_t *renderer,
