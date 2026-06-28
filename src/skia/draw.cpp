@@ -228,6 +228,9 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
     sk_color_4f.fB = color->b;
     sk_color_4f.fA = color->a;
     paint.setColor(sk_color_4f);
+    if (sb_view_antialiased(view)) {
+        paint.setAntiAlias(true);
+    }
 
     // For restore stack.
     int save_count = 0;
