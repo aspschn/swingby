@@ -141,9 +141,23 @@ SB_EXPORT
 void sb_desktop_surface_toplevel_set_minimized(
     sb_desktop_surface_t *desktop_surface);
 
+/// \memberof sb_desktop_surface_t
+/// \brief Set a title hint for the compositior.
 SB_EXPORT
 void sb_desktop_surface_toplevel_set_title(
     sb_desktop_surface_t *desktop_surface, const char *title);
+
+/// \memberof sb_desktop_surface_t
+/// \brief Set an application id hint for the compositor.
+SB_EXPORT
+void sb_desktop_surface_toplevel_set_app_id(
+    sb_desktop_surface_t *desktop_surface, const char *app_id);
+
+/// \memberof sb_desktop_surface_t
+/// \brief Open a window menu from the compositor.
+SB_EXPORT
+void sb_desktop_surface_toplevel_show_window_menu(
+    sb_desktop_surface_t *desktop_surface);
 
 
 void sb_desktop_surface_popup_set_position(

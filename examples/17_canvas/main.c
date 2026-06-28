@@ -102,6 +102,9 @@ int main(int argc, char *argv[])
 
     sb_desktop_surface_show(surface);
 
+    sb_desktop_surface_toplevel_set_title(surface,
+        "17-canvas — Swingby Example");
+
     return sb_application_exec(app);
 }
 

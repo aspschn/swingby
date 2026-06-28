@@ -16,7 +16,7 @@
 
 struct sb_desktop_surface_t {
     sb_surface_t *_surface;
-    sb_desktop_surface_role _role;
+    sb_desktop_surface_role role;
     sb_desktop_surface_t *parent;
     struct xdg_surface *_xdg_surface;
     struct xdg_toplevel *_xdg_toplevel;
@@ -143,7 +143,7 @@ sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
     sb_desktop_surface_t *d_surface = malloc(sizeof(sb_desktop_surface_t));
 
     // Initialize the members.
-    d_surface->_role = role;
+    d_surface->role = role;
     d_surface->parent = NULL;
     d_surface->_xdg_surface = NULL;
     d_surface->_xdg_toplevel = NULL;
@@ -181,13 +181,13 @@ void sb_desktop_surface_set_parent(sb_desktop_surface_t *desktop_surface,
 bool
 sb_desktop_surface_is_toplevel(const sb_desktop_surface_t *desktop_surface)
 {
-    return desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL;
+    return desktop_surface->role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL;
 }
 
 bool
 sb_desktop_surface_is_popup(const sb_desktop_surface_t *desktop_surface)
 {
-    return desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP;
+    return desktop_surface->role == SB_DESKTOP_SURFACE_ROLE_POPUP;
 }
 
 sb_surface_t*
@@ -212,7 +212,7 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         &xdg_surface_listener, NULL);
 
     // Create toplevel or popup.
-    if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
+    if (desktop_surface->role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
         desktop_surface->_xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
         xdg_toplevel_add_listener(desktop_surface->_xdg_toplevel,
             &xdg_toplevel_listener, (void*)desktop_surface);
@@ -227,7 +227,7 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         min_size.height = 100;
         sb_desktop_surface_toplevel_set_minimum_size(desktop_surface,
             &min_size);
-    } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
+    } else if (desktop_surface->role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
         struct xdg_positioner *positioner = xdg_wm_base_create_positioner(
             xdg_wm_base);
         const sb_size_t *surface_size = sb_surface_size(
@@ -258,7 +258,7 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
     }
 
     // Commit.
-    if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
+    if (desktop_surface->role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
         sb_surface_attach(desktop_surface->_surface);
 
         sb_surface_update(desktop_surface->_surface);
@@ -267,7 +267,7 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
         if (desktop_surface->parent != NULL) {
             _set_toplevel_parent(desktop_surface->parent, desktop_surface);
         }
-    } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
+    } else if (desktop_surface->role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
         // Show directly for a non grabbable popup.
         if (!desktop_surface->popup.grabbable) {
             // Must commit and roundtrip.
@@ -288,10 +288,10 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
 
 void sb_desktop_surface_hide(sb_desktop_surface_t *desktop_surface)
 {
-    if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
+    if (desktop_surface->role == SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
         xdg_toplevel_destroy(desktop_surface->_xdg_toplevel);
         desktop_surface->_xdg_toplevel = NULL;
-    } else if (desktop_surface->_role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
+    } else if (desktop_surface->role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
         xdg_popup_destroy(desktop_surface->xdg_popup);
         desktop_surface->xdg_popup = NULL;
 
@@ -438,6 +438,39 @@ void sb_desktop_surface_toplevel_set_title(
     sb_desktop_surface_t *desktop_surface, const char *title)
 {
     xdg_toplevel_set_title(desktop_surface->_xdg_toplevel, title);
+}
+
+void sb_desktop_surface_toplevel_set_app_id(
+    sb_desktop_surface_t *desktop_surface, const char *app_id)
+{
+    if (desktop_surface->role != SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
+        sb_log_warn("sb_desktop_surface_toplevel_set_app_id()"
+                    " - Not a toplevel desktop surface.");
+        return;
+    }
+    if (desktop_surface->_xdg_toplevel == NULL) {
+        sb_log_warn("sb_desktop_surface_toplevel_set_app_id()"
+                    " - XDG toplevel is NULL!\n");
+        return;
+    }
+    xdg_toplevel_set_app_id(desktop_surface->_xdg_toplevel, app_id);
+}
+
+void sb_desktop_surface_toplevel_show_window_menu(
+    sb_desktop_surface_t *desktop_surface)
+{
+    if (desktop_surface->role != SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
+        sb_log_warn("sb_desktop_surface_toplevel_show_window_menu()"
+                    " - Not a toplevel desktop surface.");
+        return;
+    }
+    if (desktop_surface->_xdg_toplevel == NULL) {
+        sb_log_warn("sb_desktop_surface_toplevel_show_window_menu()"
+                    " - XDG toplevel is NULL!\n");
+        return;
+    }
+    // TODO: Implementation.
+    // xdg_toplevel_show_window_menu(desktop_surface->_xdg_toplevel);
 }
 
 
