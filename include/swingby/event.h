@@ -204,7 +204,7 @@ bool sb_event_state_change_value(sb_event_t *event);
 //!< Scale Event
 //!<================
 
-int32_t sb_event_scale_scale(sb_event_t *event);
+float sb_event_scale_scale(sb_event_t *event);
 
 //!<================
 //!< Timer Event
