@@ -540,7 +540,7 @@ void sb_skia_draw_texture(sb_skia_renderer_t *renderer,
 void sb_skia_clip_rect(sb_skia_renderer_t *renderer,
                        const sb_rect_t *rect,
                        const sb_view_radius_t *radius,
-                       uint32_t scale)
+                       float scale)
 {
     SkCanvas *canvas = _get_canvas(renderer);
 
