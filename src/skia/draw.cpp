@@ -417,7 +417,6 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
 {
     SkCanvas *canvas = _get_canvas(renderer);
 
-    SkFontMgr *font_mgr = (SkFontMgr*)sb_font_font_mgr_instance();
     SkTextBlobBuilder builder;
     sb_font_metrics_t *metrics = NULL;
 
@@ -442,12 +441,10 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
             if (metrics == NULL) {
                 metrics = sb_font_metrics_new(font);
             }
-            // sk_sp<SkTypeface> typeface = font_mgr->makeFromFile(
-            //     font->path,
-            //     font->ttc_index
-            // );
+
+            int ttc = font->ttc_index;
             sk_sp<SkTypeface> typeface =
-                *(sk_sp<SkTypeface>*)sb_font_font_cache_find(font->path);
+                *(sk_sp<SkTypeface>*)sb_font_font_cache_find(font->path, ttc);
             // Null check.
             if (typeface == nullptr) {
                 sb_log_warn(

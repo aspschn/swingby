@@ -28,7 +28,7 @@ void sb_font_metrics_free(sb_font_metrics_t *metrics);
 
 void* sb_font_font_mgr_instance();
 
-void* sb_font_font_cache_find(const char *font_path);
+void* sb_font_font_cache_find(const char *font_path, int ttc_index);
 
 #ifdef __cplusplus
 }
