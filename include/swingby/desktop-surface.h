@@ -157,7 +157,7 @@ void sb_desktop_surface_toplevel_set_app_id(
 /// \brief Open a window menu from the compositor.
 SB_EXPORT
 void sb_desktop_surface_toplevel_show_window_menu(
-    sb_desktop_surface_t *desktop_surface);
+    sb_desktop_surface_t *desktop_surface, const sb_point_i_t *position);
 
 
 void sb_desktop_surface_popup_set_position(

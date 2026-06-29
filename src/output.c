@@ -1,6 +1,7 @@
 #include <swingby/output.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef SB_PLATFORM_WAYLAND
 #include <wayland-client.h>
@@ -16,7 +17,9 @@ struct sb_output_t {
     struct wl_output *wl_output;
     /// Wayland numeric name from the global registry handler.
     uint32_t wl_name;
+    /// Must free!
     const char *name;
+    /// Must free!
     const char *description;
     uint32_t scale;
     bool done;
@@ -55,7 +58,7 @@ const char* sb_output_name(const sb_output_t *output)
 
 void sb_output_set_name(sb_output_t *output, const char *name)
 {
-    output->name = name;
+    output->name = strdup(name);
 }
 
 uint32_t sb_output_scale(const sb_output_t *output)

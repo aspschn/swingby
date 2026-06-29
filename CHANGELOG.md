@@ -2,7 +2,7 @@
 
 ## v0.9.0-dev
 
-**Breaking changes**
+**[Breaking changes]**
 
 - `set_title` method in `sb_desktop_surface_t` type.
 

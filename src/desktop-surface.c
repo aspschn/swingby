@@ -457,7 +457,7 @@ void sb_desktop_surface_toplevel_set_app_id(
 }
 
 void sb_desktop_surface_toplevel_show_window_menu(
-    sb_desktop_surface_t *desktop_surface)
+    sb_desktop_surface_t *desktop_surface, const sb_point_i_t *position)
 {
     if (desktop_surface->role != SB_DESKTOP_SURFACE_ROLE_TOPLEVEL) {
         sb_log_warn("sb_desktop_surface_toplevel_show_window_menu()"
@@ -469,8 +469,13 @@ void sb_desktop_surface_toplevel_show_window_menu(
                     " - XDG toplevel is NULL!\n");
         return;
     }
-    // TODO: Implementation.
-    // xdg_toplevel_show_window_menu(desktop_surface->_xdg_toplevel);
+
+    sb_application_t *app = sb_application_instance();
+    xdg_toplevel_show_window_menu(desktop_surface->_xdg_toplevel,
+        sb_application_wl_seat(app),
+        sb_application_pointer_button_serial(app),
+        position->x, position->y
+    );
 }
 
 
