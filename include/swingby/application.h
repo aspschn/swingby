@@ -8,6 +8,7 @@
 #include <swingby/event.h>
 
 struct wl_surface;
+struct wl_registry_listener;
 
 typedef struct sb_surface_t sb_surface_t;
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
@@ -38,6 +39,14 @@ sb_application_t* sb_application_new(int argc, char *argv[]);
 /// \return Pointer to global application.
 SB_EXPORT
 sb_application_t* sb_application_instance();
+
+/// \memberof sb_application_t
+/// \brief TODO
+///
+/// \return TODO
+SB_EXPORT
+struct wl_registry* sb_application_get_registry_extension(sb_application_t *app,
+    const struct wl_registry_listener *listener, void *user_data);
 
 /// \memberof sb_application_t
 /// \brief Register a desktop surface.

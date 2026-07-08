@@ -338,6 +338,7 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->xkb_context = NULL;
 
     app->_wl_registry = wl_display_get_registry(app->wl_display);
+    sb_log_debug("sb_application_new() - wl_registry: %p\n", app->_wl_registry);
     wl_registry_add_listener(app->_wl_registry, &app_registry_listener,
         (void*)app);
 
@@ -370,6 +371,16 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 sb_application_t* sb_application_instance()
 {
     return _sb_application_instance;
+}
+
+struct wl_registry* sb_application_get_registry_extension(sb_application_t *app,
+    const struct wl_registry_listener *listener, void *user_data)
+{
+    struct wl_registry *registry = wl_display_get_registry(app->wl_display);
+
+    wl_registry_add_listener(registry, listener, user_data);
+
+    return registry;
 }
 
 uint32_t sb_application_pointer_button_serial(sb_application_t *application)
