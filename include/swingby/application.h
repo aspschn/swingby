@@ -62,6 +62,16 @@ void sb_application_unregister_desktop_surface(sb_application_t *application,
     sb_desktop_surface_t *desktop_surface);
 
 /// \memberof sb_application_t
+/// \brief Register a surface.
+void sb_application_register_surface(sb_application_t *application,
+                                     sb_surface_t *surface);
+
+/// \memberof sb_application_t
+/// \brief Unregister a surface.
+void sb_application_unregister_surface(sb_application_t *application,
+                                       sb_surface_t *surface);
+
+/// \memberof sb_application_t
 uint32_t sb_application_pointer_button_serial(sb_application_t *application);
 
 /// \memberof sb_application_t

@@ -71,6 +71,10 @@ struct sb_application_t {
     sb_list_t *toplevels;
     /// \brief List of the popup desktop surfaces.
     sb_list_t *popups;
+    /// \brief List of the other role surfaces.
+    ///
+    /// sb_list_t<sb_surface_t>
+    sb_list_t *other_surfaces;
     struct {
         sb_xcursor_theme_manager_t *manager;
         char current[256];
@@ -277,6 +281,15 @@ static sb_surface_t* _find_surface(sb_application_t *app,
             break;
         }
     }
+    // Search others.
+    list = app->other_surfaces;
+    for (int i = 0; i < sb_list_length(list); ++i) {
+        sb_surface_t *surface = sb_list_at(list, i);
+        if (sb_surface_wl_surface(surface) == wl_surface) {
+            found = surface;
+            break;
+        }
+    }
     // Surface must not be null.
     if (found == NULL) {
         sb_log_error("_find_surface() - Not found surface for wl_surface: %p\n",
@@ -354,6 +367,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     // Desktop surface list.
     app->toplevels = sb_list_new();
     app->popups = sb_list_new();
+    // Other surface roles.
+    app->other_surfaces = sb_list_new();
 
     // Event dispatcher.
     app->event_dispatcher = sb_event_dispatcher_new();
@@ -507,6 +522,29 @@ void sb_application_unregister_desktop_surface(sb_application_t *application,
         if (index != -1) {
             sb_list_remove(list, index);
         }
+    }
+}
+
+void sb_application_register_surface(sb_application_t *application,
+                                     sb_surface_t *surface)
+{
+    sb_list_push(application->other_surfaces, surface);
+}
+
+void sb_application_unregister_surface(sb_application_t *application,
+                                       sb_surface_t *surface)
+{
+    sb_list_t *list = application->other_surfaces;
+    uint64_t length = sb_list_length(list);
+    int64_t index = -1;
+    for (uint64_t i = 0; i < length; ++i) {
+        if (sb_list_at(list, i) == surface) {
+            index = i;
+            break;
+        }
+    }
+    if (index != -1) {
+        sb_list_remove(list, index);
     }
 }
 
