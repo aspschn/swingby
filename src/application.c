@@ -631,7 +631,7 @@ void sb_application_quit(sb_application_t *application)
 void sb_application_set_quit_on_last_toplevel_closed(
     sb_application_t *application, bool value)
 {
-    application->quit_on_last_toplevel_closed = false;
+    application->quit_on_last_toplevel_closed = value;
 }
 
 
