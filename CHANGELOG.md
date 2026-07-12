@@ -12,6 +12,8 @@
 
 - Fractional scale factor. This breaks API/ABIs.
 
+- External Wayland protocols support.
+
 
 ## v0.8.0
 
