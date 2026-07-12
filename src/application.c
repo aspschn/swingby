@@ -77,6 +77,9 @@ struct sb_application_t {
     } xcursor;
     /// \brief Output impl.
     sb_output_priv_t output;
+    /// \brief A running state flag.
+    bool running;
+    bool quit_on_last_toplevel_closed;
     /// \brief An event dispatcher.
     sb_event_dispatcher_t *event_dispatcher;
     sb_list_t *event_listeners;
@@ -358,6 +361,10 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     app->xcursor.manager = NULL;
     app->xcursor.current[0] = '\0';
 
+    // Properties.
+    app->running = false;
+    app->quit_on_last_toplevel_closed = true;
+
     _sb_application_instance = app;
 
     app->egl = sb_egl_new();
@@ -568,6 +575,7 @@ int sb_application_exec(sb_application_t *application)
         { sb_event_dispatcher_keyboard_key_repeat_fd(dispatcher), POLLIN },
     };
 
+    application->running = true;
     int err = 0; // wl_display_dispatch(application->wl_display);
     while (err != -1) {
         int ret = poll(poll_fds, 3, -1);
@@ -593,7 +601,8 @@ int sb_application_exec(sb_application_t *application)
         sb_application_post_event(application, tick_event);
 
         // Exit event loop when last toplevel desktop surface closed.
-        if (sb_list_length(application->toplevels) == 0) {
+        bool auto_quit = application->quit_on_last_toplevel_closed;
+        if (auto_quit && sb_list_length(application->toplevels) == 0) {
             sb_log_debug("Last toplevel desktop surface closed.\n");
             break;
         }
@@ -612,6 +621,17 @@ int sb_application_exec(sb_application_t *application)
     sb_log_debug("Quit application.\n");
 
     return 0;
+}
+
+void sb_application_quit(sb_application_t *application)
+{
+    application->running = false;
+}
+
+void sb_application_set_quit_on_last_toplevel_closed(
+    sb_application_t *application, bool value)
+{
+    application->quit_on_last_toplevel_closed = false;
 }
 
 

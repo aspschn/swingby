@@ -145,6 +145,19 @@ SB_EXPORT
 int sb_application_exec(sb_application_t *application);
 
 /// \memberof sb_application_t
+/// \brief Quit from the main event loop.
+SB_EXPORT
+void sb_application_quit(sb_application_t *application);
+
+SB_EXPORT
+/// \memberof sb_application_t
+/// \brief Set `false` to prevent auto quit on last toplevel closed.
+///
+/// This method considered as a temporary, unstable API. Caution in use.
+void sb_application_set_quit_on_last_toplevel_closed(
+    sb_application_t *application, bool value);
+
+/// \memberof sb_application_t
 SB_EXPORT
 void sb_application_add_event_listener(sb_application_t *application,
                                        enum sb_event_type event_type,
