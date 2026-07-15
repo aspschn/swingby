@@ -65,6 +65,8 @@ const sb_color_t* sb_filter_drop_shadow_color(const sb_filter_t *filter);
 void sb_filter_drop_shadow_set_color(sb_filter_t *filter,
                                      const sb_color_t *color);
 
+void sb_filter_free(sb_filter_t *filter);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

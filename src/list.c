@@ -68,6 +68,14 @@ void* sb_list_remove(sb_list_t *list, uint64_t index)
     return item;
 }
 
+void sb_list_clear(sb_list_t *list, void (*free_func)(void*))
+{
+    while (list->length > 0) {
+        void *item = sb_list_remove(list, list->length - 1);
+        free_func(item);
+    }
+}
+
 void sb_list_free(sb_list_t *list)
 {
     free(list->data);

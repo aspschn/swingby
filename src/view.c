@@ -19,7 +19,7 @@ struct sb_view_t {
     sb_view_t *_parent;
     /// \brief View's color if the view render type is single color.
     sb_color_t _color;
-    sb_list_t *_children;
+    sb_list_t *children;
     enum sb_view_render_type render_type;
     sb_image_t *image;
     sb_glyph_layout_t *glyph_layout;
@@ -64,7 +64,7 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
     sb_view_radius_t radius = { 0.0f, 0.0f, 0.0f, 0.0f };
     view->radius = radius;
 
-    view->_children = sb_list_new();
+    view->children = sb_list_new();
 
     view->render_type = SB_VIEW_RENDER_TYPE_SINGLE_COLOR;
     view->image = NULL;
@@ -83,7 +83,7 @@ sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
 
     if (parent != NULL) {
         // Append the new view to the child list of the parent view.
-        sb_list_push(parent->_children, (void*)view);
+        sb_list_push(parent->children, (void*)view);
         // Inherit parent's surface.
         view->_surface = parent->_surface;
     }
@@ -211,7 +211,7 @@ void sb_view_set_canvas(sb_view_t *view, sb_canvas_t *canvas)
 
 sb_list_t* sb_view_children(sb_view_t *view)
 {
-    return view->_children;
+    return view->children;
 }
 
 sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position)
@@ -225,8 +225,8 @@ sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position)
         return NULL;
     }
 
-    for (int i = sb_list_length(view->_children); i > 0; --i) {
-        sb_view_t *child = sb_list_at(view->_children, i - 1);
+    for (int i = sb_list_length(view->children); i > 0; --i) {
+        sb_view_t *child = sb_list_at(view->children, i - 1);
         if (sb_rect_contains_point((sb_rect_t*)sb_view_geometry(child),
             position)) {
             return child;
@@ -245,12 +245,15 @@ sb_view_t* sb_view_remove_child(sb_view_t *view, sb_view_t *child)
 {
     sb_view_t *found = NULL;
 
-    for (uint64_t i = 0; i < sb_list_length(view->_children); ++i) {
-        sb_view_t *curr = sb_list_at(view->_children, i);
+    for (uint64_t i = 0; i < sb_list_length(view->children); ++i) {
+        sb_view_t *curr = sb_list_at(view->children, i);
         if (curr == child) {
-            found = sb_list_remove(view->_children, i);
+            found = sb_list_remove(view->children, i);
             break;
         }
+    }
+    if (found == NULL) {
+        sb_log_warn("sb_view_remove_child - No child found.\n");
     }
 
     return found;
@@ -322,6 +325,22 @@ enum sb_cursor_shape sb_view_cursor_shape(const sb_view_t *view)
 void sb_view_set_cursor_shape(sb_view_t *view, enum sb_cursor_shape shape)
 {
     view->cursor_shape = shape;
+}
+
+void sb_view_free(sb_view_t *view)
+{
+    // Remove filters.
+    sb_list_clear(view->filters, (void (*)(void*))sb_filter_free);
+    sb_list_free(view->filters);
+
+    // Remove event listeners.
+    // TODO
+
+    // Free children.
+    sb_list_clear(view->children, (void (*)(void*))sb_view_free);
+    sb_list_free(view->children);
+
+    free(view);
 }
 
 void sb_view_add_event_listener(sb_view_t *view,

@@ -27,6 +27,9 @@ SB_EXPORT
 void* sb_list_remove(sb_list_t *list, uint64_t index);
 
 SB_EXPORT
+void sb_list_clear(sb_list_t *list, void (*free_func)(void*));
+
+SB_EXPORT
 void sb_list_free(sb_list_t *list);
 
 #ifdef __cplusplus

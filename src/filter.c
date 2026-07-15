@@ -34,6 +34,11 @@ enum sb_filter_type sb_filter_type(const sb_filter_t *filter)
     return filter->type;
 }
 
+void sb_filter_free(sb_filter_t *filter)
+{
+    free(filter);
+}
+
 //!<=============
 //!< Blur
 //!<=============
