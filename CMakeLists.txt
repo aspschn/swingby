@@ -64,6 +64,7 @@ set(SWINGBY_SOURCES
     src/image.c
     src/pixmap.c
     src/glyph.c
+    src/paint.c
     src/cursor.c
     src/event.c
     src/event-dispatcher.c

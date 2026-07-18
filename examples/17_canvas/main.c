@@ -63,7 +63,7 @@ static void on_paint(sb_event_t *event, void *user_data)
     for (int i = 0; i < sizeof(colors); ++i) {
         rect.position.x = (20.0f + (20.0f * i)) * delta.x;
         rect.position.y = (20.0f + (20.0f * i)) * delta.y;
-        paint->fill_color = colors[i];
+        sb_paint_set_fill_color(paint, &colors[i]);
 
         sb_canvas_draw_rect(canvas, &rect, paint);
     }
