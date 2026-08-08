@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.9.0-dev
+## v0.9.0-rc.1
 
 **[Breaking changes]**
 
