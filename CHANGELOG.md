@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v0.10.0-dev
+
+**[Breaking changes]**
+
+- Some simple, basic types now value-type. e.g. `sb_point_t`, `sb_color_t` etc.
+
+- Integer-version value types changed to signed integer.
+
+
 ## v0.9.0-rc.1
 
 **[Breaking changes]**

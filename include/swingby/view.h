@@ -1,5 +1,5 @@
-#ifndef _SWINGBY_VIEW_H
-#define _SWINGBY_VIEW_H
+#ifndef SWINGBY_VIEW_H
+#define SWINGBY_VIEW_H
 
 #include <stdbool.h>
 
@@ -56,7 +56,7 @@ typedef struct sb_view_t sb_view_t;
 /// \param geometry Initial position of new view.
 /// \return The view created.
 SB_EXPORT
-sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry);
+sb_view_t* sb_view_new(sb_view_t *parent, sb_rect_t geometry);
 
 SB_EXPORT
 void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface);
@@ -67,19 +67,19 @@ sb_surface_t* sb_view_surface(const sb_view_t *view);
 
 /// \brief Get the geometry of the view.
 SB_EXPORT
-const sb_rect_t* sb_view_geometry(const sb_view_t *view);
+sb_rect_t sb_view_geometry(const sb_view_t *view);
 
 /// \brief Set the geometry of the view.
 SB_EXPORT
-void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry);
+void sb_view_set_geometry(sb_view_t *view, sb_rect_t geometry);
 
 /// \brief Get the color of the view if view's render type is single color.
 SB_EXPORT
-const sb_color_t* sb_view_color(const sb_view_t *view);
+sb_color_t sb_view_color(const sb_view_t *view);
 
 /// \brief Set the color of the view. Only for single color fill type view.
 SB_EXPORT
-void sb_view_set_color(sb_view_t *view, const sb_color_t *color);
+void sb_view_set_color(sb_view_t *view, sb_color_t color);
 
 /// \memberof sb_view_t
 /// \brief Get the render type of the view.
@@ -231,4 +231,4 @@ void sb_view_on_render(sb_view_t *view, sb_event_t *event);
 }
 #endif
 
-#endif /* _SWINGBY_VIEW_H */
+#endif /* SWINGBY_VIEW_H */

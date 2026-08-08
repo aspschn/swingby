@@ -56,7 +56,7 @@ struct sb_surface_t {
     const char *backend;
     // sb_egl_context_t *egl_context;
     sb_skia_renderer_t *skia_renderer;
-    sb_size_t _size;
+    sb_size_i_t size;
     sb_view_t *_root_view;
     float scale;
     bool is_fractional_scale;
@@ -206,8 +206,8 @@ static void _raster_init(sb_surface_t *surface)
     }
 
     // Calculate the size.
-    uint32_t stride = surface->_size.width * surface->scale * 4;
-    uint32_t size = surface->_size.height * surface->scale * stride;
+    uint32_t stride = surface->size.width * surface->scale * 4;
+    uint32_t size = surface->size.height * surface->scale * stride;
 
     int fd = _create_tmpfile(size);
     if (fd == -1) {
@@ -230,8 +230,8 @@ static void _raster_init(sb_surface_t *surface)
     surface->wl_shm_pool = wl_shm_create_pool(wl_shm, fd, size);
     surface->wl_buffer = wl_shm_pool_create_buffer(surface->wl_shm_pool,
         0,
-        surface->_size.width,
-        surface->_size.height,
+        surface->size.width,
+        surface->size.height,
         stride,
         WL_SHM_FORMAT_ARGB8888);
 
@@ -272,9 +272,10 @@ static void _draw_recursive(sb_surface_t *surface,
         //     sb_view_geometry(view), surface->scale, sb_view_image(view));
         sb_skia_draw_image3(surface->skia_renderer, view, surface->scale);
     } else if (render_type == SB_VIEW_RENDER_TYPE_GLYPHS) {
+        sb_rect_t view_geometry = sb_view_geometry(view);
         sb_skia_draw_glyphs(
             surface->skia_renderer,
-            sb_view_geometry(view),
+            &view_geometry,
             surface->scale,
             sb_view_glyph_layout(view)
         );
@@ -287,8 +288,8 @@ static void _draw_recursive(sb_surface_t *surface,
         // Set the canvas to the view.
         sb_canvas_t *canvas = sb_canvas_new(sk_canvas);
         {
-            const sb_point_t *pos = &sb_view_geometry(view)->position;
-            sb_canvas_set_position(canvas, pos);
+            sb_point_t pos = sb_view_geometry(view).position;
+            sb_canvas_set_position(canvas, &pos);
         }
         sb_canvas_set_scale(canvas, surface->scale);
         sb_view_set_canvas(view, canvas);
@@ -304,7 +305,7 @@ static void _draw_recursive(sb_surface_t *surface,
         sb_canvas_free(canvas);
         sb_view_set_canvas(view, NULL);
     } else if (render_type == SB_VIEW_RENDER_TYPE_GL) {
-        const sb_rect_t *geometry = sb_view_geometry(view);
+        sb_rect_t geometry = sb_view_geometry(view);
 
         // Get renderer.
         void *renderer = sb_skia_renderer_current(surface->skia_renderer);
@@ -323,7 +324,7 @@ static void _draw_recursive(sb_surface_t *surface,
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo);
 
         // Init GL FBO.
-        _gl_view_init(surface, geometry->size.width, geometry->size.height);
+        _gl_view_init(surface, geometry.size.width, geometry.size.height);
 
         // Set GL context.
         glBindFramebuffer(GL_FRAMEBUFFER, surface->gl_view.fbo);
@@ -332,16 +333,16 @@ static void _draw_recursive(sb_surface_t *surface,
             // geometry->position.x,
             // surface_size->height - geometry->position.y - geometry->size.height,
             0, 0,
-            geometry->size.width,
-            geometry->size.height
+            geometry.size.width,
+            geometry.size.height
         );
         glEnable(GL_SCISSOR_TEST);
         glScissor(
             // geometry->position.x,
             // surface_size->height - geometry->position.y - geometry->size.height,
             0, 0,
-            geometry->size.width,
-            geometry->size.height
+            geometry.size.width,
+            geometry.size.height
         );
 
         // This event must be consumed here. Same as PAINT event type.
@@ -357,7 +358,7 @@ static void _draw_recursive(sb_surface_t *surface,
 
         //
         sb_skia_draw_texture(surface->skia_renderer,
-            geometry,
+            &geometry,
             surface->scale,
             surface->gl_view.texture
         );
@@ -375,16 +376,17 @@ static void _draw_recursive(sb_surface_t *surface,
         }
 
         if (sb_view_clip(view)) {
+            sb_rect_t view_geometry = sb_view_geometry(view);
             // Clip parent view.
             sb_skia_clip_rect(surface->skia_renderer,
-                sb_view_geometry(view),
+                &view_geometry,
                 radius,
                 surface->scale
             );
         }
 
         if (sb_view_parent(view) != NULL) {
-            const sb_point_t view_pos = sb_view_geometry(view)->position;
+            sb_point_t view_pos = sb_view_geometry(view).position;
             sb_point_t scaled_pos;
             scaled_pos.x = view_pos.x * surface->scale;
             scaled_pos.y = view_pos.y * surface->scale;
@@ -431,8 +433,8 @@ void _draw_frame(sb_surface_t *surface)
         sb_skia_gl_renderer_begin(renderer,
             egl,
             surface->_egl_surface,
-            surface->_size.width * surface->scale,
-            surface->_size.height * surface->scale
+            surface->size.width * surface->scale,
+            surface->size.height * surface->scale
         );
 
         sb_color_t clear_color = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -446,8 +448,8 @@ void _draw_frame(sb_surface_t *surface)
     }
 
     if (backend == SB_SKIA_BACKEND_RASTER) {
-        uint32_t width = surface->_size.width * surface->scale;
-        uint32_t height = surface->_size.height * surface->scale;
+        uint32_t width = surface->size.width * surface->scale;
+        uint32_t height = surface->size.height * surface->scale;
         uint32_t stride = width * 4;
         uint32_t size = height * stride;
 
@@ -455,8 +457,8 @@ void _draw_frame(sb_surface_t *surface)
             sb_skia_renderer_current(surface->skia_renderer);
 
         sb_skia_raster_renderer_begin(renderer,
-            surface->_size.width * surface->scale,
-            surface->_size.height * surface->scale);
+            surface->size.width * surface->scale,
+            surface->size.height * surface->scale);
 
         sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
         sb_skia_clear(surface->skia_renderer, &clear_color);
@@ -477,7 +479,7 @@ static void _fit_viewport(sb_surface_t *surface)
 {
     if (surface->is_fractional_scale) {
         sb_log_debug("_fit_viewport - %fx%f\n",
-            surface->_size.width, surface->_size.height);
+            surface->size.width, surface->size.height);
         if (surface->wp_viewport == NULL) {
             sb_application_t *app = sb_application_instance();
             struct wp_viewporter *viewporter =
@@ -488,7 +490,7 @@ static void _fit_viewport(sb_surface_t *surface)
         }
 
         wp_viewport_set_destination(surface->wp_viewport,
-            surface->_size.width, surface->_size.height);
+            surface->size.width, surface->size.height);
 
         // wp_viewport_destroy(vp);
     }
@@ -502,8 +504,8 @@ sb_surface_t* sb_surface_new()
 {
     sb_surface_t *surface = malloc(sizeof(sb_surface_t));
 
-    surface->_size.width = 200.0f;
-    surface->_size.height = 200.0f;
+    surface->size.width = 200;
+    surface->size.height = 200;
     surface->scale = 1.0f;
     surface->is_fractional_scale = false;
     surface->frame_ready = false;
@@ -561,8 +563,8 @@ sb_surface_t* sb_surface_new()
 
         // Create wl_egl_window.
         surface->_wl_egl_window = wl_egl_window_create(surface->_wl_surface,
-           surface->_size.width,
-           surface->_size.height);
+           surface->size.width,
+           surface->size.height);
 
         // Create EGL surface.
         surface->_egl_surface = eglCreateWindowSurface(
@@ -593,9 +595,9 @@ sb_surface_t* sb_surface_new()
     sb_rect_t geo;
     geo.position.x = 0.0f;
     geo.position.y = 0.0f;
-    geo.size.width = surface->_size.width;
-    geo.size.height = surface->_size.height;
-    surface->_root_view = sb_view_new(NULL, &geo);
+    geo.size.width = surface->size.width;
+    geo.size.height = surface->size.height;
+    surface->_root_view = sb_view_new(NULL, geo);
     sb_view_set_surface(surface->_root_view, surface);
 
     // Focused view.
@@ -615,35 +617,36 @@ void sb_surface_set_wl_surface(sb_surface_t *surface,
     surface->_wl_surface = wl_surface;
 }
 
-const sb_size_t* sb_surface_size(sb_surface_t *surface)
+sb_size_i_t sb_surface_size(const sb_surface_t *surface)
 {
-    return &surface->_size;
+    return surface->size;
 }
 
-void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
+void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
 {
-    if (size->width <= 0.0f || size->height <= 0.0f) {
+    if (size.width <= 0.0f || size.height <= 0.0f) {
         sb_log_warn("Surface size cannot be zero or negative.\n");
     }
 
-    surface->_size.width = size->width;
-    surface->_size.height = size->height;
+    surface->size.width = size.width;
+    surface->size.height = size.height;
 
     // Set the root view's size.
     sb_rect_t new_geo;
     new_geo.position.x = 0;
     new_geo.position.y = 0;
-    new_geo.size.width = size->width;
-    new_geo.size.height = size->height;
-    sb_view_set_geometry(surface->_root_view, &new_geo);
+    new_geo.size.width = size.width;
+    new_geo.size.height = size.height;
+    sb_view_set_geometry(surface->_root_view, new_geo);
 
     // Create event.
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
         (void*)surface,
         SB_EVENT_TYPE_RESIZE);
-    event->resize.old_size = *sb_surface_size(surface);
-    event->resize.size.width = size->width;
-    event->resize.size.height = size->height;
+    event->resize.old_size.width = surface->size.width;
+    event->resize.old_size.height = surface->size.height;
+    event->resize.size.width = size.width;
+    event->resize.size.height = size.height;
 
     // Post the event.
     sb_application_post_event(sb_application_instance(), event);
@@ -653,8 +656,8 @@ void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size)
     _fit_viewport(surface);
     if (strcmp(surface->backend, "opengl") == 0) {
         wl_egl_window_resize(surface->_wl_egl_window,
-            surface->_size.width * surface->scale,
-            surface->_size.height * surface->scale,
+            surface->size.width * surface->scale,
+            surface->size.height * surface->scale,
             0, 0);
     } else if (strcmp(surface->backend, "raster") == 0) {
         _raster_init(surface);
@@ -680,7 +683,7 @@ void sb_surface_attach(sb_surface_t *surface)
         _draw_frame(surface);
 
         wl_surface_attach(surface->_wl_surface, surface->wl_buffer, 0, 0);
-        wl_surface_damage_buffer(surface->_wl_surface, 0, 0, surface->_size.width, surface->_size.height);
+        wl_surface_damage_buffer(surface->_wl_surface, 0, 0, surface->size.width, surface->size.height);
         wl_surface_commit(surface->_wl_surface);
     }
 
@@ -734,14 +737,14 @@ void sb_surface_set_scale(sb_surface_t *surface, float scale)
 
     _fit_viewport(surface);
     wl_egl_window_resize(surface->_wl_egl_window,
-        surface->_size.width * surface->scale,
-        surface->_size.height * surface->scale,
+        surface->size.width * surface->scale,
+        surface->size.height * surface->scale,
         0, 0);
 
     sb_surface_update(surface);
 }
 
-void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry)
+void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t geometry)
 {
     sb_application_t *app = sb_application_instance();
     struct wl_surface *wl_surface = sb_surface_wl_surface(surface);
@@ -749,8 +752,8 @@ void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry)
 
     struct wl_region *region = wl_compositor_create_region(wl_compositor);
     wl_region_add(region,
-        geometry->position.x, geometry->position.y,
-        geometry->size.width, geometry->size.height);
+        geometry.position.x, geometry.position.y,
+        geometry.size.width, geometry.size.height);
     wl_surface_set_input_region(wl_surface, region);
     wl_region_destroy(region);
 }

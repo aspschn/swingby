@@ -1,5 +1,5 @@
-#ifndef _SWINGBY_SURFACE_H
-#define _SWINGBY_SURFACE_H
+#ifndef SWINGBY_SURFACE_H
+#define SWINGBY_SURFACE_H
 
 #include <swingby/common.h>
 #include <swingby/size.h>
@@ -22,7 +22,7 @@ void sb_surface_set_wl_surface(sb_surface_t *surface,
                                struct wl_surface *wl_surface);
 
 SB_EXPORT
-const sb_size_t* sb_surface_size(sb_surface_t *surface);
+sb_size_i_t sb_surface_size(const sb_surface_t *surface);
 
 /// \memberof sb_surface_t
 /// \brief Set the surface size.
@@ -30,7 +30,7 @@ const sb_size_t* sb_surface_size(sb_surface_t *surface);
 /// Surface size is always integer values. Values below the decimal point
 /// may cause undefined behavior.
 SB_EXPORT
-void sb_surface_set_size(sb_surface_t *surface, const sb_size_t *size);
+void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size);
 
 SB_EXPORT
 sb_view_t* sb_surface_root_view(sb_surface_t *surface);
@@ -58,7 +58,7 @@ void sb_surface_set_scale(sb_surface_t *surface, float scale);
 /// This is useful to draw the window's shadow. The shadow still a part of
 /// the surface in CSD but click the shadow should not activate the window.
 SB_EXPORT
-void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t *geometry);
+void sb_surface_set_input_geometry(sb_surface_t *surface, sb_rect_t geometry);
 
 void sb_surface_enable_text_input(sb_surface_t *surface,
                                   const sb_rect_t *rect);
@@ -100,4 +100,4 @@ void sb_surface_on_timeout(sb_surface_t *surface,
 
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface);
 
-#endif /* _SWINGBY_SURFACE_H */
+#endif /* SWINGBY_SURFACE_H */

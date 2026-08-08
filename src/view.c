@@ -18,7 +18,7 @@ struct sb_view_t {
     sb_rect_t geometry;
     sb_view_t *_parent;
     /// \brief View's color if the view render type is single color.
-    sb_color_t _color;
+    sb_color_t color;
     sb_list_t *children;
     enum sb_view_render_type render_type;
     sb_image_t *image;
@@ -46,19 +46,19 @@ struct sb_view_t {
 //!< View
 //!<===========
 
-sb_view_t* sb_view_new(sb_view_t *parent, const sb_rect_t *geometry)
+sb_view_t* sb_view_new(sb_view_t *parent, sb_rect_t geometry)
 {
     sb_view_t *view = malloc(sizeof(sb_view_t));
 
     view->_surface = NULL;
     view->_parent = parent;
     sb_log_debug("sb_view_new() - view: %p, parent: %p\n", view, parent);
-    view->geometry.position = geometry->position;
-    view->geometry.size = geometry->size;
-    view->_color.r = 1.0f;
-    view->_color.g = 1.0f;
-    view->_color.b = 1.0f;
-    view->_color.a = 1.0f;
+    view->geometry.position = geometry.position;
+    view->geometry.size = geometry.size;
+    view->color.r = 1.0f;
+    view->color.g = 1.0f;
+    view->color.b = 1.0f;
+    view->color.a = 1.0f;
 
     // Set initial radius.
     sb_view_radius_t radius = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -101,19 +101,19 @@ sb_surface_t* sb_view_surface(const sb_view_t *view)
     return view->_surface;
 }
 
-const sb_rect_t* sb_view_geometry(const sb_view_t *view)
+sb_rect_t sb_view_geometry(const sb_view_t *view)
 {
-    return &view->geometry;
+    return view->geometry;
 }
 
-void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
+void sb_view_set_geometry(sb_view_t *view, sb_rect_t geometry)
 {
     // Do nothing if equals.
-    if (sb_rect_equals(&view->geometry, geometry)) {
+    if (sb_rect_equals(&view->geometry, &geometry)) {
         return;
     }
     sb_rect_t old_geo = view->geometry;
-    sb_rect_t new_geo = *geometry;
+    sb_rect_t new_geo = geometry;
     view->geometry = new_geo;
 
     // Equality check and post events.
@@ -140,9 +140,9 @@ void sb_view_set_geometry(sb_view_t *view, const sb_rect_t *geometry)
     sb_surface_update(view->_surface);
 }
 
-const sb_color_t* sb_view_color(const sb_view_t *view)
+sb_color_t sb_view_color(const sb_view_t *view)
 {
-    return &view->_color;
+    return view->color;
 }
 
 enum sb_view_render_type sb_view_render_type(const sb_view_t *view)
@@ -219,7 +219,7 @@ sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position)
     sb_rect_t local_geo;
     local_geo.position.x = 0;
     local_geo.position.y = 0;
-    local_geo.size = sb_view_geometry(view)->size;
+    local_geo.size = sb_view_geometry(view).size;
 
     if (sb_rect_contains_point(&local_geo, position) == false) {
         return NULL;
@@ -227,8 +227,7 @@ sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position)
 
     for (int i = sb_list_length(view->children); i > 0; --i) {
         sb_view_t *child = sb_list_at(view->children, i - 1);
-        if (sb_rect_contains_point((sb_rect_t*)sb_view_geometry(child),
-            position)) {
+        if (sb_rect_contains_point(&child->geometry, position)) {
             return child;
         }
     }
@@ -276,10 +275,10 @@ sb_point_t sb_view_absolute_position(const sb_view_t *view)
     return pos;
 }
 
-void sb_view_set_color(sb_view_t *view, const sb_color_t *color)
+void sb_view_set_color(sb_view_t *view, sb_color_t color)
 {
     // TODO: Equality check.
-    view->_color = *color;
+    view->color = color;
 
     if (view->_surface == NULL) {
         sb_log_warn("sb_view_set_color() - surface is NULL.\n");

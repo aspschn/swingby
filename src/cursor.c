@@ -29,10 +29,10 @@ sb_cursor_t* sb_cursor_new(enum sb_cursor_shape shape,
     cursor->hot_spot = *hot_spot;
 
     // Set size.
-    sb_size_t size;
-    size.width = 24.0f;
-    size.height = 24.0f;
-    sb_surface_set_size(cursor->surface, &size);
+    sb_size_i_t size;
+    size.width = 24;
+    size.height = 24;
+    sb_surface_set_size(cursor->surface, size);
 
     // Set color for TEST.
     sb_color_t color;
@@ -40,7 +40,7 @@ sb_cursor_t* sb_cursor_new(enum sb_cursor_shape shape,
     color.g = 0;
     color.b = 0;
     color.a = 255;
-    sb_view_set_color(sb_surface_root_view(cursor->surface), &color);
+    sb_view_set_color(sb_surface_root_view(cursor->surface), color);
 
     sb_surface_attach(cursor->surface);
     sb_surface_commit(cursor->surface);

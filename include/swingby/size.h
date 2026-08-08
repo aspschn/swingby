@@ -1,5 +1,5 @@
-#ifndef _FOUNDATION_SIZE_H
-#define _FOUNDATION_SIZE_H
+#ifndef SWINGBY_SIZE_H
+#define SWINGBY_SIZE_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -15,8 +15,8 @@ typedef struct sb_size_t {
 
 /// \brief Unsigned integer version of size struct.
 typedef struct sb_size_i_t {
-    uint64_t width;
-    uint64_t height;
+    int32_t width;
+    int32_t height;
 } sb_size_i_t;
 
 float sb_size_width(sb_size_t *size);
@@ -33,4 +33,4 @@ uint64_t sb_size_i_height(sb_size_i_t *size);
 }
 #endif
 
-#endif /* _FOUNDATION_SIZE_H */
+#endif /* SWINGBY_SIZE_H */

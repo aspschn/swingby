@@ -1,5 +1,5 @@
-#ifndef _FOUNDATION_POINT_H
-#define _FOUNDATION_POINT_H
+#ifndef SWINGBY_POINT_H
+#define SWINGBY_POINT_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -16,8 +16,8 @@ typedef struct sb_point_t {
 } sb_point_t;
 
 typedef struct sb_point_i_t {
-    int64_t x;
-    int64_t y;
+    int32_t x;
+    int32_t y;
 } sb_point_i_t;
 
 SB_EXPORT
@@ -33,4 +33,4 @@ bool sb_point_equals(const sb_point_t *point, const sb_point_t *other);
 }
 #endif
 
-#endif /* _FOUNDATION_POINT_H */
+#endif /* SWINGBY_POINT_H */

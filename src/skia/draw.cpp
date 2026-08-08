@@ -209,24 +209,24 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
 
     // View's properties.
-    const sb_rect_t *rect = sb_view_geometry(view);
-    const sb_color_t *color = sb_view_color(view);
+    sb_rect_t rect = sb_view_geometry(view);
+    sb_color_t color = sb_view_color(view);
     const sb_view_radius_t *radius = sb_view_radius(view);
     const sb_list_t *filters = sb_view_filters(view);
     bool clip = sb_view_clip(view);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->position.x * scale,
-        rect->position.y * scale,
-        rect->size.width * scale,
-        rect->size.height * scale);
+        rect.position.x * scale,
+        rect.position.y * scale,
+        rect.size.width * scale,
+        rect.size.height * scale);
 
     SkPaint paint;
     SkColor4f sk_color_4f;
-    sk_color_4f.fR = color->r;
-    sk_color_4f.fG = color->g;
-    sk_color_4f.fB = color->b;
-    sk_color_4f.fA = color->a;
+    sk_color_4f.fR = color.r;
+    sk_color_4f.fG = color.g;
+    sk_color_4f.fB = color.b;
+    sk_color_4f.fA = color.a;
     paint.setColor(sk_color_4f);
     if (sb_view_antialiased(view)) {
         paint.setAntiAlias(true);
@@ -377,7 +377,7 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
     }
 
     SbImageImpl *impl = sb_image_impl(image);
-    const sb_rect_t *rect = sb_view_geometry(view);
+    sb_rect_t rect = sb_view_geometry(view);
     const sb_size_i_t *image_size = sb_image_size(image);
 
     // Make texture.
@@ -389,16 +389,16 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
     // TODO: RRect.
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->position.x * scale,
-        rect->position.y * scale,
-        rect->size.width * scale,
-        rect->size.height * scale
+        rect.position.x * scale,
+        rect.position.y * scale,
+        rect.size.width * scale,
+        rect.size.height * scale
     );
 
     SkSamplingOptions sampling;
     if (sb_view_antialiased(view)) {
-        if (rect->size.width > image_size->width &&
-            rect->size.height > image_size->height) {
+        if (rect.size.width > image_size->width &&
+            rect.size.height > image_size->height) {
             // Upscale.
             sampling = SkSamplingOptions(
                 SkFilterMode::kLinear,

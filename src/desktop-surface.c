@@ -230,12 +230,12 @@ void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
     } else if (desktop_surface->role == SB_DESKTOP_SURFACE_ROLE_POPUP) {
         struct xdg_positioner *positioner = xdg_wm_base_create_positioner(
             xdg_wm_base);
-        const sb_size_t *surface_size = sb_surface_size(
+        sb_size_i_t surface_size = sb_surface_size(
             desktop_surface->_surface);
-        const sb_size_t *parent_size = sb_surface_size(
+        sb_size_i_t parent_size = sb_surface_size(
             desktop_surface->parent->_surface);
         xdg_positioner_set_size(positioner,
-            surface_size->width, surface_size->height);
+            surface_size.width, surface_size.height);
         xdg_positioner_set_anchor(positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
         int32_t x;
         int32_t y;
@@ -644,7 +644,8 @@ static void xdg_toplevel_configure_handler(void *data,
                     SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
                     desktop_surface,
                     SB_EVENT_TYPE_RESIZE_REQUEST);
-                event->resize.old_size = *sb_surface_size(surface);
+                event->resize.old_size.width = sb_surface_size(surface).width;
+                event->resize.old_size.height = sb_surface_size(surface).height;
                 event->resize.size.width = width;
                 event->resize.size.height = height;
 
