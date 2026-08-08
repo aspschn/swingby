@@ -108,6 +108,7 @@ void sb_canvas_draw_line(sb_canvas_t *canvas,
 
 void sb_canvas_free(sb_canvas_t *canvas)
 {
+    sb_paint_free(canvas->paint);
     free(canvas);
 }
 

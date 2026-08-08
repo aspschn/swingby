@@ -14,6 +14,8 @@
 
 - External Wayland protocols support.
 
+- `sb_paint_t` as an opaque pointer.
+
 
 ## v0.8.0
 
