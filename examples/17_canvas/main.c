@@ -30,7 +30,10 @@ static void on_resize_request(sb_event_t *event, void *user_data)
 {
     sb_surface_t *surface = sb_desktop_surface_surface(event->target);
 
-    sb_surface_set_size(surface, &event->resize.size);
+    sb_surface_set_size(surface, (sb_size_i_t){
+        .width = event->resize.size.width,
+        .height = event->resize.size.height
+    });
 
     surface_width = event->resize.size.width;
     surface_height = event->resize.size.height;
@@ -91,7 +94,7 @@ int main(int argc, char *argv[])
 
     sb_rect_t geometry = { { 0.0f, 0.0f }, { 200.0f, 200.0f } };
     sb_view_t *view = sb_view_new(
-        sb_surface_root_view(sb_desktop_surface_surface(surface)), &geometry);
+        sb_surface_root_view(sb_desktop_surface_surface(surface)), geometry);
     sb_view_set_render_type(view, SB_VIEW_RENDER_TYPE_CANVAS);
 
     // Clip true.
