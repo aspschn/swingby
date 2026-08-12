@@ -22,6 +22,7 @@
 #include <swingby/log.h>
 #include <swingby/bench.h>
 #include <swingby/application.h>
+#include <swingby/output.h>
 #include <swingby/view.h>
 #include <swingby/image.h>
 #include <swingby/canvas.h>
@@ -478,7 +479,7 @@ void _draw_frame(sb_surface_t *surface)
 static void _fit_viewport(sb_surface_t *surface)
 {
     if (surface->is_fractional_scale) {
-        sb_log_debug("_fit_viewport - %fx%f\n",
+        sb_log_debug("_fit_viewport - %dx%d\n",
             surface->size.width, surface->size.height);
         if (surface->wp_viewport == NULL) {
             sb_application_t *app = sb_application_instance();
@@ -870,6 +871,18 @@ void sb_surface_on_timeout(sb_surface_t *surface,
         SB_EVENT_TYPE_TIMEOUT, event);
 }
 
+void sb_surface_on_enter(sb_surface_t *surface, sb_event_t *event)
+{
+    _event_listener_filter_for_each(surface->event_listeners,
+        SB_EVENT_TYPE_SURFACE_ENTER, event);
+}
+
+void sb_surface_on_leave(sb_surface_t *surface, sb_event_t *event)
+{
+    _event_listener_filter_for_each(surface->event_listeners,
+        SB_EVENT_TYPE_SURFACE_LEAVE, event);
+}
+
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface)
 {
     return surface->_wl_surface;
@@ -909,12 +922,40 @@ static void enter_handler(void *data,
                           struct wl_surface *wl_surface,
                           struct wl_output *wl_output)
 {
+    sb_surface_t *surface = (sb_surface_t*)data;
+    sb_application_t *app = sb_application_instance();
+
+    const sb_output_t *output = sb_application_find_output_by_wl_output(
+        app, wl_output);
+    sb_log_debug(" * Surface %p entered to output %s\n",
+        surface, sb_output_name(output));
+
+    if (output != NULL) {
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE, surface,
+            SB_EVENT_TYPE_SURFACE_ENTER);
+        event->enter_leave.output = output;
+
+        sb_application_post_event(app, event);
+    }
 }
 
 static void leave_handler(void *data,
                           struct wl_surface *wl_surface,
                           struct wl_output *wl_output)
 {
+    sb_surface_t *surface = (sb_surface_t*)data;
+    sb_application_t *app = sb_application_instance();
+
+    const sb_output_t *output = sb_application_find_output_by_wl_output(
+        app, wl_output);
+
+    if (output != NULL) {
+        sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE, surface,
+            SB_EVENT_TYPE_SURFACE_LEAVE);
+        event->enter_leave.output = output;
+
+        sb_application_post_event(app, event);
+    }
 }
 
 static void preferred_buffer_scale_handler(void *data,

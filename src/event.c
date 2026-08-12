@@ -193,6 +193,15 @@ const char* sb_event_text_input_commit_string(sb_event_t *event)
     return event->text_input.commit_string;
 }
 
+//!<========================
+//!< Enter or Leave Event
+//!<========================
+
+const sb_output_t* sb_event_enter_leave_output(sb_event_t *event)
+{
+    return event->enter_leave.output;
+}
+
 //!<=====================
 //!< Event Listener
 //!<=====================

@@ -46,10 +46,10 @@ static void on_resize(sb_event_t *event, void *user_data)
     sb_rect_t geo;
     geo.position.x = 10.0f;
     geo.position.y = 10.0f;
-    geo.size.width = sb_surface_size(event->target)->width - 10.0f - 10.0f;
-    geo.size.height = sb_surface_size(event->target)->height - 10.0f - 10.0f;
+    geo.size.width = sb_surface_size(event->target).width - 10.0f - 10.0f;
+    geo.size.height = sb_surface_size(event->target).height - 10.0f - 10.0f;
 
-    sb_view_set_geometry(image_view, &geo);
+    sb_view_set_geometry(image_view, geo);
 }
 
 static void on_click(sb_event_t *event, void *user_data)
@@ -86,8 +86,8 @@ int main(int argc, char *argv[])
 
     sb_desktop_surface_t *surface = sb_desktop_surface_new(
         SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
-    sb_size_t init_size = { 300.0f, 300.0f };
-    sb_surface_set_size(sb_desktop_surface_surface(surface), &init_size);
+    sb_size_i_t init_size = { 300, 300 };
+    sb_surface_set_size(sb_desktop_surface_surface(surface), init_size);
 
     sb_surface_add_event_listener(
         sb_desktop_surface_surface(surface),
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 
     sb_rect_t geometry = { { 10.0f, 10.0f }, { 256.0f, 256.0f } };
     sb_view_t *view = sb_view_new(
-        sb_surface_root_view(sb_desktop_surface_surface(surface)), &geometry);
+        sb_surface_root_view(sb_desktop_surface_surface(surface)), geometry);
     image_view = view;
     sb_view_set_render_type(view, SB_VIEW_RENDER_TYPE_IMAGE);
     sb_view_add_event_listener(view, SB_EVENT_TYPE_POINTER_CLICK, on_click, NULL);

@@ -8,6 +8,7 @@
 #include <swingby/event.h>
 
 struct wl_surface;
+struct wl_output;
 struct wl_registry_listener;
 
 typedef struct sb_surface_t sb_surface_t;
@@ -182,5 +183,9 @@ void sb_application_on_next_tick(sb_application_t *application,
 SB_INTERNAL
 sb_surface_t* sb_application_find_surface_by_wl_surface(
     sb_application_t *application, struct wl_surface *wl_surface);
+
+SB_INTERNAL
+sb_output_t* sb_application_find_output_by_wl_output(
+    sb_application_t *application, struct wl_output *wl_output);
 
 #endif /* _SWINBGY_APPLICATION_H */

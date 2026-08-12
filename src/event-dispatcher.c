@@ -329,6 +329,14 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
                 sb_surface_on_preferred_scale(event->target, event);
                 sb_event_free(event);
                 break;
+            case SB_EVENT_TYPE_SURFACE_ENTER:
+                sb_surface_on_enter(event->target, event);
+                sb_event_free(event);
+                break;
+            case SB_EVENT_TYPE_SURFACE_LEAVE:
+                sb_surface_on_leave(event->target, event);
+                sb_event_free(event);
+                break;
             default:
                 break;
             }

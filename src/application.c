@@ -1065,3 +1065,23 @@ sb_surface_t* sb_application_find_surface_by_wl_surface(
 {
     return _find_surface(application, wl_surface);
 }
+
+sb_output_t* sb_application_find_output_by_wl_output(
+    sb_application_t *application, struct wl_output *wl_output)
+{
+    const sb_list_t *outputs = application->output.outputs;
+
+    sb_output_t *found = NULL;
+    for (int i = 0; i < sb_list_length(outputs); ++i) {
+        sb_output_t *output = sb_list_at(outputs, i);
+        if (sb_output_wl_output(output) == wl_output) {
+            found = output;
+            break;
+        }
+    }
+    if (!found) {
+        sb_log_warn("No output found: %p\n", wl_output);
+    }
+
+    return found;
+}

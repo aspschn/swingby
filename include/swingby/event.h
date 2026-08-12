@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+typedef struct sb_output_t sb_output_t;
+
 enum sb_event_target_type {
     SB_EVENT_TARGET_TYPE_APPLICATION        = 1,
     SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE    = 2,
@@ -33,6 +35,10 @@ enum sb_event_type {
     SB_EVENT_TYPE_KEYBOARD_KEY_PRESS        = 32,
     SB_EVENT_TYPE_KEYBOARD_KEY_RELEASE      = 33,
     SB_EVENT_TYPE_TEXT_INPUT                = 40,
+    /// \brief Surface entered to the output.
+    SB_EVENT_TYPE_SURFACE_ENTER             = 50,
+    /// \brief Surface leaved from the output.
+    SB_EVENT_TYPE_SURFACE_LEAVE             = 51,
     /// \brief Time to paint. Only for `SB_VIEW_RENDER_TYPE_CANVAS`.
     SB_EVENT_TYPE_PAINT                     = 60,
     /// \brief Time to render directly with GL or Vulkan (not yet).
@@ -124,6 +130,10 @@ typedef struct sb_text_input_event_t {
     int32_t index;
 } sb_text_input_event_t;
 
+typedef struct sb_enter_leave_event_t {
+    const sb_output_t *output;
+} sb_enter_leave_event_t;
+
 struct sb_event_t {
     enum sb_event_target_type target_type;
     void *target;
@@ -139,6 +149,7 @@ struct sb_event_t {
         sb_timer_event_t timer;
         sb_scroll_event_t scroll;
         sb_text_input_event_t text_input;
+        sb_enter_leave_event_t enter_leave;
     };
 };
 
@@ -229,6 +240,12 @@ float sb_event_scroll_value(sb_event_t *event);
 const char* sb_event_text_input_preedit_string(sb_event_t *event);
 
 const char* sb_event_text_input_commit_string(sb_event_t *event);
+
+//!<========================
+//!< Enter or Leave Event
+//!<========================
+
+const sb_output_t* sb_event_enter_leave_output(sb_event_t *event);
 
 //!<=====================
 //!< Event Listener
