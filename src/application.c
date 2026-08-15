@@ -7,7 +7,7 @@
 
 #include <unistd.h>
 #include <sys/mman.h>
-#include <poll.h>
+#include <sys/epoll.h>
 
 #include <linux/input.h>
 
@@ -39,6 +39,8 @@
 
 #include "private/output-priv.h"
 #include "private/pointer-priv.h"
+
+#define SB_APPLICATION_EPOLL_MAX 32
 
 struct sb_application_t {
     sb_egl_t *egl;
@@ -607,27 +609,49 @@ int sb_application_exec(sb_application_t *application)
 {
     sb_event_dispatcher_t *dispatcher = application->event_dispatcher;
 
-    struct pollfd poll_fds[] = {
-        { wl_display_get_fd(application->wl_display), POLLIN },
-        { sb_event_dispatcher_timer_fd(dispatcher), POLLIN },
-        { sb_event_dispatcher_keyboard_key_repeat_fd(dispatcher), POLLIN },
-    };
+    int fd = epoll_create1(0);
+    struct epoll_event evt;
+
+    // Wayland.
+    evt.events = EPOLLIN;
+    int wl_fd = wl_display_get_fd(application->wl_display);
+    evt.data.fd = wl_fd;
+
+    epoll_ctl(fd, EPOLL_CTL_ADD, evt.data.fd, &evt);
+
+    // Timer events.
+    evt.events = EPOLLIN;
+    int timer_fd = sb_event_dispatcher_timer_fd(dispatcher);
+    evt.data.fd = timer_fd;
+
+    epoll_ctl(fd, EPOLL_CTL_ADD, evt.data.fd, &evt);
+
+    // Keyboard key repeat events.
+    evt.events = EPOLLIN;
+    int repeat_fd = sb_event_dispatcher_keyboard_key_repeat_fd(dispatcher);
+    evt.data.fd = repeat_fd;
+
+    epoll_ctl(fd, EPOLL_CTL_ADD, evt.data.fd, &evt);
+
+    //
+    struct epoll_event events[SB_APPLICATION_EPOLL_MAX];
 
     application->running = true;
     int err = 0; // wl_display_dispatch(application->wl_display);
     while (err != -1) {
-        int ret = poll(poll_fds, 3, -1);
-
-        if (poll_fds[0].revents == POLLIN) {
-            err = wl_display_dispatch(application->wl_display);
-        }
-
-        if (poll_fds[1].revents == POLLIN) {
-            sb_event_dispatcher_timer_process_events(dispatcher);
-        }
-
-        if (poll_fds[2].revents == POLLIN) {
-            sb_event_dispatcher_keyboard_key_repeat_process_events(dispatcher);
+        // int ret = poll(poll_fds, 3, -1);
+        int n = epoll_wait(fd, events, SB_APPLICATION_EPOLL_MAX, -1);
+        for (int i = 0; i < n; ++i) {
+            if (events[i].events & EPOLLIN) {
+                if (events[i].data.fd == wl_fd) {
+                    err = wl_display_dispatch(application->wl_display);
+                } else if (events[i].data.fd == timer_fd) {
+                    sb_event_dispatcher_timer_process_events(dispatcher);
+                } else if (events[i].data.fd == repeat_fd) {
+                    sb_event_dispatcher_keyboard_key_repeat_process_events(
+                        dispatcher);
+                }
+            }
         }
 
         sb_event_dispatcher_process_events(dispatcher);
