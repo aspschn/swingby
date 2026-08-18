@@ -5,8 +5,6 @@
 
 #include "image.h"
 
-sb_view_t *image_view = NULL;
-
 /*
 static uint8_t* load_image(int32_t *len)
 {
@@ -49,35 +47,41 @@ static void on_resize(sb_event_t *event, void *user_data)
     geo.size.width = sb_surface_size(event->target).width - 10.0f - 10.0f;
     geo.size.height = sb_surface_size(event->target).height - 10.0f - 10.0f;
 
-    sb_view_set_geometry(image_view, geo);
+    // sb_view_set_geometry(image_view, geo);
 }
 
 static void on_click(sb_event_t *event, void *user_data)
 {
-    return;
+    sb_view_t *view = user_data;
+
     sb_point_i_t pos;
     pos.x = (int32_t)event->pointer.position.x;
     pos.y = (int32_t)event->pointer.position.y;
 
-    sb_size_i_t size;
-    size.width = 80;
-    size.height = 50;
-    sb_image_t *rectangle = sb_image_new(&size, SB_IMAGE_FORMAT_RGBA32);
+    sb_size_i_t size = { .width = 80, .height = 50 };
+
+    uint8_t *pixels = malloc(size.width * size.height * 4);
+    sb_pixmap_t *pixmap = sb_pixmap_new(pixels, &size, size.width * 4,
+        SB_PIXEL_FORMAT_RGBA32);
+
+    sb_image_t *rectangle = sb_image_new_from_pixmap(pixmap);
     sb_color_t color;
-    color.r = 255;
-    color.g = 0;
-    color.b = 0;
-    color.a = 128;
+    color.r = 1.0f;
+    color.g = 0.0f;
+    color.b = 0.0f;
+    color.a = 0.5f;
     sb_image_fill(rectangle, &color);
 
     enum sb_blend_mode blend = (event->pointer.button == SB_POINTER_BUTTON_LEFT)
         ? SB_BLEND_MODE_PREMULTIPLIED
         : SB_BLEND_MODE_NONE;
-    sb_image_draw_image(sb_view_image(image_view), rectangle, &pos, blend);
+    sb_image_draw_image(sb_view_image(view), rectangle, &pos, blend);
 
     sb_image_free(rectangle);
+    sb_pixmap_free(pixmap);
+    free(pixels);
 
-    sb_surface_update(sb_view_surface(image_view));
+    sb_surface_update(sb_view_surface(view));
 }
 
 int main(int argc, char *argv[])
@@ -98,9 +102,9 @@ int main(int argc, char *argv[])
     sb_rect_t geometry = { { 10.0f, 10.0f }, { 256.0f, 256.0f } };
     sb_view_t *view = sb_view_new(
         sb_surface_root_view(sb_desktop_surface_surface(surface)), geometry);
-    image_view = view;
     sb_view_set_render_type(view, SB_VIEW_RENDER_TYPE_IMAGE);
-    sb_view_add_event_listener(view, SB_EVENT_TYPE_POINTER_CLICK, on_click, NULL);
+    sb_view_add_event_listener(view,
+        SB_EVENT_TYPE_POINTER_CLICK, on_click, view);
 
     sb_size_i_t image_size = { 256, 256 };
 
