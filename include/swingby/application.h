@@ -19,6 +19,17 @@ typedef struct sb_list_t sb_list_t;
 typedef struct sb_egl_t sb_egl_t;
 typedef sb_egl_t sb_egl_context_t;
 
+enum sb_fd_flag {
+    SB_FD_FLAG_READABLE = 1,
+    SB_FD_FLAG_WRITABLE = 2,
+    SB_FD_FLAG_ERROR = 4,
+    SB_FD_FLAG_HANGUP = 8,
+};
+
+typedef enum sb_fd_flag sb_fd_flags;
+
+typedef void (*sb_fd_listener_t)(sb_fd_flags, void*);
+
 /// \struct sb_application_t
 /// \brief A global application object.
 typedef struct sb_application_t sb_application_t;
@@ -167,6 +178,18 @@ SB_EXPORT
 /// This method considered as a temporary, unstable API. Caution in use.
 void sb_application_set_quit_on_last_toplevel_closed(
     sb_application_t *application, bool value);
+
+/// \memberof sb_application_t
+SB_EXPORT
+uint32_t sb_application_add_fd(sb_application_t *application,
+                               int fd,
+                               sb_fd_flags flags,
+                               sb_fd_listener_t listener,
+                               void *user_data);
+
+/// \memberof sb_application_t
+SB_EXPORT
+void sb_application_remove_fd(sb_application_t *application, uint32_t id);
 
 /// \memberof sb_application_t
 SB_EXPORT

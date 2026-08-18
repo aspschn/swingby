@@ -42,8 +42,11 @@
 
 #define SB_APPLICATION_EPOLL_MAX 32
 
+typedef struct sb_fd_record_t sb_fd_record_t;
+
 struct sb_application_t {
     sb_egl_t *egl;
+    int fd;
     /// `struct wl_display`.
     struct wl_display *wl_display;
     /// `struct wl_registry`.
@@ -86,6 +89,10 @@ struct sb_application_t {
     /// \brief A running state flag.
     bool running;
     bool quit_on_last_toplevel_closed;
+    /// \brief List of the file descriptor listeners.
+    ///
+    /// sb_list_t<sb_fd_record_t>
+    sb_list_t *fd_listeners;
     /// \brief An event dispatcher.
     sb_event_dispatcher_t *event_dispatcher;
     sb_list_t *event_listeners;
@@ -93,6 +100,18 @@ struct sb_application_t {
 
 // Singleton object.
 static sb_application_t *_sb_application_instance = NULL;
+
+//!<============
+//!< FD Record
+//!<============
+
+struct sb_fd_record_t {
+    uint32_t id;
+    int fd;
+    sb_fd_flags flags;
+    sb_fd_listener_t listener;
+    void *user_data;
+};
 
 //!<============
 //!< Registry
@@ -329,6 +348,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
 {
     sb_application_t *app = malloc(sizeof(sb_application_t));
 
+    app->fd = epoll_create1(0);
+
     app->wl_display = wl_display_connect(NULL);
 
     // Null initializations.
@@ -385,6 +406,9 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     _sb_application_instance = app;
 
     app->egl = sb_egl_new();
+
+    // File descriptor listeners.
+    app->fd_listeners = sb_list_new();
 
     // Event listeners.
     app->event_listeners = sb_list_new();
@@ -609,7 +633,7 @@ int sb_application_exec(sb_application_t *application)
 {
     sb_event_dispatcher_t *dispatcher = application->event_dispatcher;
 
-    int fd = epoll_create1(0);
+    int fd = application->fd;
     struct epoll_event evt;
 
     // Wayland.
@@ -642,14 +666,32 @@ int sb_application_exec(sb_application_t *application)
         // int ret = poll(poll_fds, 3, -1);
         int n = epoll_wait(fd, events, SB_APPLICATION_EPOLL_MAX, -1);
         for (int i = 0; i < n; ++i) {
-            if (events[i].events & EPOLLIN) {
-                if (events[i].data.fd == wl_fd) {
-                    err = wl_display_dispatch(application->wl_display);
-                } else if (events[i].data.fd == timer_fd) {
-                    sb_event_dispatcher_timer_process_events(dispatcher);
-                } else if (events[i].data.fd == repeat_fd) {
-                    sb_event_dispatcher_keyboard_key_repeat_process_events(
-                        dispatcher);
+            int event_fd = events[i].data.fd;
+            if (event_fd == wl_fd && events[i].events & EPOLLIN) {
+                err = wl_display_dispatch(application->wl_display);
+            } else if (event_fd == timer_fd && events[i].events & EPOLLIN) {
+                sb_event_dispatcher_timer_process_events(dispatcher);
+            } else if (event_fd == repeat_fd && events[i].events & EPOLLIN) {
+                sb_event_dispatcher_keyboard_key_repeat_process_events(
+                    dispatcher);
+            } else {
+                // External fds.
+                const sb_list_t *listeners = application->fd_listeners;
+                for (int j = 0; j < sb_list_length(listeners); ++j) {
+                    sb_fd_record_t *rec = sb_list_at(listeners, j);
+                    sb_fd_flags flags = 0;
+                    if (rec->fd == event_fd) {
+                        if (events[i].events & EPOLLIN) {
+                            flags |= SB_FD_FLAG_READABLE;
+                        } else if (events[i].events & EPOLLOUT) {
+                            flags |= SB_FD_FLAG_WRITABLE;
+                        } else if (events[i].events & EPOLLERR) {
+                            flags |= SB_FD_FLAG_ERROR;
+                        } else if (events[i].events & EPOLLHUP) {
+                            flags |= SB_FD_FLAG_HANGUP;
+                        }
+                        rec->listener(flags, rec->user_data);
+                    }
                 }
             }
         }
@@ -694,6 +736,48 @@ void sb_application_set_quit_on_last_toplevel_closed(
     sb_application_t *application, bool value)
 {
     application->quit_on_last_toplevel_closed = value;
+}
+
+uint32_t sb_application_add_fd(sb_application_t *application,
+                               int fd,
+                               sb_fd_flags flags,
+                               sb_fd_listener_t listener,
+                               void *user_data)
+{
+    static uint32_t id = 0;
+
+    sb_fd_record_t *record = malloc(sizeof(sb_fd_record_t));
+    record->id = id++;
+    record->fd = fd;
+    record->flags = flags;
+    record->listener = listener;
+    record->user_data = user_data;
+
+    sb_list_push(application->fd_listeners, record);
+
+    struct epoll_event ev = {0};
+    if (flags & SB_FD_FLAG_READABLE) {
+        ev.events |= EPOLLIN;
+    }
+    if (flags & SB_FD_FLAG_WRITABLE) {
+        ev.events |= EPOLLOUT;
+    }
+    ev.data.fd = record->fd;
+    epoll_ctl(application->fd, EPOLL_CTL_ADD, fd, &ev);
+
+    return record->id;
+}
+
+void sb_application_remove_fd(sb_application_t *application, uint32_t id)
+{
+    for (int i = 0; i < sb_list_length(application->fd_listeners); ++i) {
+        sb_fd_record_t *rec = sb_list_at(application->fd_listeners, i);
+        if (rec->id == id) {
+            sb_list_remove(application->fd_listeners, i);
+            free(rec);
+            break;
+        }
+    }
 }
 
 
