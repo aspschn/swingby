@@ -3,9 +3,12 @@
 #include <skia/include/core/SkBitmap.h>
 #include <skia/include/core/SkPixmap.h>
 #include <skia/include/core/SkImage.h>
+#include <skia/include/core/SkCanvas.h>
 #include <skia/include/codec/SkCodec.h>
 #include <skia/include/gpu/ganesh/GrDirectContext.h>
 #include <skia/include/gpu/ganesh/GrBackendSurface.h>
+// SkSurface::RenderTarget
+#include <skia/include/gpu/ganesh/SkSurfaceGanesh.h>
 // SkImages::BorrowTextureFrom
 #include <skia/include/gpu/ganesh/SkImageGanesh.h>
 
@@ -164,17 +167,85 @@ uint8_t* sb_image_data(sb_image_t *image)
     return nullptr;
 }
 
-void sb_image_fill(sb_image_t *image, const sb_color_t *color)
+void sb_image_fill(sb_image_t *image, sb_color_t color)
 {
-    //
+    GrDirectContext *context = (GrDirectContext*)sb_skia_gl_direct_context();
+    if (!context) {
+        sb_log_error("sb_image_fill - context is NULL!\n");
+    }
+
+    SkImageInfo info = image->sk_image->imageInfo();
+    info = info.makeAlphaType(kPremul_SkAlphaType); // Important!
+    sk_sp<SkSurface> surface = SkSurfaces::RenderTarget(context,
+        skgpu::Budgeted::kNo, info);
+    if (surface.get() == nullptr) {
+        sb_log_error("sb_image_fill - Surface creation failed\n");
+    }
+
+    SkColor4f sk_color;
+    sk_color.fR = color.r;
+    sk_color.fG = color.g;
+    sk_color.fB = color.b;
+    sk_color.fA = color.a;
+
+    SkCanvas *canvas = surface->getCanvas();
+    canvas->clear(sk_color);
+
+    sk_sp<SkImage> sk_image = surface->makeImageSnapshot();
+    if (sk_image->isTextureBacked()) {
+        image->backing = SB_IMAGE_BACKING_TYPE_TEXTURE;
+    } else {
+        sb_log_warn("sb_image_fill - isTextureBacked false\n");
+    }
+
+    image->sk_image = sk_image;
 }
 
 void sb_image_draw_image(sb_image_t *image,
                          const sb_image_t *src,
-                         const sb_point_i_t *pos,
+                         sb_point_i_t pos,
                          enum sb_blend_mode blend_mode)
 {
-    //
+    GrDirectContext *context = (GrDirectContext*)sb_skia_gl_direct_context();
+    if (!context) {
+        sb_log_error("sb_image_draw_image - context is NULL!\n");
+    }
+
+    SkImageInfo info = image->sk_image->imageInfo();
+    info = info.makeAlphaType(kPremul_SkAlphaType); // Important!
+    sk_sp<SkSurface> surface = SkSurfaces::RenderTarget(context,
+        skgpu::Budgeted::kNo, info);
+    if (surface.get() == nullptr) {
+        sb_log_error("sb_image_draw_image - Surface creation failed\n");
+    }
+
+    SkCanvas *canvas = surface->getCanvas();
+
+    // Draw the image to the new canvas.
+    canvas->drawImage(image->sk_image, 0, 0);
+    // Draw source image to the new canvas.
+    SkSamplingOptions sampling;
+    SkPaint paint;
+    switch (blend_mode) {
+    case SB_BLEND_MODE_NONE:
+        paint.setBlendMode(SkBlendMode::kSrc);
+        break;
+    case SB_BLEND_MODE_ALPHA:
+    case SB_BLEND_MODE_PREMULTIPLIED:
+        paint.setBlendMode(SkBlendMode::kSrcOver);
+        break;
+    default:
+        paint.setBlendMode(SkBlendMode::kSrcOver);
+        break;
+    }
+    canvas->drawImage(src->sk_image,
+        (SkScalar)pos.x, (SkScalar)pos.y,
+        sampling,
+        &paint);
+
+    sk_sp<SkImage> sk_image = surface->makeImageSnapshot();
+
+    image->sk_image = sk_image;
 }
 
 void sb_image_free(sb_image_t *image)

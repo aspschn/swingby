@@ -132,8 +132,8 @@ void sb_skia_gl_renderer_begin(sb_skia_gl_renderer_t *renderer,
     }
     renderer->gl_interface = _gl_interface;
     if (!renderer->direct_context) {
-        // _direct_context = GrDirectContexts::MakeGL(_gl_interface);
-        renderer->direct_context = GrDirectContexts::MakeGL(_gl_interface);
+        _direct_context = GrDirectContexts::MakeGL(_gl_interface);
+        renderer->direct_context = _direct_context;
     }
 
     GrGLFramebufferInfo fb_info;

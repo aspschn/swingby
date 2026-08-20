@@ -7,6 +7,7 @@
 #include <swingby/common.h>
 #include <swingby/point.h>
 #include <swingby/size.h>
+#include <swingby/color.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,12 +73,12 @@ void sb_image_set_data(sb_image_t *image,
                        const sb_size_i_t *size);
 
 SB_EXPORT
-void sb_image_fill(sb_image_t *image, const sb_color_t *color);
+void sb_image_fill(sb_image_t *image, sb_color_t color);
 
 SB_EXPORT
 void sb_image_draw_image(sb_image_t *image,
                          const sb_image_t *src,
-                         const sb_point_i_t *pos,
+                         sb_point_i_t pos,
                          enum sb_blend_mode blend_mode);
 
 SB_EXPORT

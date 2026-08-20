@@ -70,12 +70,12 @@ static void on_click(sb_event_t *event, void *user_data)
     color.g = 0.0f;
     color.b = 0.0f;
     color.a = 0.5f;
-    sb_image_fill(rectangle, &color);
+    sb_image_fill(rectangle, color);
 
     enum sb_blend_mode blend = (event->pointer.button == SB_POINTER_BUTTON_LEFT)
         ? SB_BLEND_MODE_PREMULTIPLIED
         : SB_BLEND_MODE_NONE;
-    sb_image_draw_image(sb_view_image(view), rectangle, &pos, blend);
+    sb_image_draw_image(sb_view_image(view), rectangle, pos, blend);
 
     sb_image_free(rectangle);
     sb_pixmap_free(pixmap);
