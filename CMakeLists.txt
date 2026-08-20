@@ -61,7 +61,6 @@ set(SWINGBY_SOURCES
     src/filter.c
     src/output.c
     src/view.c
-    src/image.c
     src/pixmap.c
     src/glyph.c
     src/paint.c
@@ -83,6 +82,7 @@ set(SWINGBY_SOURCES
     src/skia/load-image.cpp
     src/skia/canvas.cpp
     src/skia/font.cpp
+    src/skia/image.cpp
     src/helpers/shared.h
     src/helpers/shared.c
     src/impl/image-impl.cpp

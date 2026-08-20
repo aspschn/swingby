@@ -310,11 +310,11 @@ void sb_skia_draw_image(sb_skia_renderer_t *renderer,
 {
     SkCanvas *canvas = _get_canvas(renderer);
 
-    const sb_size_i_t *image_size = sb_image_size((sb_image_t*)image);
+    sb_size_i_t image_size = sb_image_size((sb_image_t*)image);
 
     SkImageInfo image_info = SkImageInfo::Make(
-        image_size->width,
-        image_size->height,
+        image_size.width,
+        image_size.height,
         kRGBA_8888_SkColorType,
         kUnpremul_SkAlphaType
     );
@@ -322,7 +322,7 @@ void sb_skia_draw_image(sb_skia_renderer_t *renderer,
     SkBitmap bitmap;
     bitmap.installPixels(image_info,
         sb_image_data((sb_image_t*)image),
-        image_size->width * 4);
+        image_size.width * 4);
 
     sk_sp<SkImage> sk_image = SkImages::RasterFromBitmap(bitmap);
 
@@ -337,34 +337,6 @@ void sb_skia_draw_image(sb_skia_renderer_t *renderer,
     canvas->drawImageRect(sk_image, sk_rect, sampling, nullptr);
 }
 
-void sb_skia_draw_image2(sb_skia_renderer_t *renderer,
-                         const sb_rect_t *rect,
-                         uint32_t scale,
-                         const sb_image_t *image)
-{
-    SkCanvas *canvas = _get_canvas(renderer);
-    SbImageImpl *impl = sb_image_impl(image);
-
-    // Make texture.
-    auto gl_renderer =
-        (sb_skia_gl_renderer_t*)sb_skia_renderer_current(renderer);
-
-    sb_skia_gl_renderer_make_image_texture(gl_renderer, impl);
-
-    // TODO: RRect.
-
-    SkRect sk_rect = SkRect::MakeXYWH(
-        rect->position.x * scale,
-        rect->position.y * scale,
-        rect->size.width * scale,
-        rect->size.height * scale
-    );
-
-    SkSamplingOptions sampling;
-
-    canvas->drawImageRect(impl->sk_image(), sk_rect, sampling, nullptr);
-}
-
 void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
                          const sb_view_t *view,
                          float scale)
@@ -376,15 +348,14 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
         return;
     }
 
-    SbImageImpl *impl = sb_image_impl(image);
     sb_rect_t rect = sb_view_geometry(view);
-    const sb_size_i_t *image_size = sb_image_size(image);
+    sb_size_i_t image_size = sb_image_size(image);
 
     // Make texture.
     auto gl_renderer =
         (sb_skia_gl_renderer_t*)sb_skia_renderer_current(renderer);
 
-    sb_skia_gl_renderer_make_image_texture(gl_renderer, impl);
+    // sb_skia_gl_renderer_make_image_texture(gl_renderer, impl);
 
     // TODO: RRect.
 
@@ -397,8 +368,8 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
 
     SkSamplingOptions sampling;
     if (sb_view_antialiased(view)) {
-        if (rect.size.width > image_size->width &&
-            rect.size.height > image_size->height) {
+        if (rect.size.width > image_size.width &&
+            rect.size.height > image_size.height) {
             // Upscale.
             sampling = SkSamplingOptions(
                 SkFilterMode::kLinear,
@@ -410,7 +381,9 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
         }
     }
 
-    canvas->drawImageRect(impl->sk_image(), sk_rect, sampling, nullptr);
+    sk_sp<SkImage> sk_image = *(sk_sp<SkImage>*)sb_image_sk_image(image);
+    canvas->drawImageRect(sk_image,
+        sk_rect, sampling, nullptr);
 }
 
 void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,

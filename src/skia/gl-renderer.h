@@ -37,6 +37,10 @@ void sb_skia_gl_renderer_end(sb_skia_gl_renderer_t *renderer);
 
 void sb_skia_gl_renderer_free(sb_skia_gl_renderer_t *renderer);
 
+// Global variables.
+
+void* sb_skia_gl_direct_context();
+
 #ifdef __cplusplus
 }
 #endif

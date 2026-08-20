@@ -94,10 +94,10 @@ void sb_skia_image_draw_image(sb_image_t *dst,
                               enum sb_blend_mode blend_mode)
 {
     SkBitmap bitmap;
-    const sb_size_i_t *dst_size = sb_image_size(dst);
-    SkImageInfo info = SkImageInfo::Make(dst_size->width, dst_size->height,
+    sb_size_i_t dst_size = sb_image_size(dst);
+    SkImageInfo info = SkImageInfo::Make(dst_size.width, dst_size.height,
         kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-    bitmap.installPixels(info, sb_image_data(dst), dst_size->width * 4);
+    bitmap.installPixels(info, sb_image_data(dst), dst_size.width * 4);
 
     SkCanvas canvas(bitmap);
 
@@ -117,15 +117,15 @@ void sb_skia_image_draw_image(sb_image_t *dst,
     }
 
     SkBitmap src_bitmap;
-    const sb_size_i_t *src_size = sb_image_size(src);
+    sb_size_i_t src_size = sb_image_size(src);
     SkAlphaType src_alpha = (blend_mode == SB_BLEND_MODE_PREMULTIPLIED)
         ? kPremul_SkAlphaType
         : kUnpremul_SkAlphaType;
 
-    SkImageInfo src_info = SkImageInfo::Make(src_size->width, src_size->height,
+    SkImageInfo src_info = SkImageInfo::Make(src_size.width, src_size.height,
                                              kRGBA_8888_SkColorType, src_alpha);
     src_bitmap.installPixels(src_info, sb_image_data((sb_image_t*)src),
-        src_size->width * 4);
+        src_size.width * 4);
 
     sk_sp<SkImage> src_image = src_bitmap.asImage();
 
@@ -139,7 +139,7 @@ void sb_skia_image_draw_image(sb_image_t *dst,
 
 void sb_skia_image_fill(sb_image_t *image, const sb_color_t *color)
 {
-    const sb_size_i_t *size = sb_image_size(image);
+    sb_size_i_t size = sb_image_size(image);
 
     SkColorType color_type = kRGBA_8888_SkColorType;
     SkAlphaType alpha_type = kUnpremul_SkAlphaType;
@@ -156,11 +156,11 @@ void sb_skia_image_fill(sb_image_t *image, const sb_color_t *color)
     }
 
     SkImageInfo info = SkImageInfo::Make(
-        size->width, size->height, color_type, alpha_type
+        size.width, size.height, color_type, alpha_type
     );
 
     SkBitmap bitmap;
-    if (!bitmap.installPixels(info, sb_image_data(image), size->width * 4)) {
+    if (!bitmap.installPixels(info, sb_image_data(image), size.width * 4)) {
         return;
     }
 

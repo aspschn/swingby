@@ -27,6 +27,13 @@ enum sb_image_source_type {
     SB_IMAGE_SOURCE_TYPE_PIXELS,
 };
 
+enum sb_image_backing_type {
+    SB_IMAGE_BACKING_TYPE_INVALID = 0,
+    SB_IMAGE_BACKING_TYPE_PIXELS,
+    SB_IMAGE_BACKING_TYPE_TEXTURE,
+    // SB_IMAGE_BACKING_TYPE_LAZY,
+};
+
 enum sb_image_format {
     SB_IMAGE_FORMAT_RGBA32  = 0,
     SB_IMAGE_FORMAT_ARGB32  = 1,
@@ -74,7 +81,13 @@ SB_EXPORT
 sb_image_t* sb_image_new(const sb_size_i_t *size, enum sb_image_format format);
 
 SB_EXPORT
-const sb_size_i_t* sb_image_size(const sb_image_t *image);
+sb_size_i_t sb_image_size(const sb_image_t *image);
+
+SB_EXPORT
+enum sb_image_backing_type sb_image_backing_type(const sb_image_t *image);
+
+SB_EXPORT
+bool sb_image_upload_texture(sb_image_t *image);
 
 SB_EXPORT
 enum sb_image_format sb_image_format(const sb_image_t *image);
@@ -109,6 +122,10 @@ bool sb_image_load_from_data(sb_image_t *image,
 
 SB_EXPORT
 void sb_image_free(sb_image_t *image);
+
+
+SB_INTERNAL
+void* sb_image_sk_image(const sb_image_t *image);
 
 
 typedef struct SbImageImpl SbImageImpl;

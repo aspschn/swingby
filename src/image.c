@@ -74,6 +74,16 @@ const sb_size_i_t* sb_image_size(const sb_image_t *image)
     return &image->size;
 }
 
+enum sb_image_backing_type sb_image_backing_type(const sb_image_t *image)
+{
+    return SB_IMAGE_BACKING_TYPE_INVALID;
+}
+
+bool sb_image_upload_texture(sb_image_t *iamge)
+{
+    return false;
+}
+
 enum sb_image_format sb_image_format(const sb_image_t *image)
 {
     return image->format;
