@@ -16,17 +16,6 @@ typedef struct sb_color_t sb_color_t;
 
 typedef struct sb_pixmap_t sb_pixmap_t;
 
-enum sb_image_source_type {
-    /// Delegate allocation to `sb_image_t`.
-    SB_IMAGE_SOURCE_TYPE_EMPTY,
-    /// Create from file path.
-    SB_IMAGE_SOURCE_TYPE_FILE,
-    /// Create from loaded data.
-    SB_IMAGE_SOURCE_TYPE_DATA,
-    /// Create from raw pixels.
-    SB_IMAGE_SOURCE_TYPE_PIXELS,
-};
-
 enum sb_image_backing_type {
     SB_IMAGE_BACKING_TYPE_INVALID = 0,
     SB_IMAGE_BACKING_TYPE_PIXELS,
@@ -51,25 +40,7 @@ enum sb_blend_mode {
     SB_BLEND_MODE_PREMULTIPLIED     = 2,
 };
 
-/// \brief Image descriptor.
-typedef struct sb_image_desc_t {
-    enum sb_image_source_type source_type;
-    sb_size_i_t size;
-    enum sb_image_format format;
-    struct {
-        const char *filename;
-        enum sb_image_file_format format;
-    } file;
-    struct {
-        const uint8_t *buffer;
-        uint64_t length;
-    } data;
-} sb_image_desc_t;
-
-
 typedef struct sb_image_t sb_image_t;
-
-sb_image_t* sb_image_new2(const sb_image_desc_t *descriptor);
 
 SB_EXPORT
 sb_image_t* sb_image_new_from_data(const uint8_t *data, uint64_t len);
