@@ -6,7 +6,11 @@ static void on_resize(sb_event_t *event, void *user_data)
 {
     sb_surface_t *surface = sb_desktop_surface_surface(event->target);
 
-    sb_surface_set_size(surface, &event->resize.size);
+    sb_size_i_t size = {
+        .width = event->resize.size.width,
+        .height = event->resize.size.height
+    };
+    sb_surface_set_size(surface, size);
 }
 
 static void on_view_pointer_move(sb_event_t *event, void *user_data)
@@ -23,8 +27,8 @@ static void on_view_pointer_move(sb_event_t *event, void *user_data)
         }
     }
     sb_point_t center_pos;
-    center_pos.x = sb_view_geometry(event->target)->size.width / 2.0f;
-    center_pos.y = sb_view_geometry(event->target)->size.height / 2.0f;
+    center_pos.x = sb_view_geometry(event->target).size.width / 2.0f;
+    center_pos.y = sb_view_geometry(event->target).size.height / 2.0f;
 
     sb_point_t pos = event->pointer.position;
     pos.x = (center_pos.x - pos.x) / 2.0f;
@@ -48,9 +52,9 @@ int main(int argc, char *argv[])
 
     sb_rect_t geometry = { { 20.0f, 20.0f }, { 80.0f, 80.0f } };
     sb_view_t *view = sb_view_new(
-        sb_surface_root_view(sb_desktop_surface_surface(surface)), &geometry);
-    sb_color_t color = { 255, 0, 0, 255 };
-    sb_view_set_color(view, &color);
+        sb_surface_root_view(sb_desktop_surface_surface(surface)), geometry);
+    sb_color_t color = { 1.0f, 0.0f, 0.0f, 1.0f };
+    sb_view_set_color(view, color);
     sb_view_radius_t radius = { 2.0f, 10.0f, 15.0f, 50.0f };
     sb_view_set_radius(view, &radius);
 

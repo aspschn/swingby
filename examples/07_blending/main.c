@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 
     sb_rect_t geometry = { { 0.0f, 0.0f }, { 100.0f, 100.0f } };
     sb_view_t *view = sb_view_new(
-        sb_surface_root_view(sb_desktop_surface_surface(surface)), &geometry);
+        sb_surface_root_view(sb_desktop_surface_surface(surface)), geometry);
     sb_color_t color = { 255, 0, 0, 0x60 };
     sb_view_set_color(view, &color);
     fprintf(stderr, "First rect: #ff9f9f\n");

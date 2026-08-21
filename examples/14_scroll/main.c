@@ -16,18 +16,18 @@ static void on_preferred_scale(sb_event_t *event, void *user_data)
 static void on_scroll(sb_event_t *event, void *user_data)
 {
     fprintf(stderr, "Scroll value: %.2f\n", event->scroll.value);
-    const sb_rect_t *prev_geo = sb_view_geometry(item);
+    sb_rect_t prev_geo = sb_view_geometry(item);
     sb_rect_t new_geo;
-    new_geo.size = prev_geo->size;
+    new_geo.size = prev_geo.size;
     if (event->scroll.axis == SB_POINTER_SCROLL_AXIS_VERTICAL_SCROLL) {
-        new_geo.position.x = prev_geo->position.x;
-        new_geo.position.y = prev_geo->position.y + event->scroll.value;
+        new_geo.position.x = prev_geo.position.x;
+        new_geo.position.y = prev_geo.position.y + event->scroll.value;
     } else if (event->scroll.axis == SB_POINTER_SCROLL_AXIS_HORIZONTAL_SCROLL) {
-        new_geo.position.x = prev_geo->position.x + event->scroll.value;
-        new_geo.position.y = prev_geo->position.y;
+        new_geo.position.x = prev_geo.position.x + event->scroll.value;
+        new_geo.position.y = prev_geo.position.y;
     }
 
-    sb_view_set_geometry(item, &new_geo);
+    sb_view_set_geometry(item, new_geo);
 }
 
 int main(int argc, char *argv[])
@@ -45,9 +45,9 @@ int main(int argc, char *argv[])
 
     sb_rect_t geometry = { { 0.0f, 0.0f }, { 150.0f, 150.0f } };
     sb_view_t *view = sb_view_new(
-        sb_surface_root_view(sb_desktop_surface_surface(surface)), &geometry);
-    sb_color_t color = { 0, 255, 0, 255 };
-    sb_view_set_color(view, &color);
+        sb_surface_root_view(sb_desktop_surface_surface(surface)), geometry);
+    sb_color_t color = { 0.0f, 1.0f, 0.0f, 1.0f };
+    sb_view_set_color(view, color);
     // Clip true.
     sb_view_set_clip(view, true);
 
@@ -58,11 +58,11 @@ int main(int argc, char *argv[])
     geometry.position.y = 10.0f;
     geometry.size.width = 50.0f;
     geometry.size.height = 50.0f;
-    color.r = 255;
-    color.g = 0;
-    color.b = 0;
-    item = sb_view_new(view, &geometry);
-    sb_view_set_color(item, &color);
+    color.r = 1.0f;
+    color.g = 0.0f;
+    color.b = 0.0f;
+    item = sb_view_new(view, geometry);
+    sb_view_set_color(item, color);
 
     sb_desktop_surface_show(surface);
 

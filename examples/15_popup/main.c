@@ -41,22 +41,22 @@ static void on_click(sb_event_t *event, void *user_data)
     sb_desktop_surface_popup_set_position(popup, &pos);
 
     sb_color_t color;
-    color.r = 255;
-    color.g = 255;
-    color.b = 0;
-    color.a = 255;
+    color.r = 1.0f;
+    color.g = 1.0f;
+    color.b = 0.0f;
+    color.a = 1.0f;
 
-    sb_rect_t geometry;
+    sb_rect_i_t geometry;
     geometry.position.x = 0;
     geometry.position.y = 0;
     geometry.size.width = 50;
     geometry.size.height = 50;
 
     sb_surface_t *popup_surface = sb_desktop_surface_surface(popup);
-    sb_surface_set_size(popup_surface, &geometry.size);
+    sb_surface_set_size(popup_surface, geometry.size);
 
     sb_view_t *popup_root_view = sb_surface_root_view(popup_surface);
-    sb_view_set_color(popup_root_view, &color);
+    sb_view_set_color(popup_root_view, color);
     sb_desktop_surface_popup_set_grabbable(popup, true);
     sb_desktop_surface_show(popup);
     sb_desktop_surface_popup_grab_for_button(popup);
@@ -74,20 +74,20 @@ static void on_pointer_enter(sb_event_t *event, void *user_data)
     sb_desktop_surface_set_parent(tooltip, toplevel);
 
     // Set geometry.
-    sb_rect_t geometry = {
-        .pos = { 30.0f, 30.0f },
-        .size = { 50.0f, 15.0f },
+    sb_rect_i_t geometry = {
+        .pos = { 30, 30 },
+        .size = { 50, 15 },
     };
     sb_surface_set_size(
         sb_desktop_surface_surface(tooltip),
-        &geometry.size
+        geometry.size
     );
 
     // Set color.
     sb_color_t color = { .r = 0.5f, .g = 0.5f, .b = 0.0f, .a = 1.0f };
     sb_view_set_color(
         sb_surface_root_view(sb_desktop_surface_surface(tooltip)),
-        &color
+        color
     );
 
     // Set position.
@@ -114,9 +114,9 @@ int main(int argc, char *argv[])
 
     sb_rect_t geometry = { { 0.0f, 0.0f }, { 150.0f, 150.0f } };
     sb_view_t *view = sb_view_new(
-        sb_surface_root_view(sb_desktop_surface_surface(surface)), &geometry);
-    sb_color_t color = { 0, 255, 0, 255 };
-    sb_view_set_color(view, &color);
+        sb_surface_root_view(sb_desktop_surface_surface(surface)), geometry);
+    sb_color_t color = { 0.0f, 1.0f, 0.0f, 1.0f };
+    sb_view_set_color(view, color);
     // Clip true.
     sb_view_set_clip(view, true);
 
@@ -130,8 +130,8 @@ int main(int argc, char *argv[])
 
         sb_color_t color = { 1.0f, 0.0f, 0.0f, 1.0f };
 
-        item = sb_view_new(view, &geometry);
-        sb_view_set_color(item, &color);
+        item = sb_view_new(view, geometry);
+        sb_view_set_color(item, color);
 
         sb_view_add_event_listener(item,
             SB_EVENT_TYPE_POINTER_PRESS, on_click, NULL);
@@ -145,8 +145,8 @@ int main(int argc, char *argv[])
 
         sb_color_t color = { .r = 0.0f, .g = 0.0f, .b = 1.0f, .a = 1.0f };
 
-        sb_view_t *tooltip_item = sb_view_new(view, &geometry);
-        sb_view_set_color(tooltip_item, &color);
+        sb_view_t *tooltip_item = sb_view_new(view, geometry);
+        sb_view_set_color(tooltip_item, color);
 
         sb_view_add_event_listener(tooltip_item,
             SB_EVENT_TYPE_POINTER_ENTER, on_pointer_enter, tooltip_item);
@@ -158,4 +158,3 @@ int main(int argc, char *argv[])
 
     return sb_application_exec(app);
 }
-

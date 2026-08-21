@@ -36,15 +36,15 @@ sb_size_t get_surface_size(sb_size_t *window_size)
 sb_rect_t get_window_geometry(struct window *window)
 {
     sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
-    const sb_size_t *surface_size = sb_surface_size(surface);
+    sb_size_i_t surface_size = sb_surface_size(surface);
 
     sb_rect_t geometry;
     geometry.position.x = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
     geometry.position.y = WINDOW_SHADOW_THICKNESS - WINDOW_BORDER_THICKNESS;
-    geometry.size.width = surface_size->width
+    geometry.size.width = surface_size.width
         - (WINDOW_SHADOW_THICKNESS * 2)
         + (WINDOW_BORDER_THICKNESS * 2);
-    geometry.size.height = surface_size->height
+    geometry.size.height = surface_size.height
         - (WINDOW_SHADOW_THICKNESS * 2)
         + (WINDOW_BORDER_THICKNESS * 2);
 
@@ -54,20 +54,20 @@ sb_rect_t get_window_geometry(struct window *window)
 sb_rect_t get_shadow_geometry(struct window *window)
 {
     sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
-    const sb_size_t *surface_size = sb_surface_size(surface);
+    sb_size_i_t surface_size = sb_surface_size(surface);
 
     sb_rect_t geometry;
     geometry.position.x = 0;
     geometry.position.y = 0;
-    geometry.size.width = surface_size->width;
-    geometry.size.height = surface_size->height;
+    geometry.size.width = surface_size.width;
+    geometry.size.height = surface_size.height;
 
     return geometry;
 }
 
 sb_rect_t get_resize_geometry(struct window *window)
 {
-    const sb_size_t shadow_size = sb_view_geometry(window->shadow)->size;
+    sb_size_t shadow_size = sb_view_geometry(window->shadow).size;
 
     sb_rect_t geometry;
     geometry.position.x = WINDOW_SHADOW_THICKNESS - WINDOW_RESIZE_THICKNESS;
@@ -84,7 +84,7 @@ sb_rect_t get_resize_geometry(struct window *window)
 
 sb_rect_t get_border_geometry(struct window *window)
 {
-    const sb_size_t resize_size = sb_view_geometry(window->resize)->size;
+    sb_size_t resize_size = sb_view_geometry(window->resize).size;
 
     sb_rect_t geometry;
     geometry.position.x = WINDOW_RESIZE_THICKNESS - WINDOW_BORDER_THICKNESS;
@@ -101,7 +101,7 @@ sb_rect_t get_border_geometry(struct window *window)
 
 sb_rect_t get_title_bar_geometry(struct window *window)
 {
-    const sb_size_t border_size = sb_view_geometry(window->border)->size;
+    sb_size_t border_size = sb_view_geometry(window->border).size;
 
     sb_rect_t geometry;
     geometry.position.x = WINDOW_BORDER_THICKNESS;
@@ -114,7 +114,7 @@ sb_rect_t get_title_bar_geometry(struct window *window)
 
 sb_rect_t get_body_geometry(struct window *window)
 {
-    const sb_size_t border_size = sb_view_geometry(window->border)->size;
+    sb_size_t border_size = sb_view_geometry(window->border).size;
 
     sb_rect_t geometry;
     geometry.position.x = WINDOW_SHADOW_THICKNESS;
@@ -132,10 +132,10 @@ static void on_desktop_surface_resize(sb_event_t *event, void *user_data)
     // Resize the surface.
     sb_surface_t *surface = sb_desktop_surface_surface(
         window_global->desktop_surface);
-    sb_rect_t new_geo;
+    sb_rect_i_t new_geo;
     new_geo.size = get_surface_size(&event->resize.size);
 
-    sb_surface_set_size(surface, &new_geo.size);
+    sb_surface_set_size(surface, new_geo.size);
 
     sb_rect_t wm_geo;
     wm_geo = get_window_geometry(window_global);
@@ -154,15 +154,15 @@ static void on_desktop_surface_state_change(sb_event_t *event, void *user_data)
     if (state == SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED) {
         fprintf(stderr, " - Maximized: %d\n", event->state_change.value);
         if (event->state_change.value == true) {
-            sb_size_t size;
+            sb_size_i_t size;
             size.width = event->state_change.size.width;
             size.height = event->state_change.size.height;
-            sb_surface_set_size(surface, &size);
+            sb_surface_set_size(surface, size);
         } else {
-            sb_size_t size;
+            sb_size_i_t size;
             size.width = event->state_change.size.width;
             size.height = event->state_change.size.height;
-            sb_surface_set_size(surface, &size);
+            sb_surface_set_size(surface, size);
         }
     }
 }
@@ -175,23 +175,23 @@ static void on_surface_resize(sb_event_t *event, void *user_data)
 
     // Update shadow size.
     sb_rect_t shadow_geometry = get_shadow_geometry(window_global);
-    sb_view_set_geometry(window_global->shadow, &shadow_geometry);
+    sb_view_set_geometry(window_global->shadow, shadow_geometry);
 
     // Update resize size.
     sb_rect_t resize_geometry = get_resize_geometry(window_global);
-    sb_view_set_geometry(window_global->resize, &resize_geometry);
+    sb_view_set_geometry(window_global->resize, resize_geometry);
 
     // Update border size.
     sb_rect_t border_geometry = get_border_geometry(window_global);
-    sb_view_set_geometry(window_global->border, &border_geometry);
+    sb_view_set_geometry(window_global->border, border_geometry);
 
     // Update title bar size.
     sb_rect_t title_bar_geometry = get_title_bar_geometry(window_global);
-    sb_view_set_geometry(window_global->title_bar, &title_bar_geometry);
+    sb_view_set_geometry(window_global->title_bar, title_bar_geometry);
 
     // Update body size.
     sb_rect_t body_geometry = get_body_geometry(window_global);
-    sb_view_set_geometry(window_global->body, &body_geometry);
+    sb_view_set_geometry(window_global->body, body_geometry);
 }
 
 static void on_close_button_press(sb_event_t *event, void *user_data)
@@ -273,11 +273,11 @@ static void init_window(struct window *window)
     button_geometry.position.y = 3;
     button_geometry.size.width = 24;
     button_geometry.size.height = 24;
-    sb_view_t *close_button = sb_view_new(window->title_bar, &button_geometry);
-    color.r = 255;
-    color.g = 0;
-    color.b = 0;
-    sb_view_set_color(close_button, &color);
+    sb_view_t *close_button = sb_view_new(window->title_bar, button_geometry);
+    color.r = 1.0f;
+    color.g = 0.0f;
+    color.b = 0.0f;
+    sb_view_set_color(close_button, color);
     sb_view_add_event_listener(close_button,
         SB_EVENT_TYPE_POINTER_PRESS,
         on_close_button_press,
@@ -290,27 +290,27 @@ static void init_window(struct window *window)
     button_geometry.position.x = button_geometry.position.x + 24 + 3;
     sb_view_t *minimize_button = sb_view_new(window->title_bar,
         &button_geometry);
-    color.r = 255;
-    color.g = 255;
-    color.b = 0;
-    sb_view_set_color(minimize_button, &color);
+    color.r = 1.0f;
+    color.g = 1.0f;
+    color.b = 0.0f;
+    sb_view_set_color(minimize_button, color);
 
     button_geometry.position.x = button_geometry.position.x + 24 + 3;
     sb_view_t *maximize_button = sb_view_new(window->title_bar,
         &button_geometry);
-    color.r = 0;
-    color.g = 255;
-    color.b = 0;
-    sb_view_set_color(maximize_button, &color);
+    color.r = 0.0f;
+    color.g = 1.0f;
+    color.b = 0.0f;
+    sb_view_set_color(maximize_button, color);
 
     // Set body.
     sb_rect_t body_geometry = get_body_geometry(window);
-    window->body = sb_view_new(sb_surface_root_view(surface), &body_geometry);
-    color.r = 255;
-    color.g = 255;
-    color.b = 255;
-    color.a = 255;
-    sb_view_set_color(window->body, &color);
+    window->body = sb_view_new(sb_surface_root_view(surface), body_geometry);
+    color.r = 1.0f;
+    color.g = 1.0f;
+    color.b = 1.0f;
+    color.a = 1.0f;
+    sb_view_set_color(window->body, color);
 }
 
 int main(int argc, char *argv[])
