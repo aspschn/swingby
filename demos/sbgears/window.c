@@ -28,20 +28,20 @@ static void button_on_paint(sb_event_t *event, void *user_data)
     sb_canvas_t *canvas = sb_view_canvas(button);
     sb_paint_t *paint = sb_canvas_paint(canvas);
 
-    const sb_rect_t *src = sb_view_geometry(button);
+    sb_rect_t src = sb_view_geometry(button);
     sb_rect_t rect = {
         .position = { .x = 0.0f, .y = 0.0f },
-        .size = { .width = src->size.width, .height = src->size.height },
+        .size = { .width = src.size.width, .height = src.size.height },
     };
-    paint->fill_color = (sb_color_t){
+    sb_paint_set_fill_color(paint, &(sb_color_t){
         .r = 0.5f, .g = 0.5f, .b = 0.5f, .a = 1.0f
-    };
+    });
     sb_canvas_draw_rect(canvas, &rect, paint);
 
-    paint->stroke_color = (sb_color_t){
+    sb_paint_set_stroke_color(paint, &(sb_color_t){
         .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f
-    };
-    paint->stroke_width = 1.0f;
+    });
+    sb_paint_set_stroke_width(paint, 1.0f);
     {
         sb_point_t p1 = { .x = 4.0f, .y = 4.0f };
         sb_point_t p2 = { .x = 18.0f, .y = 18.0f };
@@ -82,13 +82,13 @@ sbgears_decoration* decoration_new(const sbgears_window *window)
     sb_rect_t border_geometry = {
         .position = { .x = 0.0f, .y = 0.0f },
         .size = {
-            .width = sb_surface_size(surface)->width,
-            .height = sb_surface_size(surface)->height,
+            .width = (float)sb_surface_size(surface).width,
+            .height = (float)sb_surface_size(surface).height,
         },
     };
     sb_color_t border_color = { .r = 0.5f, .g = 0.5f, .b = 0.5f, .a = 1.0f };
-    decoration->border = sb_view_new(window->root_view, &border_geometry);
-    sb_view_set_color(decoration->border, &border_color);
+    decoration->border = sb_view_new(window->root_view, border_geometry);
+    sb_view_set_color(decoration->border, border_color);
     sb_view_set_cursor_shape(decoration->border, SB_CURSOR_SHAPE_NW_RESIZE);
 
     sb_view_add_event_listener(decoration->border,
@@ -109,9 +109,8 @@ sbgears_decoration* decoration_new(const sbgears_window *window)
         },
     };
     sb_color_t title_color = { .r = 0.3f, .g = 0.3f, .b = 0.65f, .a = 1.0f };
-    // TODO: This break this demo. Swingby must patched for it.
-    decoration->title_bar = sb_view_new(decoration->border, &title_geometry);
-    sb_view_set_color(decoration->title_bar, &title_color);
+    decoration->title_bar = sb_view_new(decoration->border, title_geometry);
+    sb_view_set_color(decoration->title_bar, title_color);
 
     // Add events.
     sb_view_add_event_listener(decoration->title_bar,
@@ -124,7 +123,7 @@ sbgears_decoration* decoration_new(const sbgears_window *window)
     button_geometry.position = (sb_point_t){ .x = 5.0f, .y = 5.0f };
     button_geometry.size = (sb_size_t){ .width = 22.0f, .height = 22.0f };
     decoration->close_button = sb_view_new(decoration->title_bar,
-        &button_geometry);
+        button_geometry);
     sb_view_set_render_type(decoration->close_button,
         SB_VIEW_RENDER_TYPE_CANVAS);
     sb_view_add_event_listener(decoration->close_button,
@@ -166,12 +165,12 @@ void window_set_size(sbgears_window *window, const sb_size_i_t *size)
         window->sb_desktop_surface);
 
     // Surface size.
-    sb_size_t new_size = {
-        .width = (float)size->width,
-        .height = (float)size->height,
+    sb_size_i_t new_size = {
+        .width = size->width,
+        .height = size->height,
     };
 
-    sb_surface_set_size(surface, &new_size);
+    sb_surface_set_size(surface, new_size);
 
     //==========================
     // Decoration Geometries
@@ -189,16 +188,16 @@ void window_set_size(sbgears_window *window, const sb_size_i_t *size)
          },
     };
 
-    sb_view_set_geometry(window->decoration->border, &border_geometry);
+    sb_view_set_geometry(window->decoration->border, border_geometry);
 
     // Title bar.
-    sb_rect_t border_rect = *sb_view_geometry(window->decoration->border);
-    sb_rect_t title_bar_rect = *sb_view_geometry(window->decoration->title_bar);
+    sb_rect_t border_rect = sb_view_geometry(window->decoration->border);
+    sb_rect_t title_bar_rect = sb_view_geometry(window->decoration->title_bar);
 
     title_bar_rect.size.width = border_rect.size.width
         - (SBGEARS_WINDOW_BORDER_SIZE * 2);
 
-    sb_view_set_geometry(window->decoration->title_bar, &title_bar_rect);
+    sb_view_set_geometry(window->decoration->title_bar, title_bar_rect);
 
     // Body geometry.
     sb_rect_t body_geometry = {
@@ -213,7 +212,7 @@ void window_set_size(sbgears_window *window, const sb_size_i_t *size)
          },
     };
 
-    sb_view_set_geometry(window->body, &body_geometry);
+    sb_view_set_geometry(window->body, body_geometry);
 }
 
 void window_free(sbgears_window *window)

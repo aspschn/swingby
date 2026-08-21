@@ -331,9 +331,9 @@ static void window_on_resize_request(sb_event_t *event, void *user_data)
     window_set_size(window, &size);
 
     // Body geometry.
-    const sb_rect_t *body_geometry = sb_view_geometry(window->body);
+    sb_rect_t body_geometry = sb_view_geometry(window->body);
 
-    reshape(body_geometry->size.width, body_geometry->size.height);
+    reshape(body_geometry.size.width, body_geometry.size.height);
 }
 
 int
@@ -351,7 +351,7 @@ main(int argc, char *argv[])
     geometry.position.x = 0;
     geometry.position.y = 0;
     geometry.size = initial_size;
-    sb_view_t *view = sb_view_new(window->root_view, &geometry);
+    sb_view_t *view = sb_view_new(window->root_view, geometry);
     sb_view_set_render_type(view, SB_VIEW_RENDER_TYPE_GL);
     sb_view_add_event_listener(view, SB_EVENT_TYPE_DIRECT_RENDER,
         on_render, view);
