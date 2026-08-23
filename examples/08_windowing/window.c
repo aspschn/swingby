@@ -22,11 +22,11 @@ struct window* window_new(sb_size_t size)
         NULL);
 
     sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
-    sb_size_t initial_size;
+    sb_size_i_t initial_size;
     initial_size.width = size.width;
     initial_size.height = size.height;
 
-    sb_surface_set_size(surface, &initial_size);
+    sb_surface_set_size(surface, initial_size);
 
     // Set root view's color as transparent.
     sb_color_t trans;
@@ -34,7 +34,7 @@ struct window* window_new(sb_size_t size)
     trans.g = 0;
     trans.b = 0;
     trans.a = 0;
-    sb_view_set_color(sb_surface_root_view(surface), &trans);
+    sb_view_set_color(sb_surface_root_view(surface), trans);
 
     // Create decoration.
     window->decoration = decoration_new(window);
@@ -52,18 +52,21 @@ struct window* window_new(sb_size_t size)
     sb_rect_t body_geometry;
     body_geometry.size.width = size.width;
     body_geometry.size.height = size.height;
-    window->body = sb_view_new(sb_surface_root_view(surface), &body_geometry);
+    window->body = sb_view_new(sb_surface_root_view(surface), body_geometry);
 
     // Set body geometry.
     body_geometry = window_body_geometry(window);
-    sb_view_set_geometry(window->body, &body_geometry);
+    sb_view_set_geometry(window->body, body_geometry);
 
     // Update initial decoration geometry.
     decoration_set_size(window->decoration, window_whole_size(window));
 
     // Set window surface size.
-    sb_size_t surface_size = window_whole_size(window);
-    sb_surface_set_size(surface, &surface_size);
+    sb_size_i_t surface_size = {
+        .width = window_whole_size(window).width,
+        .height = window_whole_size(window).height,
+    };
+    sb_surface_set_size(surface, surface_size);
 
     return window;
 }
@@ -106,9 +109,9 @@ void on_desktop_surface_resize(sb_event_t *event, void *user_data)
     decoration_set_size(window_global->decoration, surface_size);
 
     // Set body geometry.
-    const sb_rect_t *old_geometry = sb_view_geometry(window_global->body);
+    sb_rect_t old_geometry = sb_view_geometry(window_global->body);
     sb_rect_t new_geometry;
-    new_geometry.position = old_geometry->position;
+    new_geometry.position = old_geometry.position;
     new_geometry.size = decoration_border_size(window_global->decoration);
     new_geometry.size.width -=
         (window_global->decoration->border.thickness * 2);
@@ -116,7 +119,7 @@ void on_desktop_surface_resize(sb_event_t *event, void *user_data)
         (window_global->decoration->border.thickness * 2)
         + window_global->decoration->title_bar->height;
 
-    sb_view_set_geometry(window_global->body, &new_geometry);
+    sb_view_set_geometry(window_global->body, new_geometry);
 
     // Set window frame geometry hint.
     sb_rect_t frame_geometry = window_frame_geometry(window_global);
@@ -220,9 +223,9 @@ bool window_maximized(struct window *window)
 
 sb_size_t window_body_size(struct window *window)
 {
-    const sb_rect_t *geometry = sb_view_geometry(window->body);
+    sb_rect_t geometry = sb_view_geometry(window->body);
 
-    return geometry->size;
+    return geometry.size;
 }
 
 sb_size_t window_frame_size(struct window *window)
@@ -249,7 +252,10 @@ void window_set_surface_size(struct window *window, sb_size_t size)
 {
     sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
 
-    sb_surface_set_size(surface, &size);
+    sb_surface_set_size(surface, (sb_size_i_t){
+        .width = size.width,
+        .height = size.height,
+    });
 }
 
 sb_size_t window_body_size_for(struct window *window, sb_size_t size)

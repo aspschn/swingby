@@ -19,7 +19,7 @@ struct decoration* decoration_new(struct window *window)
     geometry.size.height = 200;
     decoration->view = sb_view_new(
         sb_surface_root_view(window_surface),
-        &geometry
+        geometry
     );
 
     // Transparent the view.
@@ -28,7 +28,7 @@ struct decoration* decoration_new(struct window *window)
     trans.g = 0;
     trans.b = 0;
     trans.a = 0;
-    sb_view_set_color(decoration->view, &trans);
+    sb_view_set_color(decoration->view, trans);
 
     // Initial geometry. Not important.
     sb_rect_t g;
@@ -40,33 +40,33 @@ struct decoration* decoration_new(struct window *window)
     shadow_geometry.position.y = 0.0f;
     shadow_geometry.size.width = 200.0f;
     shadow_geometry.size.height = 200.0f;
-    decoration->shadow.view = sb_view_new(decoration->view, &shadow_geometry);
+    decoration->shadow.view = sb_view_new(decoration->view, shadow_geometry);
     sb_color_t shadow_color;
     shadow_color.r = 0.0f;
     shadow_color.g = 0.0f;
     shadow_color.b = 0.0f;
     shadow_color.a = 0.4f;
-    sb_view_set_color(decoration->shadow.view, &shadow_color);
+    sb_view_set_color(decoration->shadow.view, shadow_color);
 
     // Resize.
     decoration->resize.thickness = 5.0f;
-    decoration->resize.view = sb_view_new(decoration->view, &g);
+    decoration->resize.view = sb_view_new(decoration->view, g);
     sb_color_t resize_color; // Must transparent. Green for debug.
     resize_color.r = 0.0f;
     resize_color.g = 1.0f;
     resize_color.b = 0.0f;
     resize_color.a = 1.0f;
-    sb_view_set_color(decoration->resize.view, &resize_color);
+    sb_view_set_color(decoration->resize.view, resize_color);
 
     // Border.
     decoration->border.thickness = 1.0f;
-    decoration->border.view = sb_view_new(decoration->view, &g);
+    decoration->border.view = sb_view_new(decoration->view, g);
     sb_color_t border_color;
     border_color.r = 0.0f;
     border_color.g = 0.0f;
     border_color.b = 0.0f;
     border_color.a = 1.0f;
-    sb_view_set_color(decoration->border.view, &border_color);
+    sb_view_set_color(decoration->border.view, border_color);
 
     // Title bar.
     decoration->title_bar = title_bar_new(decoration->view);
@@ -91,9 +91,9 @@ sb_size_t decoration_size(struct decoration *decoration, struct window *window)
 
 sb_size_t decoration_border_size(struct decoration *decoration)
 {
-    const sb_rect_t *geometry = sb_view_geometry(decoration->border.view);
+    sb_rect_t geometry = sb_view_geometry(decoration->border.view);
 
-    return geometry->size;
+    return geometry.size;
 }
 
 void decoration_set_size(struct decoration *decoration, sb_size_t size)
@@ -109,14 +109,14 @@ void decoration_set_size(struct decoration *decoration, sb_size_t size)
     decoration_geometry.position.x = 0.0f;
     decoration_geometry.position.y = 0.0f;
     decoration_geometry.size = size;
-    sb_view_set_geometry(decoration->view, &decoration_geometry);
+    sb_view_set_geometry(decoration->view, decoration_geometry);
 
     // Update shadow.
     sb_rect_t shadow_geometry;
     shadow_geometry.position.x = 0.0f;
     shadow_geometry.position.y = 0.0f;
     shadow_geometry.size = size;
-    sb_view_set_geometry(decoration->shadow.view, &shadow_geometry);
+    sb_view_set_geometry(decoration->shadow.view, shadow_geometry);
 
     // Update resize.
     sb_rect_t resize_geometry;
@@ -129,7 +129,7 @@ void decoration_set_size(struct decoration *decoration, sb_size_t size)
     resize_geometry.size.height =
         body_size.height + (decoration->resize.thickness * 2);
     resize_geometry.size.height += decoration->title_bar->height;
-    sb_view_set_geometry(decoration->resize.view, &resize_geometry);
+    sb_view_set_geometry(decoration->resize.view, resize_geometry);
 
     // Update border.
     sb_rect_t border_geometry;
@@ -142,7 +142,7 @@ void decoration_set_size(struct decoration *decoration, sb_size_t size)
     border_geometry.size.height =
         body_size.height + decoration->border.thickness * 2;
     border_geometry.size.height += decoration->title_bar->height;
-    sb_view_set_geometry(decoration->border.view, &border_geometry);
+    sb_view_set_geometry(decoration->border.view, border_geometry);
 
     // Update title bar.
     sb_rect_t title_bar_geometry;

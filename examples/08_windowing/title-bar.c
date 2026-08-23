@@ -17,7 +17,7 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     geometry.size.width = 10.0;
     geometry.size.height = TITLE_BAR_HEIGHT;
 
-    sb_view_t *view = sb_view_new(parent, &geometry);
+    sb_view_t *view = sb_view_new(parent, geometry);
 
     sb_color_t color;
     color.r = 0.7f;
@@ -25,7 +25,7 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     color.b = 0.7f;
     color.a = 1.0f;
 
-    sb_view_set_color(view, &color);
+    sb_view_set_color(view, color);
 
     title_bar->view = view;
 
@@ -34,9 +34,9 @@ struct title_bar* title_bar_new(sb_view_t *parent)
     geometry.position.y = 3;
     geometry.size.width = TITLE_BAR_BUTTON_SIZE;
     geometry.size.height = TITLE_BAR_BUTTON_SIZE;
-    title_bar->close_button = sb_view_new(title_bar->view, &geometry);
+    title_bar->close_button = sb_view_new(title_bar->view, geometry);
     sb_color_t button_color = close_button_color();
-    sb_view_set_color(title_bar->close_button, &button_color);
+    sb_view_set_color(title_bar->close_button, button_color);
 
     sb_view_add_event_listener(title_bar->close_button,
                                SB_EVENT_TYPE_POINTER_PRESS,
@@ -58,19 +58,19 @@ struct title_bar* title_bar_new(sb_view_t *parent)
 
     // Minimize button.
     geometry.position.x += TITLE_BAR_BUTTON_SIZE + 3;
-    title_bar->minimize_button = sb_view_new(title_bar->view, &geometry);
+    title_bar->minimize_button = sb_view_new(title_bar->view, geometry);
     button_color = minimize_button_color();
-    sb_view_set_color(title_bar->minimize_button, &button_color);
+    sb_view_set_color(title_bar->minimize_button, button_color);
 
     // Maximize/Restore button.
     geometry.position.x += TITLE_BAR_BUTTON_SIZE + 3;
     title_bar->maximize_restore_button = sb_view_new(title_bar->view,
-        &geometry);
+        geometry);
     button_color.r = 0.0f;
     button_color.g = 0.8f;
     button_color.b = 0.0f;
     button_color.a = 1.0f;
-    sb_view_set_color(title_bar->maximize_restore_button, &button_color);
+    sb_view_set_color(title_bar->maximize_restore_button, button_color);
 
     title_bar->pressed = false;
 
@@ -92,14 +92,14 @@ void on_close_button_pointer_enter(sb_event_t *event, void *user_data)
 {
     sb_view_t *close_button = (sb_view_t*)event->target;
     sb_color_t color = close_button_color_hover();
-    sb_view_set_color(close_button, &color);
+    sb_view_set_color(close_button, color);
 }
 
 void on_close_button_pointer_leave(sb_event_t *event, void *user_data)
 {
     sb_view_t *close_button = (sb_view_t*)event->target;
     sb_color_t color = close_button_color();
-    sb_view_set_color(close_button, &color);
+    sb_view_set_color(close_button, color);
 }
 
 
@@ -141,5 +141,5 @@ void title_bar_set_geometry(struct title_bar *title_bar, sb_rect_t geometry)
 {
     // Height should not be changed.
     geometry.size.height = title_bar->height;
-    sb_view_set_geometry(title_bar->view, &geometry);
+    sb_view_set_geometry(title_bar->view, geometry);
 }

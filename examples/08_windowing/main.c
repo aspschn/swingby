@@ -67,7 +67,10 @@ static void on_window_state_change(sb_event_t *event, void *user_data)
         // Maximize.
 
         // Set surface size.
-        sb_surface_set_size(surface, &size);
+        sb_surface_set_size(surface, (sb_size_i_t){
+            .width = size.width,
+            .height = size.height,
+        });
         // Set decoration.
         decoration_set_size(window->decoration, size);
         // Set body geometry.
@@ -76,7 +79,7 @@ static void on_window_state_change(sb_event_t *event, void *user_data)
             geometry.position.x = window_body_offset_x(window);
             geometry.position.y = window_body_offset_y(window);
             geometry.size = window_body_size_for(window, size);
-            sb_view_set_geometry(window->body, &geometry);
+            sb_view_set_geometry(window->body, geometry);
         }
         // Set WM geometry.
         sb_rect_t geometry;
@@ -90,7 +93,10 @@ static void on_window_state_change(sb_event_t *event, void *user_data)
 
         // Set surface size.
         sb_size_t surface_size = window_surface_size_for(window, size);
-        sb_surface_set_size(surface, &surface_size);
+        sb_surface_set_size(surface, (sb_size_i_t){
+            .width = surface_size.width,
+            .height = surface_size.height,
+        });
         // Set deoration.
         decoration_set_size(window->decoration, surface_size);
         // Set body geometry.
@@ -99,7 +105,7 @@ static void on_window_state_change(sb_event_t *event, void *user_data)
             geometry.position.x = window_body_offset_x(window);
             geometry.position.y = window_body_offset_y(window);
             geometry.size = window_body_size_for(window, size);
-            sb_view_set_geometry(window->body, &geometry);
+            sb_view_set_geometry(window->body, geometry);
         }
         // Set WM geometry.
         sb_rect_t geometry;
