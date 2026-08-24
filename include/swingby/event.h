@@ -211,6 +211,8 @@ int sb_event_state_change_state(sb_event_t *event);
 
 bool sb_event_state_change_value(sb_event_t *event);
 
+sb_size_i_t sb_event_state_change_size(sb_event_t *event);
+
 //!<================
 //!< Scale Event
 //!<================

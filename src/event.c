@@ -142,6 +142,16 @@ bool sb_event_state_change_value(sb_event_t *event)
     return event->state_change.value;
 }
 
+sb_size_i_t sb_event_state_change_size(sb_event_t *event)
+{
+    sb_size_i_t size = {
+        .width = event->state_change.size.width,
+        .height = event->state_change.size.height,
+    };
+
+    return size;
+}
+
 //!<================
 //!< Scale Event
 //!<================
