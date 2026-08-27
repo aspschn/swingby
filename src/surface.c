@@ -490,6 +490,12 @@ static void _fit_viewport(sb_surface_t *surface)
                 surface->_wl_surface);
         }
 
+        wp_viewport_set_source(surface->wp_viewport,
+            0, 0,
+            wl_fixed_from_double(surface->size.width * surface->scale),
+            wl_fixed_from_double(surface->size.height * surface->scale)
+        );
+
         wp_viewport_set_destination(surface->wp_viewport,
             surface->size.width, surface->size.height);
 
@@ -657,8 +663,8 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
     _fit_viewport(surface);
     if (strcmp(surface->backend, "opengl") == 0) {
         wl_egl_window_resize(surface->_wl_egl_window,
-            surface->size.width * surface->scale,
-            surface->size.height * surface->scale,
+            ceilf(surface->size.width * surface->scale),
+            ceilf(surface->size.height * surface->scale),
             0, 0);
     } else if (strcmp(surface->backend, "raster") == 0) {
         _raster_init(surface);
@@ -738,8 +744,8 @@ void sb_surface_set_scale(sb_surface_t *surface, float scale)
 
     _fit_viewport(surface);
     wl_egl_window_resize(surface->_wl_egl_window,
-        surface->size.width * surface->scale,
-        surface->size.height * surface->scale,
+        ceilf(surface->size.width * surface->scale),
+        ceilf(surface->size.height * surface->scale),
         0, 0);
 
     sb_surface_update(surface);
