@@ -216,10 +216,10 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
     bool clip = sb_view_clip(view);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect.position.x * scale,
-        rect.position.y * scale,
-        rect.size.width * scale,
-        rect.size.height * scale);
+        rect.position.x,
+        rect.position.y,
+        rect.size.width,
+        rect.size.height);
 
     SkPaint paint;
     SkColor4f sk_color_4f;
@@ -276,10 +276,10 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
     }
 
     if (radius != NULL) {
-        float top_left = sb_view_radius_top_left(radius) * scale;
-        float top_right = sb_view_radius_top_right(radius) * scale;
-        float bottom_right = sb_view_radius_bottom_right(radius) * scale;
-        float bottom_left = sb_view_radius_bottom_left(radius) * scale;
+        float top_left = sb_view_radius_top_left(radius);
+        float top_right = sb_view_radius_top_right(radius);
+        float bottom_right = sb_view_radius_bottom_right(radius);
+        float bottom_left = sb_view_radius_bottom_left(radius);
         SkVector radii[] = {
             { top_left, top_left },
             { top_right, top_right },
@@ -290,17 +290,32 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
         SkRRect rrect;
         rrect.setRectRadii(sk_rect, radii);
 
+        // Save for scale.
+        canvas->save();
+        canvas->scale(scale, scale);
+
         canvas->drawRRect(rrect, paint);
         for (int i = 0; i < save_count; ++i) {
             canvas->restore();
         }
+
+        // Restore for scale.
+        canvas->restore();
+
         return;
     }
+
+    // Save for scale.
+    canvas->save();
+    canvas->scale(scale, scale);
 
     canvas->drawRect(sk_rect, paint);
     for (int i = 0; i < save_count; ++i) {
         canvas->restore();
     }
+
+    // Restore for scale.
+    canvas->restore();
 }
 
 void sb_skia_draw_image(sb_skia_renderer_t *renderer,
@@ -360,10 +375,10 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
     // TODO: RRect.
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect.position.x * scale,
-        rect.position.y * scale,
-        rect.size.width * scale,
-        rect.size.height * scale
+        rect.position.x,
+        rect.position.y,
+        rect.size.width,
+        rect.size.height
     );
 
     SkSamplingOptions sampling;
@@ -382,8 +397,16 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
     }
 
     sk_sp<SkImage> sk_image = *(sk_sp<SkImage>*)sb_image_sk_image(image);
+
+    // Set scale.
+    canvas->save();
+    canvas->scale(scale, scale);
+
     canvas->drawImageRect(sk_image,
         sk_rect, sampling, nullptr);
+
+    // Restore scale.
+    canvas->restore();
 }
 
 void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
@@ -518,16 +541,16 @@ void sb_skia_clip_rect(sb_skia_renderer_t *renderer,
     SkCanvas *canvas = _get_canvas(renderer);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect->position.x * scale,
-        rect->position.y * scale,
-        rect->size.width * scale,
-        rect->size.height * scale);
+        rect->position.x,
+        rect->position.y,
+        rect->size.width,
+        rect->size.height);
 
     if (radius != NULL) {
-        float top_left = sb_view_radius_top_left(radius) * scale;
-        float top_right = sb_view_radius_top_right(radius) * scale;
-        float bottom_right = sb_view_radius_bottom_right(radius) * scale;
-        float bottom_left = sb_view_radius_bottom_left(radius) * scale;
+        float top_left = sb_view_radius_top_left(radius);
+        float top_right = sb_view_radius_top_right(radius);
+        float bottom_right = sb_view_radius_bottom_right(radius);
+        float bottom_left = sb_view_radius_bottom_left(radius);
         SkVector radii[] = {
             { top_left, top_left },
             { top_right, top_right },
@@ -540,14 +563,22 @@ void sb_skia_clip_rect(sb_skia_renderer_t *renderer,
 
         // Clip rrect.
         canvas->save();
+
+        canvas->save(); // For scale.
+        canvas->scale(scale, scale);
         canvas->clipRRect(rrect);
+        canvas->restore(); // For scale.
 
         return;
     }
 
     // Clip normal rect.
     canvas->save();
+
+    canvas->save(); // For scale.
+    canvas->scale(scale, scale);
     canvas->clipRect(sk_rect);
+    canvas->restore(); // For scale.
 }
 
 void sb_skia_clip_restore(sb_skia_renderer_t *renderer)

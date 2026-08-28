@@ -434,8 +434,8 @@ void _draw_frame(sb_surface_t *surface)
         sb_skia_gl_renderer_begin(renderer,
             egl,
             surface->_egl_surface,
-            surface->size.width * surface->scale,
-            surface->size.height * surface->scale
+            (int)ceilf(surface->size.width * surface->scale),
+            (int)ceilf(surface->size.height * surface->scale)
         );
 
         sb_color_t clear_color = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -663,9 +663,14 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
     _fit_viewport(surface);
     if (strcmp(surface->backend, "opengl") == 0) {
         wl_egl_window_resize(surface->_wl_egl_window,
-            ceilf(surface->size.width * surface->scale),
-            ceilf(surface->size.height * surface->scale),
+            (int)ceilf(surface->size.width * surface->scale),
+            (int)ceilf(surface->size.height * surface->scale),
             0, 0);
+        sb_log_warn("%dx%d - %dx%d\n",
+            (int)ceilf(surface->size.width * surface->scale),
+            (int)ceilf(surface->size.height * surface->scale),
+            surface->size.width, surface->size.height
+        );
     } else if (strcmp(surface->backend, "raster") == 0) {
         _raster_init(surface);
     }
@@ -744,8 +749,8 @@ void sb_surface_set_scale(sb_surface_t *surface, float scale)
 
     _fit_viewport(surface);
     wl_egl_window_resize(surface->_wl_egl_window,
-        ceilf(surface->size.width * surface->scale),
-        ceilf(surface->size.height * surface->scale),
+        (int)ceilf(surface->size.width * surface->scale),
+        (int)ceilf(surface->size.height * surface->scale),
         0, 0);
 
     sb_surface_update(surface);
