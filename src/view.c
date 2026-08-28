@@ -1,5 +1,7 @@
 #include <swingby/view.h>
 
+#include <math.h>
+
 #include <stdlib.h>
 
 #include <swingby/application.h>
