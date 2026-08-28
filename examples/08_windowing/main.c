@@ -126,6 +126,12 @@ static void on_window_state_change(sb_event_t *event, void *user_data)
     }
 }
 
+static void on_window_preferred_scale(sb_event_t *event, void *user_data)
+{
+    sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
+    sb_surface_set_scale(surface, event->scale.scale);
+}
+
 int main(int argc, char *argv[])
 {
     sb_application_t *app = sb_application_new(argc, argv);
@@ -145,6 +151,7 @@ int main(int argc, char *argv[])
     window_set_on_title_bar_pointer_move(window,
         on_window_title_bar_pointer_move);
     window_set_on_state_change(window, on_window_state_change);
+    window_set_on_preferred_scale(window, on_window_preferred_scale);
 
     window_show(window);
 

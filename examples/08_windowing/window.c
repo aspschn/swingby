@@ -191,6 +191,16 @@ void window_set_on_state_change(struct window *window,
                                           NULL);
 }
 
+void window_set_on_preferred_scale(struct window *window,
+                                   sb_event_listener_t handler)
+{
+    sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
+    sb_surface_add_event_listener(surface,
+                                  SB_EVENT_TYPE_PREFERRED_SCALE,
+                                  handler,
+                                  NULL);
+}
+
 
 static void on_window_resize_press(sb_event_t *event, void *user_data)
 {

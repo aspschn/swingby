@@ -50,6 +50,9 @@ void window_set_on_title_bar_pointer_move(struct window *window,
 void window_set_on_state_change(struct window *window,
                                 sb_event_listener_t handler);
 
+void window_set_on_preferred_scale(struct window *window,
+                                   sb_event_listener_t handler);
+
 //!<==============
 //!< Properties
 //!<==============
