@@ -220,6 +220,17 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
         roundf(rect.position.y * scale),
         roundf(rect.size.width * scale),
         roundf(rect.size.height * scale));
+    { // DEBUG!
+        if (sb_view_parent((sb_view_t*)view) == NULL) {
+            sb_log_warn("sk_rect: %fx%f\n",
+                roundf(rect.size.width * scale),
+                roundf(rect.size.height * scale)
+            );
+            sb_log_warn("physical size: %dx%d\n",
+                sb_view_physical_geometry(view).size.width,
+                sb_view_physical_geometry(view).size.height);
+        }
+    }
     // Root view.
     if (sb_view_parent((sb_view_t*)view) == NULL) {
         sk_rect = SkRect::MakeXYWH(

@@ -57,10 +57,10 @@ void sb_canvas_draw_rect(sb_canvas_t *canvas,
     const float scale = canvas->scale;
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        (rect->position.x + canvas->position.x) * scale,
-        (rect->position.y + canvas->position.y) * scale,
-        rect->size.width * scale,
-        rect->size.height * scale
+        roundf((rect->position.x + canvas->position.x) * scale),
+        roundf((rect->position.y + canvas->position.y) * scale),
+        roundf(rect->size.width * scale),
+        roundf(rect->size.height * scale)
     );
 
     SkPaint sk_paint;

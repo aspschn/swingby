@@ -48,6 +48,13 @@ static void on_preferred_scale(sb_event_t *event, void *user_data)
     sb_surface_set_scale(surface, event->scale.scale);
 }
 
+static void on_resizer_press(sb_event_t *event, void *user_data)
+{
+    sb_desktop_surface_t *toplevel = user_data;
+    sb_desktop_surface_toplevel_resize(toplevel,
+        SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_LEFT);
+}
+
 static void on_paint(sb_event_t *event, void *user_data)
 {
     sb_view_t *view = event->target;
@@ -102,6 +109,18 @@ int main(int argc, char *argv[])
 
     sb_view_add_event_listener(view, SB_EVENT_TYPE_PAINT, on_paint,
         NULL);
+
+    // Resizer.
+    sb_view_t *resizer = sb_view_new(view, (sb_rect_t){
+        .position = { .x = 10.0f, .y = 30.0f },
+        .size = { .width = 20.0f, .height = 30.0f },
+    });
+    sb_view_set_color(resizer, (sb_color_t){
+        .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f
+    });
+    sb_view_add_event_listener(resizer, SB_EVENT_TYPE_POINTER_PRESS,
+        on_resizer_press,
+        (void*)surface);
 
     sb_desktop_surface_show(surface);
 

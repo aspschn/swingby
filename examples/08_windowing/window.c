@@ -89,8 +89,10 @@ void window_maximize(struct window *window)
 
 void on_desktop_surface_resize(sb_event_t *event, void *user_data)
 {
+    /*
     fprintf(stderr, "Desktop surface resize: %fx%f\n",
             event->resize.size.width, event->resize.size.height);
+    */
     // Calculate the whole surface size.
     sb_size_t surface_size;
     surface_size.width =
@@ -206,7 +208,7 @@ static void on_window_resize_press(sb_event_t *event, void *user_data)
 {
     sb_desktop_surface_toplevel_resize(
         window_global->desktop_surface,
-        SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT
+        SB_DESKTOP_SURFACE_TOPLEVEL_RESIZE_EDGE_TOP_LEFT
     );
 }
 
