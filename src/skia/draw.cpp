@@ -216,10 +216,19 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
     bool clip = sb_view_clip(view);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rect.position.x * scale,
-        rect.position.y * scale,
-        rect.size.width * scale,
-        rect.size.height * scale);
+        roundf(rect.position.x * scale),
+        roundf(rect.position.y * scale),
+        roundf(rect.size.width * scale),
+        roundf(rect.size.height * scale));
+    // Root view.
+    if (sb_view_parent((sb_view_t*)view) == NULL) {
+        sk_rect = SkRect::MakeXYWH(
+            ceilf(rect.position.x * scale),
+            ceilf(rect.position.y * scale),
+            ceilf(rect.size.width * scale),
+            ceilf(rect.size.height * scale)
+        );
+    }
 
     SkPaint paint;
     SkColor4f sk_color_4f;

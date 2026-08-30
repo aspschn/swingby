@@ -140,6 +140,24 @@ void sb_view_set_geometry(sb_view_t *view, sb_rect_t geometry)
     sb_surface_update(view->_surface);
 }
 
+sb_rect_i_t sb_view_physical_geometry(const sb_view_t *view)
+{
+    float scale = sb_surface_scale(view->_surface);
+
+    sb_rect_i_t geometry = {
+        .position = {
+            .x = (int)roundf(view->geometry.position.x * scale),
+            .y = (int)roundf(view->geometry.position.y * scale),
+        },
+        .size = {
+            .width = (int)roundf(view->geometry.size.width * scale),
+            .height = (int)roundf(view->geometry.size.height * scale),
+        },
+    };
+
+    return geometry;
+}
+
 sb_color_t sb_view_color(const sb_view_t *view)
 {
     return view->color;

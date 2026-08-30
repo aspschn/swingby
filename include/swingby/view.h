@@ -73,6 +73,9 @@ sb_rect_t sb_view_geometry(const sb_view_t *view);
 SB_EXPORT
 void sb_view_set_geometry(sb_view_t *view, sb_rect_t geometry);
 
+SB_EXPORT
+sb_rect_i_t sb_view_physical_geometry(const sb_view_t *view);
+
 /// \brief Get the color of the view if view's render type is single color.
 SB_EXPORT
 sb_color_t sb_view_color(const sb_view_t *view);
