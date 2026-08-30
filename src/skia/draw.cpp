@@ -215,11 +215,21 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
     const sb_list_t *filters = sb_view_filters(view);
     bool clip = sb_view_clip(view);
 
+    float (*rasterize_function)(float) = roundf;
+    switch (sb_view_fractional_scale_policy(view)) {
+    case SB_FRACTIONAL_SCALE_POLICY_CEIL:
+        rasterize_function = ceilf;
+        break;
+    case SB_FRACTIONAL_SCALE_POLICY_ROUND:
+        rasterize_function = roundf;
+        break;
+    }
+
     SkRect sk_rect = SkRect::MakeXYWH(
-        roundf(rect.position.x * scale),
-        roundf(rect.position.y * scale),
-        roundf(rect.size.width * scale),
-        roundf(rect.size.height * scale));
+        rasterize_function(rect.position.x * scale),
+        rasterize_function(rect.position.y * scale),
+        rasterize_function(rect.size.width * scale),
+        rasterize_function(rect.size.height * scale));
     { // DEBUG!
         if (sb_view_parent((sb_view_t*)view) == NULL) {
             sb_log_warn("sk_rect: %fx%f\n",

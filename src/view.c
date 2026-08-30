@@ -35,6 +35,7 @@ struct sb_view_t {
     /// \brief View's visibility.
     bool visible;
     bool antialiased;
+    enum sb_fractional_scale_policy fractional_scale_policy;
     enum sb_cursor_shape cursor_shape;
     sb_list_t *event_listeners;
 };
@@ -80,6 +81,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, sb_rect_t geometry)
     view->clip = false;
     view->visible = true;
     view->antialiased = false;
+
+    view->fractional_scale_policy = SB_FRACTIONAL_SCALE_POLICY_ROUND;
 
     view->cursor_shape = SB_CURSOR_SHAPE_DEFAULT;
 
@@ -293,6 +296,18 @@ sb_point_t sb_view_absolute_position(const sb_view_t *view)
     }
 
     return pos;
+}
+
+enum sb_fractional_scale_policy sb_view_fractional_scale_policy(
+    const sb_view_t *view)
+{
+    return view->fractional_scale_policy;
+}
+
+void sb_view_set_fractional_scale_policy(sb_view_t *view,
+    enum sb_fractional_scale_policy policy)
+{
+    view->fractional_scale_policy = policy;
 }
 
 void sb_view_set_color(sb_view_t *view, sb_color_t color)

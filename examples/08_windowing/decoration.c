@@ -21,6 +21,8 @@ struct decoration* decoration_new(struct window *window)
         sb_surface_root_view(window_surface),
         geometry
     );
+    sb_view_set_fractional_scale_policy(decoration->view,
+        SB_FRACTIONAL_SCALE_POLICY_CEIL);
 
     // Transparent the view.
     sb_color_t trans;
@@ -47,6 +49,8 @@ struct decoration* decoration_new(struct window *window)
     shadow_color.b = 0.0f;
     shadow_color.a = 0.4f;
     sb_view_set_color(decoration->shadow.view, shadow_color);
+    sb_view_set_fractional_scale_policy(decoration->shadow.view,
+        SB_FRACTIONAL_SCALE_POLICY_CEIL);
 
     // Resize.
     decoration->resize.thickness = 5.0f;
