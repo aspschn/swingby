@@ -1,9 +1,10 @@
-#ifndef _SWINGBY_SWINGBY_H
-#define _SWINGBY_SWINGBY_H
+#ifndef SWINGBY_SWINGBY_H
+#define SWINGBY_SWINGBY_H
 
 #include <swingby/application.h>
 #include <swingby/canvas.h>
 #include <swingby/color.h>
+#include <swingby/common.h>
 #include <swingby/desktop-surface.h>
 #include <swingby/event-dispatcher.h>
 #include <swingby/event.h>
@@ -22,4 +23,4 @@
 #include <swingby/surface.h>
 #include <swingby/view.h>
 
-#endif /* _SWINGBY_SWINGBY_H */
+#endif /* SWINGBY_SWINGBY_H */

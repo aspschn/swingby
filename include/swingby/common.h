@@ -1,5 +1,5 @@
-#ifndef _SWINGBY_COMMON_H
-#define _SWINGBY_COMMON_H
+#ifndef SWINGBY_COMMON_H
+#define SWINGBY_COMMON_H
 
 #include <stdint.h>
 #include <time.h>
@@ -26,8 +26,12 @@ int64_t sb_time_milliseconds_to_nanoseconds(int64_t ms);
 
 struct timespec sb_time_milliseconds_to_timespec(int64_t ms);
 
+float sb_float_ceil(float);
+
+float sb_float_round(float);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
 
-#endif /* _SWINGBY_COMMON_H */
+#endif /* SWINGBY_COMMON_H */

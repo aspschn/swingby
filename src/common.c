@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <time.h>
+#include <math.h>
 
 #include <sys/time.h>
 
@@ -33,6 +34,16 @@ struct timespec sb_time_milliseconds_to_timespec(int64_t ms)
     ts.tv_nsec = (ms % 1000) * 1000000;
 
     return ts;
+}
+
+float sb_float_ceil(float x)
+{
+    return ceilf(x);
+}
+
+float sb_float_round(float x)
+{
+    return roundf(x);
 }
 
 #ifdef __cplusplus
