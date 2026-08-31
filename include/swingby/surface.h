@@ -32,6 +32,8 @@ sb_size_i_t sb_surface_size(const sb_surface_t *surface);
 SB_EXPORT
 void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size);
 
+sb_size_i_t sb_surface_buffer_size(const sb_surface_t *surface);
+
 SB_EXPORT
 sb_view_t* sb_surface_root_view(sb_surface_t *surface);
 

@@ -58,6 +58,7 @@ struct sb_surface_t {
     // sb_egl_context_t *egl_context;
     sb_skia_renderer_t *skia_renderer;
     sb_size_i_t size;
+    sb_size_i_t buffer_size;
     sb_view_t *_root_view;
     float scale;
     bool is_fractional_scale;
@@ -639,6 +640,12 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
     new_geo.size.width = size.width;
     new_geo.size.height = size.height;
     sb_view_set_geometry(surface->_root_view, new_geo);
+    { // DEBUG!
+        sb_log_warn("root_view_size: %fx%f\n",
+            new_geo.size.width,
+            new_geo.size.height
+        );
+    }
 
     // Create event.
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
@@ -656,13 +663,28 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
 
     _fit_viewport(surface);
     if (strcmp(surface->backend, "opengl") == 0) {
+        surface->buffer_size = (sb_size_i_t){
+            .width = (int)ceilf(surface->size.width * surface->scale),
+            .height = (int)ceilf(surface->size.height * surface->scale),
+        };
+        { // DEBUG!
+            sb_log_warn("surface size: %dx%d\n",
+                surface->size.width, surface->size.height);
+            sb_log_warn("buffer size: %dx%d\n",
+                surface->buffer_size.width, surface->buffer_size.height);
+        }
         wl_egl_window_resize(surface->_wl_egl_window,
-            (int)ceilf(surface->size.width * surface->scale),
-            (int)ceilf(surface->size.height * surface->scale),
+            surface->buffer_size.width,
+            surface->buffer_size.height,
             0, 0);
     } else if (strcmp(surface->backend, "raster") == 0) {
         _raster_init(surface);
     }
+}
+
+sb_size_i_t sb_surface_buffer_size(const sb_surface_t *surface)
+{
+    return surface->buffer_size;
 }
 
 sb_view_t* sb_surface_root_view(sb_surface_t *surface)

@@ -148,15 +148,27 @@ void sb_view_set_geometry(sb_view_t *view, sb_rect_t geometry)
 sb_rect_i_t sb_view_physical_geometry(const sb_view_t *view)
 {
     float scale = sb_surface_scale(view->_surface);
+    enum sb_fractional_scale_policy policy =
+        sb_view_fractional_scale_policy(view);
+
+    float (*rasterize_func)(float) = roundf;
+    switch (policy) {
+    case SB_FRACTIONAL_SCALE_POLICY_CEIL:
+        rasterize_func = ceilf;
+        break;
+    case SB_FRACTIONAL_SCALE_POLICY_ROUND:
+        rasterize_func = roundf;
+        break;
+    }
 
     sb_rect_i_t geometry = {
         .position = {
-            .x = (int)roundf(view->geometry.position.x * scale),
-            .y = (int)roundf(view->geometry.position.y * scale),
+            .x = (int)rasterize_func(view->geometry.position.x * scale),
+            .y = (int)rasterize_func(view->geometry.position.y * scale),
         },
         .size = {
-            .width = (int)roundf(view->geometry.size.width * scale),
-            .height = (int)roundf(view->geometry.size.height * scale),
+            .width = (int)rasterize_func(view->geometry.size.width * scale),
+            .height = (int)rasterize_func(view->geometry.size.height * scale),
         },
     };
 
