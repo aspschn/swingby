@@ -16,6 +16,7 @@ add_subdirectory(14_scroll)
 add_subdirectory(15_popup)
 add_subdirectory(16_glyphs)
 add_subdirectory(17_canvas)
+add_subdirectory(18_fractional-scale)
 
 add_custom_target(example)
 
@@ -38,4 +39,5 @@ add_dependencies(example
     example_popup
     example_glyphs
     example_canvas
+    example_fractional-scale
 )

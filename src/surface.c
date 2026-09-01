@@ -600,6 +600,8 @@ sb_surface_t* sb_surface_new()
     geo.size.width = surface->size.width;
     geo.size.height = surface->size.height;
     surface->_root_view = sb_view_new(NULL, geo);
+    sb_view_set_fractional_scale_policy(surface->_root_view,
+        SB_FRACTIONAL_SCALE_POLICY_CEIL);
     sb_view_set_surface(surface->_root_view, surface);
 
     // Focused view.
