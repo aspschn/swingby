@@ -678,12 +678,6 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
             .width = (int)ceilf(surface->size.width * surface->scale),
             .height = (int)ceilf(surface->size.height * surface->scale),
         };
-        { // DEBUG!
-            sb_log_warn("surface size: %dx%d\n",
-                surface->size.width, surface->size.height);
-            sb_log_warn("buffer size: %dx%d\n",
-                surface->buffer_size.width, surface->buffer_size.height);
-        }
         wl_egl_window_resize(surface->_wl_egl_window,
             surface->buffer_size.width,
             surface->buffer_size.height,
