@@ -21,7 +21,7 @@ struct sb_desktop_surface_t {
     struct xdg_surface *_xdg_surface;
     struct xdg_toplevel *_xdg_toplevel;
     struct xdg_popup *xdg_popup;
-    sb_rect_t wm_geometry;
+    sb_rect_i_t wm_geometry;
     struct {
         sb_size_t minimum_size;
         sb_desktop_surface_toplevel_state_flags states;
@@ -316,17 +316,17 @@ sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface)
 }
 
 void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
-                                        const sb_rect_t *geometry)
+                                        sb_rect_i_t geometry)
 {
-    desktop_surface->wm_geometry = *geometry;
+    desktop_surface->wm_geometry = geometry;
 
     if (desktop_surface->_xdg_surface == NULL) {
         sb_log_warn("XDG surface of the desktop surface is NULL!\n");
     }
 
     xdg_surface_set_window_geometry(desktop_surface->_xdg_surface,
-        geometry->position.x, geometry->position.y,
-        geometry->size.width, geometry->size.height);
+        geometry.position.x, geometry.position.y,
+        geometry.size.width, geometry.size.height);
 }
 
 const sb_size_t*
@@ -635,6 +635,11 @@ static void xdg_toplevel_configure_handler(void *data,
             if (desktop_surface->toplevel.initial_resizing == false) {
                 sb_surface_t *surface = desktop_surface->_surface;
 
+                sb_size_t old_size = {
+                    .width = desktop_surface->wm_geometry.size.width,
+                    .height = desktop_surface->wm_geometry.size.height,
+                };
+
                 sb_size_t new_size;
                 new_size.width = width;
                 new_size.height = height;
@@ -644,10 +649,8 @@ static void xdg_toplevel_configure_handler(void *data,
                     SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
                     desktop_surface,
                     SB_EVENT_TYPE_RESIZE_REQUEST);
-                event->resize.old_size.width = sb_surface_size(surface).width;
-                event->resize.old_size.height = sb_surface_size(surface).height;
-                event->resize.size.width = width;
-                event->resize.size.height = height;
+                event->resize.old_size = old_size;
+                event->resize.size = new_size;
 
                 sb_application_post_event(sb_application_instance(), event);
             } else {

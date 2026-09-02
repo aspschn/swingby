@@ -628,9 +628,11 @@ sb_size_i_t sb_surface_size(const sb_surface_t *surface)
 
 void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
 {
-    if (size.width <= 0.0f || size.height <= 0.0f) {
+    if (size.width <= 0 || size.height <= 0) {
         sb_log_warn("Surface size cannot be zero or negative.\n");
     }
+
+    sb_size_i_t old_size = surface->size;
 
     surface->size.width = size.width;
     surface->size.height = size.height;
@@ -653,8 +655,8 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
         (void*)surface,
         SB_EVENT_TYPE_RESIZE);
-    event->resize.old_size.width = surface->size.width;
-    event->resize.old_size.height = surface->size.height;
+    event->resize.old_size.width = old_size.width;
+    event->resize.old_size.height = old_size.height;
     event->resize.size.width = size.width;
     event->resize.size.height = size.height;
 

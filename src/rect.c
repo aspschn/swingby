@@ -56,6 +56,22 @@ bool sb_rect_equals(const sb_rect_t *rect, const sb_rect_t *other)
     return false;
 }
 
+sb_rect_t sb_rect_i_to_rect(sb_rect_i_t rect)
+{
+    sb_rect_t ret = {
+        .position = {
+            .x = (float)rect.position.x,
+            .y = (float)rect.position.y,
+        },
+        .size = {
+            .width = (float)rect.size.width,
+            .height = (float)rect.size.height,
+        },
+    };
+
+    return ret;
+}
+
 #ifdef __cplusplus
 }
 #endif

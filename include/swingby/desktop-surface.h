@@ -93,7 +93,7 @@ sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface);
 /// hint to the compositor how to magnet the windows each other.
 SB_EXPORT
 void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
-                                        const sb_rect_t *geometry);
+                                        sb_rect_i_t geometry);
 
 const sb_size_t*
 sb_desktop_surface_toplevel_minimum_size(sb_desktop_surface_t *desktop_surface);

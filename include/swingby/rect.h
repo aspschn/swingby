@@ -48,6 +48,8 @@ bool sb_rect_intersects(const sb_rect_t *rect, const sb_rect_t *other);
 SB_EXPORT
 bool sb_rect_equals(const sb_rect_t *rect, const sb_rect_t *other);
 
+sb_rect_t sb_rect_i_to_rect(sb_rect_i_t rect);
+
 #ifdef __cplusplus
 }
 #endif
