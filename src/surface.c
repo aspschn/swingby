@@ -491,6 +491,11 @@ static void _fit_viewport(sb_surface_t *surface)
                 surface->_wl_surface);
         }
 
+        wp_viewport_set_source(surface->wp_viewport,
+            0, 0,
+            wl_fixed_from_double(surface->size.width * surface->scale),
+            wl_fixed_from_double(surface->size.height * surface->scale));
+
         wp_viewport_set_destination(surface->wp_viewport,
             surface->size.width, surface->size.height);
 
@@ -521,6 +526,8 @@ sb_surface_t* sb_surface_new()
     surface->gl_view.texture = 0;
     surface->wp_fractional_scale_v1 = NULL;
     surface->wp_viewport = NULL;
+    surface->buffer_size.width = 200;
+    surface->buffer_size.height = 200;
 
     sb_application_t *app = sb_application_instance();
 
