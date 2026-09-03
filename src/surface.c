@@ -435,8 +435,8 @@ void _draw_frame(sb_surface_t *surface)
         sb_skia_gl_renderer_begin(renderer,
             egl,
             surface->_egl_surface,
-            (int)ceilf(surface->size.width * surface->scale),
-            (int)ceilf(surface->size.height * surface->scale)
+            surface->buffer_size.width,
+            surface->buffer_size.height
         );
 
         sb_color_t clear_color = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -765,8 +765,8 @@ void sb_surface_set_scale(sb_surface_t *surface, float scale)
 
     _fit_viewport(surface);
     wl_egl_window_resize(surface->_wl_egl_window,
-        (int)ceilf(surface->size.width * surface->scale),
-        (int)ceilf(surface->size.height * surface->scale),
+        surface->buffer_size.width,
+        surface->buffer_size.height,
         0, 0);
 
     sb_surface_update(surface);
