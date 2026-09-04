@@ -26,10 +26,37 @@ static void do_resize(sb_desktop_surface_t *toplevel, sb_size_t size)
     float scale = sb_surface_scale(surface);
     const sb_view_t *root_view = sb_surface_root_view(surface);
 
+    // WM geometry.
+    sb_rect_i_t wm_geo = {
+        .position = { .x = 1, .y = 1 },
+        .size = {
+            .width = size.width,
+            .height = size.height,
+        },
+    };
+    // Surface size.
+    sb_size_i_t surface_size = {
+        .width = size.width + 2,
+        .height = size.height + 2,
+    };
+
     float remains = size.width * scale - (uint32_t)(size.width * scale);
     if (remains != 0.0f) {
-        return;
+        fprintf(stderr, "remains: %.2f\n", remains);
+        if (remains == 0.25f) {
+            wm_geo.size.width += 1;
+            surface_size.width += 2;
+        } else if (remains == 0.5f) {
+            wm_geo.size.width += 2;
+            surface_size.width += 2;
+        } else if (remains == 0.75f) {
+            wm_geo.size.width += 1;
+            surface_size.width += 1;
+        } else {
+            return;
+        }
     }
+
     sb_view_set_geometry(inner_global, (sb_rect_t){
         .position = { .x = 1.0f, .y = 1.0f },
         .size = {
@@ -38,19 +65,9 @@ static void do_resize(sb_desktop_surface_t *toplevel, sb_size_t size)
         },
     });
 
-    sb_rect_i_t wm_geo = {
-        .position = { .x = 1, .y = 1 },
-        .size = {
-            .width = size.width,
-            .height = size.height,
-        },
-    };
-
     sb_desktop_surface_set_wm_geometry(toplevel, wm_geo);
-    sb_surface_set_size(surface, (sb_size_i_t){
-        .width = size.width + 2,
-        .height = size.height + 2,
-    });
+
+    sb_surface_set_size(surface, surface_size);
     {
         print_rect("resize request",
             (sb_rect_t){
@@ -89,7 +106,7 @@ static void do_resize(sb_desktop_surface_t *toplevel, sb_size_t size)
 
         print_rect_i("wm geometry", wm_geo);
 
-        print_rect("inner view", sb_view_geometry(inner_global));
+        // print_rect("inner view", sb_view_geometry(inner_global));
 
         fprintf(stderr, "\n");
     }
