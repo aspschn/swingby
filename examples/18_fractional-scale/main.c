@@ -3,7 +3,6 @@
 #include <swingby/swingby.h>
 
 static sb_view_t *inner_global = NULL;
-static sb_view_t *wm_hint_g = NULL;
 
 static void print_rect(const char *name, sb_rect_t rect)
 {
@@ -27,6 +26,10 @@ static void do_resize(sb_desktop_surface_t *toplevel, sb_size_t size)
     float scale = sb_surface_scale(surface);
     const sb_view_t *root_view = sb_surface_root_view(surface);
 
+    float remains = size.width * scale - (uint32_t)(size.width * scale);
+    if (remains != 0.0f) {
+        return;
+    }
     sb_view_set_geometry(inner_global, (sb_rect_t){
         .position = { .x = 1.0f, .y = 1.0f },
         .size = {
@@ -48,7 +51,6 @@ static void do_resize(sb_desktop_surface_t *toplevel, sb_size_t size)
         .width = size.width + 2,
         .height = size.height + 2,
     });
-    sb_view_set_geometry(wm_hint_g, sb_rect_i_to_rect(wm_geo));
     {
         print_rect("resize request",
             (sb_rect_t){
@@ -64,6 +66,17 @@ static void do_resize(sb_desktop_surface_t *toplevel, sb_size_t size)
 
         print_rect("root view logical",
             sb_view_geometry(root_view));
+
+        print_rect("root view scaled", (sb_rect_t){
+            .position = {
+                .x = sb_view_geometry(root_view).position.x * scale,
+                .y = sb_view_geometry(root_view).position.y * scale,
+            },
+            .size = {
+                .width = sb_view_geometry(root_view).size.width * scale,
+                .height = sb_view_geometry(root_view).size.height * scale,
+            },
+        });
 
         print_rect_i("root view physical",
             sb_view_physical_geometry(root_view));
@@ -132,6 +145,12 @@ int main(int argc, char *argv[])
     sb_surface_t *surface = sb_desktop_surface_surface(toplevel);
     const sb_view_t *root_view = sb_surface_root_view(surface);
 
+    // Set surface initial size.
+    sb_surface_set_size(surface, (sb_size_i_t){
+        .width = 200 + 2,
+        .height = 200 + 2,
+    });
+
     sb_desktop_surface_add_event_listener(
         toplevel,
         SB_EVENT_TYPE_RESIZE_REQUEST,
@@ -145,21 +164,8 @@ int main(int argc, char *argv[])
         on_preferred_scale,
         NULL);
 
-    sb_rect_t geometry = { { 0.0f, 0.0f }, { 200.0f, 200.0f } };
-
     // Clip true.
     // sb_view_set_clip(view, true);
-
-    // WM geometry hint.
-    geometry.position.x = 1.0f;
-    geometry.position.y = 1.0f;
-    geometry.size.width = 200.0f;
-    geometry.size.height = 200.0f;
-    sb_view_t *wm_hint = sb_view_new(sb_surface_root_view(surface), geometry);
-    sb_view_set_color(wm_hint, (sb_color_t){
-        .r = 0.5f, .g = 0.0f, .b = 0.0f, .a = 0.5f
-    });
-    wm_hint_g = wm_hint;
 
     // Inner rect.
     sb_view_t *inner = sb_view_new(root_view, (sb_rect_t){
@@ -167,7 +173,7 @@ int main(int argc, char *argv[])
         .size = { .width = 198.0f, .height = 198.0f },
     });
     sb_view_set_color(inner, (sb_color_t){
-        .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 0.5f
+        .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 0.0f
     });
     inner_global = inner;
 
@@ -186,7 +192,7 @@ int main(int argc, char *argv[])
     // Only WM geometry.
     sb_view_t *wm_button = sb_view_new(root_view, (sb_rect_t){
         .position = { .x = 40.0f, .y = 40.0f },
-        .size = { .width = 10.0f, .height = 10.0f },
+        .size = { .width = 2.0f, .height = 10.0f },
     });
     sb_view_set_color(wm_button, (sb_color_t){
         .r = 1.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f
@@ -198,8 +204,13 @@ int main(int argc, char *argv[])
     sb_desktop_surface_show(toplevel);
 
     // Minimum size.
-    sb_size_t min = { .width = 102.0f, .height = 102.0f };
+    sb_size_t min = { .width = 200.0f, .height = 200.0f };
     sb_desktop_surface_toplevel_set_minimum_size(toplevel, &min);
+
+    sb_desktop_surface_set_wm_geometry(toplevel, (sb_rect_i_t){
+        .position = { .x = 1, .y = 1 },
+        .size = { .width = 200, .height = 200 },
+    });
 
     sb_desktop_surface_toplevel_set_title(toplevel,
         "18-fractional-scale — Swingby Example");
