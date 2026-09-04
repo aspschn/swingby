@@ -58,7 +58,6 @@ struct sb_surface_t {
     // sb_egl_context_t *egl_context;
     sb_skia_renderer_t *skia_renderer;
     sb_size_i_t size;
-    sb_size_i_t buffer_size;
     sb_view_t *_root_view;
     float scale;
     bool is_fractional_scale;
@@ -432,11 +431,12 @@ void _draw_frame(sb_surface_t *surface)
             sb_skia_renderer_current(surface->skia_renderer);
         sb_egl_t *egl = sb_application_egl(app);
 
+        sb_size_i_t buffer_size = sb_surface_buffer_size(surface);
         sb_skia_gl_renderer_begin(renderer,
             egl,
             surface->_egl_surface,
-            surface->buffer_size.width,
-            surface->buffer_size.height
+            buffer_size.width,
+            buffer_size.height
         );
 
         sb_color_t clear_color = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -491,10 +491,10 @@ static void _fit_viewport(sb_surface_t *surface)
                 surface->_wl_surface);
         }
 
-        wp_viewport_set_source(surface->wp_viewport,
-            0, 0,
-            wl_fixed_from_double(surface->size.width * surface->scale),
-            wl_fixed_from_double(surface->size.height * surface->scale));
+        // wp_viewport_set_source(surface->wp_viewport,
+        //     0, 0,
+        //     wl_fixed_from_double(surface->size.width * surface->scale),
+        //     wl_fixed_from_double(surface->size.height * surface->scale));
 
         wp_viewport_set_destination(surface->wp_viewport,
             surface->size.width, surface->size.height);
@@ -526,8 +526,6 @@ sb_surface_t* sb_surface_new()
     surface->gl_view.texture = 0;
     surface->wp_fractional_scale_v1 = NULL;
     surface->wp_viewport = NULL;
-    surface->buffer_size.width = 200;
-    surface->buffer_size.height = 200;
 
     sb_application_t *app = sb_application_instance();
 
@@ -601,11 +599,8 @@ sb_surface_t* sb_surface_new()
     }
 
     // Root view.
-    sb_rect_t geo;
-    geo.position.x = 0.0f;
-    geo.position.y = 0.0f;
-    geo.size.width = surface->size.width;
-    geo.size.height = surface->size.height;
+    sb_rect_t geo = sb_rect_make(0.0f, 0.0f,
+        (float)surface->size.width, (float)surface->size.height);
     surface->_root_view = sb_view_new(NULL, geo);
     sb_view_set_fractional_scale_policy(surface->_root_view,
         SB_FRACTIONAL_SCALE_POLICY_CEIL);
@@ -645,18 +640,8 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
     surface->size.height = size.height;
 
     // Set the root view's size.
-    sb_rect_t new_geo;
-    new_geo.position.x = 0;
-    new_geo.position.y = 0;
-    new_geo.size.width = size.width;
-    new_geo.size.height = size.height;
+    sb_rect_t new_geo = sb_rect_make(0.0f, 0.0f, size.width, size.height);
     sb_view_set_geometry(surface->_root_view, new_geo);
-    { // DEBUG!
-        sb_log_warn("root_view_size: %fx%f\n",
-            new_geo.size.width,
-            new_geo.size.height
-        );
-    }
 
     // Create event.
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
@@ -674,13 +659,10 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
 
     _fit_viewport(surface);
     if (strcmp(surface->backend, "opengl") == 0) {
-        surface->buffer_size = (sb_size_i_t){
-            .width = (int)ceilf(surface->size.width * surface->scale),
-            .height = (int)ceilf(surface->size.height * surface->scale),
-        };
+        sb_size_i_t buffer_size = sb_surface_buffer_size(surface);
         wl_egl_window_resize(surface->_wl_egl_window,
-            surface->buffer_size.width,
-            surface->buffer_size.height,
+            buffer_size.width,
+            buffer_size.height,
             0, 0);
     } else if (strcmp(surface->backend, "raster") == 0) {
         _raster_init(surface);
@@ -689,7 +671,11 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
 
 sb_size_i_t sb_surface_buffer_size(const sb_surface_t *surface)
 {
-    return surface->buffer_size;
+    sb_size_i_t size = {
+        .width = (int)roundf(surface->size.width * surface->scale),
+        .height = (int)roundf(surface->size.height * surface->scale),
+    };
+    return size;
 }
 
 sb_view_t* sb_surface_root_view(sb_surface_t *surface)
@@ -764,9 +750,11 @@ void sb_surface_set_scale(sb_surface_t *surface, float scale)
     }
 
     _fit_viewport(surface);
+
+    sb_size_i_t buffer_size = sb_surface_buffer_size(surface);
     wl_egl_window_resize(surface->_wl_egl_window,
-        surface->buffer_size.width,
-        surface->buffer_size.height,
+        buffer_size.width,
+        buffer_size.height,
         0, 0);
 
     sb_surface_update(surface);
