@@ -39,6 +39,8 @@ typedef struct sb_rect_i_t {
 #endif
 } sb_rect_i_t;
 
+sb_rect_t sb_rect_make(float x, float y, float width, float height);
+
 SB_EXPORT
 bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point);
 
@@ -47,6 +49,9 @@ bool sb_rect_intersects(const sb_rect_t *rect, const sb_rect_t *other);
 
 SB_EXPORT
 bool sb_rect_equals(const sb_rect_t *rect, const sb_rect_t *other);
+
+
+sb_rect_i_t sb_rect_i_make(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
 sb_rect_t sb_rect_i_to_rect(sb_rect_i_t rect);
 

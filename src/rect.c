@@ -4,6 +4,17 @@
 extern "C" {
 #endif
 
+sb_rect_t sb_rect_make(float x, float y, float width, float height)
+{
+    sb_rect_t ret;
+    ret.position.x = x;
+    ret.position.y = y;
+    ret.size.width = width;
+    ret.size.height = height;
+
+    return ret;
+}
+
 bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point)
 {
     // Check top-left.
@@ -54,6 +65,17 @@ bool sb_rect_equals(const sb_rect_t *rect, const sb_rect_t *other)
     }
 
     return false;
+}
+
+sb_rect_i_t sb_rect_i_make(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+{
+    sb_rect_i_t ret;
+    ret.position.x = x;
+    ret.position.y = y;
+    ret.size.width = w;
+    ret.size.height = h;
+
+    return ret;
 }
 
 sb_rect_t sb_rect_i_to_rect(sb_rect_i_t rect)
