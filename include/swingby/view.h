@@ -42,11 +42,6 @@ enum sb_view_render_type {
     SB_VIEW_RENDER_TYPE_GL,
 };
 
-enum sb_fractional_scale_policy {
-    SB_FRACTIONAL_SCALE_POLICY_ROUND,
-    SB_FRACTIONAL_SCALE_POLICY_CEIL,
-};
-
 /// \struct sb_view_t
 /// \brief A minimum render unit.
 typedef struct sb_view_t sb_view_t;
@@ -179,11 +174,21 @@ sb_view_t* sb_view_remove_child(sb_view_t *view, sb_view_t *child);
 
 sb_point_t sb_view_absolute_position(const sb_view_t *view);
 
-enum sb_fractional_scale_policy sb_view_fractional_scale_policy(
+enum sb_rounding_policy sb_view_fractional_scale_policy(
     const sb_view_t *view);
 
 void sb_view_set_fractional_scale_policy(sb_view_t *view,
-    enum sb_fractional_scale_policy policy);
+    enum sb_rounding_policy policy);
+
+enum sb_rounding_policy sb_view_position_rounding_policy(const sb_view_t *view);
+
+void sb_view_set_position_rounding_policy(sb_view_t *view,
+                                          enum sb_rounding_policy policy);
+
+enum sb_rounding_policy sb_view_size_rounding_policy(const sb_view_t *view);
+
+void sb_view_set_size_rounding_policy(sb_view_t *view,
+                                      enum sb_rounding_policy policy);
 
 void sb_view_free(sb_view_t *view);
 

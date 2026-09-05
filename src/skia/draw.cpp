@@ -33,6 +33,7 @@
 #include <swingby/log.h>
 #include <swingby/bench.h>
 
+#include "../helpers/shared.h"
 #include "../impl/image-impl.hpp"
 
 #ifdef __cplusplus
@@ -215,21 +216,17 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
     const sb_list_t *filters = sb_view_filters(view);
     bool clip = sb_view_clip(view);
 
-    float (*rasterize_function)(float) = roundf;
-    switch (sb_view_fractional_scale_policy(view)) {
-    case SB_FRACTIONAL_SCALE_POLICY_CEIL:
-        rasterize_function = ceilf;
-        break;
-    case SB_FRACTIONAL_SCALE_POLICY_ROUND:
-        rasterize_function = roundf;
-        break;
-    }
+    enum sb_rounding_policy p_policy = sb_view_position_rounding_policy(view);
+    enum sb_rounding_policy s_policy = sb_view_size_rounding_policy(view);
+
+    float (*pos_rounding_f)(float) = _rounding_function(p_policy);
+    float (*size_rounding_f)(float) = _rounding_function(s_policy);
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rasterize_function(rect.position.x * scale),
-        rasterize_function(rect.position.y * scale),
-        rasterize_function(rect.size.width * scale),
-        rasterize_function(rect.size.height * scale));
+        pos_rounding_f(rect.position.x * scale),
+        pos_rounding_f(rect.position.y * scale),
+        size_rounding_f(rect.size.width * scale),
+        size_rounding_f(rect.size.height * scale));
 
     // Root view.
     if (sb_view_parent((sb_view_t*)view) == NULL) {

@@ -35,7 +35,10 @@ struct sb_view_t {
     /// \brief View's visibility.
     bool visible;
     bool antialiased;
-    enum sb_fractional_scale_policy fractional_scale_policy;
+    struct {
+        enum sb_rounding_policy position;
+        enum sb_rounding_policy size;
+    } rounding_policy;
     enum sb_cursor_shape cursor_shape;
     sb_list_t *event_listeners;
 };
@@ -82,7 +85,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, sb_rect_t geometry)
     view->visible = true;
     view->antialiased = false;
 
-    view->fractional_scale_policy = SB_FRACTIONAL_SCALE_POLICY_ROUND;
+    view->rounding_policy.position = SB_ROUNDING_POLICY_ROUND;
+    view->rounding_policy.size = SB_ROUNDING_POLICY_ROUND;
 
     view->cursor_shape = SB_CURSOR_SHAPE_DEFAULT;
 
@@ -148,27 +152,20 @@ void sb_view_set_geometry(sb_view_t *view, sb_rect_t geometry)
 sb_rect_i_t sb_view_physical_geometry(const sb_view_t *view)
 {
     float scale = sb_surface_scale(view->_surface);
-    enum sb_fractional_scale_policy policy =
-        sb_view_fractional_scale_policy(view);
+    enum sb_rounding_policy p_policy = sb_view_position_rounding_policy(view);
+    enum sb_rounding_policy s_policy = sb_view_size_rounding_policy(view);
 
-    float (*rasterize_func)(float) = roundf;
-    switch (policy) {
-    case SB_FRACTIONAL_SCALE_POLICY_CEIL:
-        rasterize_func = ceilf;
-        break;
-    case SB_FRACTIONAL_SCALE_POLICY_ROUND:
-        rasterize_func = roundf;
-        break;
-    }
+    float (*pos_rounding_f)(float) = _rounding_function(p_policy);
+    float (*size_rounding_f)(float) = _rounding_function(s_policy);
 
     sb_rect_i_t geometry = {
         .position = {
-            .x = (int)rasterize_func(view->geometry.position.x * scale),
-            .y = (int)rasterize_func(view->geometry.position.y * scale),
+            .x = (int)pos_rounding_f(view->geometry.position.x * scale),
+            .y = (int)pos_rounding_f(view->geometry.position.y * scale),
         },
         .size = {
-            .width = (int)rasterize_func(view->geometry.size.width * scale),
-            .height = (int)rasterize_func(view->geometry.size.height * scale),
+            .width = (int)size_rounding_f(view->geometry.size.width * scale),
+            .height = (int)size_rounding_f(view->geometry.size.height * scale),
         },
     };
 
@@ -310,16 +307,39 @@ sb_point_t sb_view_absolute_position(const sb_view_t *view)
     return pos;
 }
 
-enum sb_fractional_scale_policy sb_view_fractional_scale_policy(
+enum sb_rounding_policy sb_view_fractional_scale_policy(
     const sb_view_t *view)
 {
-    return view->fractional_scale_policy;
+    return view->rounding_policy.size;
 }
 
 void sb_view_set_fractional_scale_policy(sb_view_t *view,
-    enum sb_fractional_scale_policy policy)
+    enum sb_rounding_policy policy)
 {
-    view->fractional_scale_policy = policy;
+    view->rounding_policy.position = policy;
+    view->rounding_policy.size = policy;
+}
+
+enum sb_rounding_policy sb_view_position_rounding_policy(const sb_view_t *view)
+{
+    return view->rounding_policy.position;
+}
+
+void sb_view_set_position_rounding_policy(sb_view_t *view,
+                                          enum sb_rounding_policy policy)
+{
+    view->rounding_policy.position = policy;
+}
+
+enum sb_rounding_policy sb_view_size_rounding_policy(const sb_view_t *view)
+{
+    return view->rounding_policy.size;
+}
+
+void sb_view_set_size_rounding_policy(sb_view_t *view,
+                                      enum sb_rounding_policy policy)
+{
+    view->rounding_policy.size = policy;
 }
 
 void sb_view_set_color(sb_view_t *view, sb_color_t color)

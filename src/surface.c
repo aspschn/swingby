@@ -602,8 +602,10 @@ sb_surface_t* sb_surface_new()
     sb_rect_t geo = sb_rect_make(0.0f, 0.0f,
         (float)surface->size.width, (float)surface->size.height);
     surface->_root_view = sb_view_new(NULL, geo);
-    sb_view_set_fractional_scale_policy(surface->_root_view,
-        SB_FRACTIONAL_SCALE_POLICY_CEIL);
+    sb_view_set_position_rounding_policy(surface->_root_view,
+        SB_ROUNDING_POLICY_ROUND);
+    sb_view_set_size_rounding_policy(surface->_root_view,
+        SB_ROUNDING_POLICY_CEIL);
     sb_view_set_surface(surface->_root_view, surface);
 
     // Focused view.

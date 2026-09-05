@@ -20,6 +20,12 @@
 extern "C" {
 #endif // __cplusplus
 
+enum sb_rounding_policy {
+    SB_ROUNDING_POLICY_ROUND,
+    SB_ROUNDING_POLICY_CEIL,
+    SB_ROUNDING_POLICY_FLOOR,
+};
+
 uint64_t sb_time_now_milliseconds();
 
 int64_t sb_time_milliseconds_to_nanoseconds(int64_t ms);

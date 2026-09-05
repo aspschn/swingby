@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include <swingby/common.h>
 #include <swingby/list.h>
 #include <swingby/event.h>
 #include <swingby/view.h>
@@ -38,4 +39,16 @@ sb_view_t* _find_most_child(sb_view_t *view,
     position->y = position->y - sb_view_geometry(child).position.y;
 
     return _find_most_child(child, position);
+}
+
+rounding_function_t _rounding_function(enum sb_rounding_policy policy)
+{
+    switch (policy) {
+    case SB_ROUNDING_POLICY_ROUND:
+        return sb_float_round;
+    case SB_ROUNDING_POLICY_CEIL:
+        return sb_float_ceil;
+    default:
+        return sb_float_round;  // TODO: Cover all cases.
+    }
 }
