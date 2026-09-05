@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
         .size = { .width = 198.0f, .height = 198.0f },
     });
     sb_view_set_color(inner, (sb_color_t){
-        .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 0.0f
+        .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 0.5f
     });
     inner_global = inner;
 
