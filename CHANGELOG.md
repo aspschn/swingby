@@ -8,6 +8,8 @@
 
 - Integer-version value types changed to signed integer.
 
+- `sb_rect_t::pos` now removed.
+
 
 ## v0.9.0-rc.1
 
