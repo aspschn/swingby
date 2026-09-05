@@ -12,31 +12,13 @@ extern "C" {
 #endif
 
 typedef struct sb_rect_t {
-#ifndef __swift__
-    union {
-        /// Represent the x, y position.
-        sb_point_t position;
-        /// \deprecated
-        /// x, y position. Use `position` instead.
-        __attribute__((deprecated("use position instead."))) sb_point_t pos;
-    };
-#else
     sb_point_t position;
-#endif
-    /// Size.
     sb_size_t size;
 } sb_rect_t;
 
 typedef struct sb_rect_i_t {
-#ifndef __swift__
-    union {
-        sb_point_i_t position;
-        __attribute__((deprecated("use position instead."))) sb_point_i_t pos;
-    };
-    sb_size_i_t size;
-#else
     sb_point_i_t position;
-#endif
+    sb_size_i_t size;
 } sb_rect_i_t;
 
 sb_rect_t sb_rect_make(float x, float y, float width, float height);
