@@ -78,7 +78,7 @@ void window_show(struct window *window)
     // Window frame geometry hint.
     sb_rect_t frame_geometry = window_frame_geometry(window);
     sb_desktop_surface_set_wm_geometry(window->desktop_surface,
-        &frame_geometry);
+        sb_rect_to_rect_i(frame_geometry));
 }
 
 void window_maximize(struct window *window)
@@ -126,7 +126,7 @@ void on_desktop_surface_resize(sb_event_t *event, void *user_data)
     // Set window frame geometry hint.
     sb_rect_t frame_geometry = window_frame_geometry(window_global);
     sb_desktop_surface_set_wm_geometry(window_global->desktop_surface,
-                                       &frame_geometry);
+                                       sb_rect_to_rect_i(frame_geometry));
 }
 
 void window_set_on_close_button_click(struct window* window,

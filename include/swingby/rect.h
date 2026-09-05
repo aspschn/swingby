@@ -23,6 +23,8 @@ typedef struct sb_rect_i_t {
 
 sb_rect_t sb_rect_make(float x, float y, float width, float height);
 
+sb_rect_i_t sb_rect_to_rect_i(sb_rect_t rect);
+
 SB_EXPORT
 bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point);
 

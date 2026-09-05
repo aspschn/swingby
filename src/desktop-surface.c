@@ -318,6 +318,12 @@ sb_desktop_surface_toplevel_states(sb_desktop_surface_t *desktop_surface)
 void sb_desktop_surface_set_wm_geometry(sb_desktop_surface_t *desktop_surface,
                                         sb_rect_i_t geometry)
 {
+    if (geometry.size.width <= 0 || geometry.size.height <= 0) {
+        sb_log_warn("sb_desktop_surface_set_wm_geometry - "
+            "values can't be zero or negative: %dx%d\n",
+            geometry.size.width, geometry.size.height);
+        return;
+    }
     desktop_surface->wm_geometry = geometry;
 
     if (desktop_surface->_xdg_surface == NULL) {

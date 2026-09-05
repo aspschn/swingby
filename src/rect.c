@@ -15,6 +15,17 @@ sb_rect_t sb_rect_make(float x, float y, float width, float height)
     return ret;
 }
 
+sb_rect_i_t sb_rect_to_rect_i(sb_rect_t rect)
+{
+    sb_rect_i_t ret;
+    ret.position.x = (uint32_t)rect.position.x;
+    ret.position.y = (uint32_t)rect.position.y;
+    ret.size.width = (uint32_t)rect.size.width;
+    ret.size.height = (uint32_t)rect.size.height;
+
+    return ret;
+}
+
 bool sb_rect_contains_point(sb_rect_t *rect, const sb_point_t *point)
 {
     // Check top-left.

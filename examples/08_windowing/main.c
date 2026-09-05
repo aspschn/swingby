@@ -86,7 +86,8 @@ static void on_window_state_change(sb_event_t *event, void *user_data)
         geometry.size = event->state_change.size;
         geometry.position.x = 0;
         geometry.position.y = 0;
-        sb_desktop_surface_set_wm_geometry(window->desktop_surface, &geometry);
+        sb_desktop_surface_set_wm_geometry(window->desktop_surface,
+            sb_rect_to_rect_i(geometry));
     } else if (state == SB_DESKTOP_SURFACE_TOPLEVEL_STATE_MAXIMIZED &&
         value == false) {
         // Restore.
@@ -112,7 +113,8 @@ static void on_window_state_change(sb_event_t *event, void *user_data)
         geometry.size = event->state_change.size;
         geometry.position.x = window_decoration_border_offset(window);
         geometry.position.y = window_decoration_border_offset(window);
-        sb_desktop_surface_set_wm_geometry(window->desktop_surface, &geometry);
+        sb_desktop_surface_set_wm_geometry(window->desktop_surface,
+            sb_rect_to_rect_i(geometry));
     } else if (state == SB_DESKTOP_SURFACE_TOPLEVEL_STATE_ACTIVATED &&
         value == true) {
         // Activated.
