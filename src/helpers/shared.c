@@ -48,6 +48,8 @@ rounding_function_t _rounding_function(enum sb_rounding_policy policy)
         return sb_float_round;
     case SB_ROUNDING_POLICY_CEIL:
         return sb_float_ceil;
+    case SB_ROUNDING_POLICY_FLOOR:
+        return sb_float_floor;
     default:
         return sb_float_round;  // TODO: Cover all cases.
     }

@@ -22,3 +22,16 @@ target_include_directories(test-rect
 target_link_libraries(test-rect
     swingby
 )
+
+
+add_executable(test-rounding
+    rounding.c
+)
+
+target_include_directories(test-rounding
+    PRIVATE ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(test-rounding
+    swingby
+)

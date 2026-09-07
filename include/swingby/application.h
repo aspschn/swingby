@@ -20,10 +20,10 @@ typedef struct sb_egl_t sb_egl_t;
 typedef sb_egl_t sb_egl_context_t;
 
 enum sb_fd_flag {
-    SB_FD_FLAG_READABLE = 1,
-    SB_FD_FLAG_WRITABLE = 2,
-    SB_FD_FLAG_ERROR = 4,
-    SB_FD_FLAG_HANGUP = 8,
+    SB_FD_FLAG_READABLE = 1,    // EPOLLIN
+    SB_FD_FLAG_WRITABLE = 2,    // EPOLLOUT
+    SB_FD_FLAG_ERROR = 4,       // EPOLLERR
+    SB_FD_FLAG_HANGUP = 8,      // EPOLLHUP
 };
 
 typedef enum sb_fd_flag sb_fd_flags;

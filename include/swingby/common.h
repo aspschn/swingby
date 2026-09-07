@@ -36,6 +36,8 @@ float sb_float_ceil(float);
 
 float sb_float_round(float);
 
+float sb_float_floor(float);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

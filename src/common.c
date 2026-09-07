@@ -46,6 +46,11 @@ float sb_float_round(float x)
     return roundf(x);
 }
 
+float sb_float_floor(float x)
+{
+    return floorf(x);
+}
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

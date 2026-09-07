@@ -5,7 +5,7 @@
 
 #include <swingby/swingby.h>
 
-#define TITLE_BAR_HEIGHT 30
+#define TITLE_BAR_HEIGHT 32
 #define TITLE_BAR_BUTTON_SIZE 24
 
 #ifdef __cplusplus

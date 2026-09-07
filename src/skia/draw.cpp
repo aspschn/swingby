@@ -228,16 +228,6 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
         size_rounding_f(rect.size.width * scale),
         size_rounding_f(rect.size.height * scale));
 
-    // Root view.
-    if (sb_view_parent((sb_view_t*)view) == NULL) {
-        sk_rect = SkRect::MakeXYWH(
-            ceilf(rect.position.x * scale),
-            ceilf(rect.position.y * scale),
-            ceilf(rect.size.width * scale),
-            ceilf(rect.size.height * scale)
-        );
-    }
-
     SkPaint paint;
     SkColor4f sk_color_4f;
     sk_color_4f.fR = color.r;

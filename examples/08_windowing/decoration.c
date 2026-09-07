@@ -36,7 +36,7 @@ struct decoration* decoration_new(struct window *window)
     sb_rect_t g;
 
     // Shadow.
-    decoration->shadow.thickness = 40.0f;
+    decoration->shadow.thickness = 37.0f;
     sb_rect_t shadow_geometry;
     shadow_geometry.position.x = 0.0f;
     shadow_geometry.position.y = 0.0f;
@@ -59,7 +59,7 @@ struct decoration* decoration_new(struct window *window)
     resize_color.r = 0.0f;
     resize_color.g = 1.0f;
     resize_color.b = 0.0f;
-    resize_color.a = 1.0f;
+    resize_color.a = 0.8f;
     sb_view_set_color(decoration->resize.view, resize_color);
 
     // Border.
@@ -68,7 +68,7 @@ struct decoration* decoration_new(struct window *window)
     sb_color_t border_color;
     border_color.r = 0.0f;
     border_color.g = 0.0f;
-    border_color.b = 0.0f;
+    border_color.b = 1.0f;
     border_color.a = 1.0f;
     sb_view_set_color(decoration->border.view, border_color);
 

@@ -605,7 +605,7 @@ sb_surface_t* sb_surface_new()
     sb_view_set_position_rounding_policy(surface->_root_view,
         SB_ROUNDING_POLICY_ROUND);
     sb_view_set_size_rounding_policy(surface->_root_view,
-        SB_ROUNDING_POLICY_CEIL);
+        SB_ROUNDING_POLICY_ROUND);
     sb_view_set_surface(surface->_root_view, surface);
 
     // Focused view.

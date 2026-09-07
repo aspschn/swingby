@@ -53,6 +53,7 @@ struct window* window_new(sb_size_t size)
     body_geometry.size.width = size.width;
     body_geometry.size.height = size.height;
     window->body = sb_view_new(sb_surface_root_view(surface), body_geometry);
+    sb_view_set_size_rounding_policy(window->body, SB_ROUNDING_POLICY_CEIL);
 
     // Set body geometry.
     body_geometry = window_body_geometry(window);
@@ -93,6 +94,7 @@ void on_desktop_surface_resize(sb_event_t *event, void *user_data)
     fprintf(stderr, "Desktop surface resize: %fx%f\n",
             event->resize.size.width, event->resize.size.height);
     */
+    struct window *window = window_global;
     // Calculate the whole surface size.
     sb_size_t surface_size;
     surface_size.width =
@@ -121,12 +123,51 @@ void on_desktop_surface_resize(sb_event_t *event, void *user_data)
         (window_global->decoration->border.thickness * 2)
         + window_global->decoration->title_bar->height;
 
+    new_geometry.size = event->resize.size;
+    new_geometry.size.width -= 2;
+    new_geometry.size.height -= (TITLE_BAR_HEIGHT + 2);
+
     sb_view_set_geometry(window_global->body, new_geometry);
+    {
+        fprintf(stderr, "requested: %.2fx%.2f\n",
+            event->resize.size.width, event->resize.size.height);
+
+        sb_surface_t *surface = sb_desktop_surface_surface(window->desktop_surface);
+        sb_size_i_t surface_buffer = sb_surface_buffer_size(surface);
+        fprintf(stderr, "surface: [%.2fx%.2f] [%.2fx%.2f] [%dx%d]\n",
+            surface_size.width, surface_size.height,
+            surface_size.width * sb_surface_scale(surface),
+            surface_size.height * sb_surface_scale(surface),
+            surface_buffer.width,
+            surface_buffer.height);
+
+        sb_size_i_t body_buffer = sb_view_physical_geometry(window->body).size;
+        fprintf(stderr, "body view: %.2fx%.2f %dx%d\n",
+            new_geometry.size.width, new_geometry.size.height,
+            body_buffer.width,
+            body_buffer.height);
+
+        fprintf(stderr, "diff: %dx%d\n\n",
+            surface_buffer.width - body_buffer.width,
+            surface_buffer.height - body_buffer.height);
+    }
 
     // Set window frame geometry hint.
     sb_rect_t frame_geometry = window_frame_geometry(window_global);
     sb_desktop_surface_set_wm_geometry(window_global->desktop_surface,
                                        sb_rect_to_rect_i(frame_geometry));
+
+
+    // Grids.
+    if (sb_list_length(sb_view_children(window->body)) > 0) {
+        return;
+    }
+    for (int i = 0; i < 50; i += 2) {
+        sb_view_t *v = sb_view_new(window->body, sb_rect_make(i, 0, 1, 50));
+        sb_view_set_position_rounding_policy(v, SB_ROUNDING_POLICY_FLOOR);
+        sb_view_set_color(v, (sb_color_t){ .r = 1.0f, .g = 0, .b = 0, .a = 1 });
+        fprintf(stderr, "x: %d\n", sb_view_physical_geometry(v).position.x);
+    }
 }
 
 void window_set_on_close_button_click(struct window* window,
