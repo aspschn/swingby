@@ -53,6 +53,7 @@ struct window* window_new(sb_size_t size)
     body_geometry.size.width = size.width;
     body_geometry.size.height = size.height;
     window->body = sb_view_new(sb_surface_root_view(surface), body_geometry);
+    sb_view_set_clip(window->body, true);
     sb_view_set_size_rounding_policy(window->body, SB_ROUNDING_POLICY_CEIL);
 
     // Set body geometry.
@@ -162,7 +163,7 @@ void on_desktop_surface_resize(sb_event_t *event, void *user_data)
     if (sb_list_length(sb_view_children(window->body)) > 0) {
         return;
     }
-    for (int i = 0; i < 50; i += 2) {
+    for (int i = 0; i < 120; i += 2) {
         sb_view_t *v = sb_view_new(window->body, sb_rect_make(i, 0, 1, 50));
         sb_view_set_position_rounding_policy(v, SB_ROUNDING_POLICY_FLOOR);
         sb_view_set_color(v, (sb_color_t){ .r = 1.0f, .g = 0, .b = 0, .a = 1 });
