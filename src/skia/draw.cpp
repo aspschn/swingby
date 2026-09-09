@@ -384,7 +384,11 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
             );
         } else {
             // Downscale.
-            sampling = SkSamplingOptions(SkCubicResampler::Mitchell());
+            sampling = SkSamplingOptions(
+                SkFilterMode::kLinear,
+                SkMipmapMode::kLinear
+            );
+            //sampling = SkSamplingOptions(SkCubicResampler::Mitchell());
         }
     }
 
