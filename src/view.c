@@ -1,7 +1,5 @@
 #include <swingby/view.h>
 
-#include <math.h>
-
 #include <stdlib.h>
 
 #include <swingby/application.h>
@@ -103,6 +101,13 @@ sb_view_t* sb_view_new(sb_view_t *parent, sb_rect_t geometry)
 void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface)
 {
     view->_surface = surface;
+}
+
+void sb_view_set_parent(sb_view_t *view, sb_view_t *parent)
+{
+    view->_parent = parent;
+    sb_list_push(parent->children, (void*)view);
+    view->_surface = parent->_surface;
 }
 
 sb_surface_t* sb_view_surface(const sb_view_t *view)
