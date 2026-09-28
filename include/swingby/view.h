@@ -58,7 +58,7 @@ typedef struct sb_view_t sb_view_t;
 SB_EXPORT
 sb_view_t* sb_view_new(sb_view_t *parent, sb_rect_t geometry);
 
-SB_EXPORT
+SB_INTERNAL
 void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface);
 
 /// \memberof sb_view_t

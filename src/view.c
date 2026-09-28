@@ -14,9 +14,9 @@
 #include "helpers/shared.h"
 
 struct sb_view_t {
-    sb_surface_t *_surface;
+    sb_surface_t *surface;
     sb_rect_t geometry;
-    sb_view_t *_parent;
+    sb_view_t *parent;
     /// \brief View's color if the view render type is single color.
     sb_color_t color;
     sb_list_t *children;
@@ -54,8 +54,8 @@ sb_view_t* sb_view_new(sb_view_t *parent, sb_rect_t geometry)
 {
     sb_view_t *view = malloc(sizeof(sb_view_t));
 
-    view->_surface = NULL;
-    view->_parent = parent;
+    view->surface = NULL;
+    view->parent = parent;
     sb_log_debug("sb_view_new() - view: %p, parent: %p\n", view, parent);
     view->geometry.position = geometry.position;
     view->geometry.size = geometry.size;
@@ -91,8 +91,6 @@ sb_view_t* sb_view_new(sb_view_t *parent, sb_rect_t geometry)
     if (parent != NULL) {
         // Append the new view to the child list of the parent view.
         sb_list_push(parent->children, (void*)view);
-        // Inherit parent's surface.
-        view->_surface = parent->_surface;
     }
 
     return view;
@@ -100,19 +98,29 @@ sb_view_t* sb_view_new(sb_view_t *parent, sb_rect_t geometry)
 
 void sb_view_set_surface(sb_view_t *view, sb_surface_t *surface)
 {
-    view->_surface = surface;
+    view->surface = surface;
 }
 
 void sb_view_set_parent(sb_view_t *view, sb_view_t *parent)
 {
-    view->_parent = parent;
-    sb_list_push(parent->children, (void*)view);
-    view->_surface = parent->_surface;
+    if (view->parent == NULL) {
+        view->parent = parent;
+        sb_list_push(parent->children, (void*)view);
+    }
 }
 
 sb_surface_t* sb_view_surface(const sb_view_t *view)
 {
-    return view->_surface;
+    // If the view is root view.
+    if (view->parent == NULL && view->surface != NULL) {
+        return view->surface;
+    }
+
+    sb_view_t *parent = view->parent;
+    while (parent->parent != NULL) {
+        parent = parent->parent;
+    }
+    return parent->surface;
 }
 
 sb_rect_t sb_view_geometry(const sb_view_t *view)
@@ -148,15 +156,18 @@ void sb_view_set_geometry(sb_view_t *view, sb_rect_t geometry)
         sb_application_post_event(sb_application_instance(), move_event);
     }
 
-    if (view->_surface == NULL) {
+    sb_surface_t *surface = sb_view_surface(view);
+    if (surface == NULL) {
         sb_log_warn("sb_view_set_geometry() - surface is NULL\n");
+        return;
     }
-    sb_surface_update(view->_surface);
+    sb_surface_update(surface);
 }
 
 sb_rect_i_t sb_view_physical_geometry(const sb_view_t *view)
 {
-    float scale = sb_surface_scale(view->_surface);
+    const sb_surface_t *surface = sb_view_surface(view);
+    float scale = sb_surface_scale(surface);
     enum sb_rounding_policy p_policy = sb_view_position_rounding_policy(view);
     enum sb_rounding_policy s_policy = sb_view_size_rounding_policy(view);
 
@@ -274,7 +285,7 @@ sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position)
 
 sb_view_t* sb_view_parent(sb_view_t *view)
 {
-    return view->_parent;
+    return view->parent;
 }
 
 sb_view_t* sb_view_remove_child(sb_view_t *view, sb_view_t *child)
@@ -301,12 +312,12 @@ sb_point_t sb_view_absolute_position(const sb_view_t *view)
     pos.x = view->geometry.position.x;
     pos.y = view->geometry.position.y;
 
-    const sb_view_t *it = view->_parent;
+    const sb_view_t *it = view->parent;
     while (it != NULL) {
         pos.x += it->geometry.position.x;
         pos.y += it->geometry.position.y;
 
-        it = it->_parent;
+        it = it->parent;
     }
 
     return pos;
@@ -352,10 +363,12 @@ void sb_view_set_color(sb_view_t *view, sb_color_t color)
     // TODO: Equality check.
     view->color = color;
 
-    if (view->_surface == NULL) {
+    sb_surface_t *surface = sb_view_surface(view);
+    if (surface == NULL) {
         sb_log_warn("sb_view_set_color() - surface is NULL.\n");
+        return;
     }
-    sb_surface_update(view->_surface);
+    sb_surface_update(surface);
 }
 
 bool sb_view_clip(const sb_view_t *view)
