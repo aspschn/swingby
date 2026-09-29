@@ -114,6 +114,8 @@ sb_surface_t* sb_view_surface(const sb_view_t *view)
     // If the view is root view.
     if (view->parent == NULL && view->surface != NULL) {
         return view->surface;
+    } else if (view->parent == NULL && view->surface == NULL) {
+        return NULL;
     }
 
     sb_view_t *parent = view->parent;
