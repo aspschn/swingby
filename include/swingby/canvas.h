@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 /// \brief Create a new canvas.
-SB_EXPORT
+SB_INTERNAL
 sb_canvas_t* sb_canvas_new(void *sk_canvas);
 
 /// \brief Set surface scale factor.
@@ -31,6 +31,11 @@ SB_EXPORT
 void sb_canvas_draw_rect(sb_canvas_t *canvas,
                          const sb_rect_t *rect,
                          const sb_paint_t *paint);
+
+SB_EXPORT
+void sb_canvas_draw_rounded_rect(sb_canvas_t *canvas,
+                                 sb_rounded_rect_t rrect,
+                                 const sb_paint_t *paint);
 
 SB_EXPORT
 void sb_canvas_draw_line(sb_canvas_t *canvas,

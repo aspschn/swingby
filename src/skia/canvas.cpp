@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include <skia/include/core/SkCanvas.h>
+#include <skia/include/core/SkRRect.h>
 
 #include <swingby/rect.h>
 
@@ -75,6 +76,43 @@ void sb_canvas_draw_rect(sb_canvas_t *canvas,
     sk_paint.setColor4f(color);
 
     canvas->sk_canvas->drawRect(sk_rect, sk_paint);
+}
+
+void sb_canvas_draw_rounded_rect(sb_canvas_t *canvas,
+                                 sb_rounded_rect_t rrect,
+                                 const sb_paint_t *paint)
+{
+    const float scale = canvas->scale;
+
+    SkRect sk_rect = SkRect::MakeXYWH(
+        rrect.position.x * scale,
+        rrect.position.y * scale,
+        rrect.size.width * scale,
+        rrect.size.height * scale
+    );
+
+    SkRRect sk_rrect;
+    SkVector radii[] = {
+        { rrect.radii.top_left * scale, rrect.radii.top_left * scale },
+        { rrect.radii.top_right * scale, rrect.radii.top_right * scale },
+        { rrect.radii.bottom_right * scale, rrect.radii.bottom_right * scale },
+        { rrect.radii.bottom_left * scale, rrect.radii.bottom_left * scale },
+    };
+
+    sk_rrect.setRectRadii(sk_rect, radii);
+
+    SkPaint sk_paint;
+
+    SkColor4f color;
+    const sb_color_t *fill_color = sb_paint_fill_color(paint);
+    color.fR = fill_color->r;
+    color.fG = fill_color->g;
+    color.fB = fill_color->b;
+    color.fA = fill_color->a;
+
+    sk_paint.setColor4f(color);
+
+    canvas->sk_canvas->drawRRect(sk_rrect, sk_paint);
 }
 
 void sb_canvas_draw_line(sb_canvas_t *canvas,
