@@ -7,6 +7,8 @@
 
 #include <swingby/rect.h>
 
+#include "converts.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -66,12 +68,8 @@ void sb_canvas_draw_rect(sb_canvas_t *canvas,
 
     SkPaint sk_paint;
 
-    SkColor4f color;
     const sb_color_t *fill_color = sb_paint_fill_color(paint);
-    color.fR = fill_color->r;
-    color.fG = fill_color->g;
-    color.fB = fill_color->b;
-    color.fA = fill_color->a;
+    SkColor4f color = sb_color_to_SkColor4f(*fill_color);
 
     sk_paint.setColor4f(color);
 
@@ -103,12 +101,8 @@ void sb_canvas_draw_rounded_rect(sb_canvas_t *canvas,
 
     SkPaint sk_paint;
 
-    SkColor4f color;
     const sb_color_t *fill_color = sb_paint_fill_color(paint);
-    color.fR = fill_color->r;
-    color.fG = fill_color->g;
-    color.fB = fill_color->b;
-    color.fA = fill_color->a;
+    SkColor4f color = sb_color_to_SkColor4f(*fill_color);
 
     sk_paint.setColor4f(color);
 

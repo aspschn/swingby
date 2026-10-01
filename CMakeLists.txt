@@ -76,6 +76,8 @@ set(SWINGBY_SOURCES
     src/skia/raster-renderer.cpp
     src/skia/renderer.h
     src/skia/renderer.cpp
+    src/skia/converts.h
+    src/skia/converts.cpp
     src/skia/draw.h
     src/skia/draw.cpp
     src/skia/load-image.h
