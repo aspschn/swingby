@@ -53,6 +53,18 @@ sb_paint_t* sb_canvas_paint(sb_canvas_t *canvas)
     return canvas->paint;
 }
 
+void sb_canvas_clip_rect(sb_canvas_t *canvas, sb_rect_t rect)
+{
+    SkRect sk_rect = sb_rect_to_SkRect(rect, canvas->scale);
+    canvas->sk_canvas->clipRect(sk_rect);
+}
+
+void sb_canvas_clip_rounded_rect(sb_canvas_t *canvas, sb_rounded_rect_t rrect)
+{
+    SkRRect sk_rrect = sb_rounded_rect_to_SkRRect(rrect, canvas->scale);
+    canvas->sk_canvas->clipRRect(sk_rrect, true);
+}
+
 void sb_canvas_draw_rect(sb_canvas_t *canvas,
                          const sb_rect_t *rect,
                          const sb_paint_t *paint)
@@ -136,6 +148,16 @@ void sb_canvas_draw_line(sb_canvas_t *canvas,
         (p2->y + canvas->position.y) * scale,
         sk_paint
     );
+}
+
+void sb_canvas_save(sb_canvas_t *canvas)
+{
+    canvas->sk_canvas->save();
+}
+
+void sb_canvas_restore(sb_canvas_t *canvas)
+{
+    canvas->sk_canvas->restore();
 }
 
 void sb_canvas_free(sb_canvas_t *canvas)
