@@ -171,7 +171,9 @@ void sb_view_set_cursor_shape(sb_view_t *view, enum sb_cursor_shape shape);
 /// \brief Get the list of the view's children.
 sb_list_t* sb_view_children(sb_view_t *view);
 
-/// \brief Get the child of the given position.
+/// \memberof sb_view_t
+/// \brief Get the visible child of the given position.
+SB_EXPORT
 sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position);
 
 /// \brief Returns the parent view.

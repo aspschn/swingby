@@ -277,6 +277,9 @@ sb_view_t* sb_view_child_at(sb_view_t *view, const sb_point_t *position)
 
     for (int i = sb_list_length(view->children); i > 0; --i) {
         sb_view_t *child = sb_list_at(view->children, i - 1);
+        if (child->visible == false) {
+            continue;
+        }
         if (sb_rect_contains_point(&child->geometry, position)) {
             return child;
         }
