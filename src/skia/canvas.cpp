@@ -8,6 +8,7 @@
 #include <swingby/rect.h>
 
 #include "converts.h"
+#include "include/core/SkPaint.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,10 +114,22 @@ void sb_canvas_draw_rounded_rect(sb_canvas_t *canvas,
 
     SkPaint sk_paint;
 
+    // Draw fill.
     const sb_color_t *fill_color = sb_paint_fill_color(paint);
     SkColor4f color = sb_color_to_SkColor4f(*fill_color);
 
     sk_paint.setColor4f(color);
+
+    canvas->sk_canvas->drawRRect(sk_rrect, sk_paint);
+
+    if (sb_paint_stroke_width(paint) == 0.0) {
+        return;
+    }
+    // Draw stroke.
+    sk_paint.setStyle(SkPaint::Style::kStroke_Style);
+    sk_paint.setStrokeWidth(sb_paint_stroke_width(paint));
+    const sb_color_t *stroke_color = sb_paint_stroke_color(paint);
+    sk_paint.setColor4f(sb_color_to_SkColor4f(*stroke_color));
 
     canvas->sk_canvas->drawRRect(sk_rrect, sk_paint);
 }
