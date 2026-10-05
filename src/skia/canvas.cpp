@@ -96,8 +96,8 @@ void sb_canvas_draw_rounded_rect(sb_canvas_t *canvas,
     const float scale = canvas->scale;
 
     SkRect sk_rect = SkRect::MakeXYWH(
-        rrect.position.x * scale,
-        rrect.position.y * scale,
+        (rrect.position.x + canvas->position.x) * scale,
+        (rrect.position.y + canvas->position.y) * scale,
         rrect.size.width * scale,
         rrect.size.height * scale
     );
