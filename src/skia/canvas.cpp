@@ -125,13 +125,25 @@ void sb_canvas_draw_rounded_rect(sb_canvas_t *canvas,
     if (sb_paint_stroke_width(paint) == 0.0) {
         return;
     }
-    // Draw stroke.
+    // Set stroke.
+    float stroke_width = sb_paint_stroke_width(paint);
     sk_paint.setStyle(SkPaint::Style::kStroke_Style);
-    sk_paint.setStrokeWidth(sb_paint_stroke_width(paint));
+    sk_paint.setStrokeWidth(stroke_width);
     const sb_color_t *stroke_color = sb_paint_stroke_color(paint);
     sk_paint.setColor4f(sb_color_to_SkColor4f(*stroke_color));
 
-    canvas->sk_canvas->drawRRect(sk_rrect, sk_paint);
+    // Apply sizing policy and draw.
+    enum sb_stroke_sizing sizing = sb_paint_stroke_sizing(paint);
+    switch (sizing) {
+    case SB_STROKE_SIZING_INNER:
+        sk_rrect.inset(stroke_width / 2, stroke_width / 2);
+        canvas->sk_canvas->drawRRect(sk_rrect, sk_paint);
+        break;
+    case SB_STROKE_SIZING_CENTER:
+    case SB_STROKE_SIZING_OUTER:    // TODO: Not implemented.
+        canvas->sk_canvas->drawRRect(sk_rrect, sk_paint);
+        break;
+    }
 }
 
 void sb_canvas_draw_line(sb_canvas_t *canvas,

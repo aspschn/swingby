@@ -9,6 +9,12 @@
 extern "C" {
 #endif // __cplusplus
 
+enum sb_stroke_sizing {
+    SB_STROKE_SIZING_INNER,
+    SB_STROKE_SIZING_CENTER,
+    SB_STROKE_SIZING_OUTER,
+};
+
 typedef struct sb_paint_t sb_paint_t;
 
 sb_paint_t* sb_paint_new();
@@ -28,6 +34,10 @@ void sb_paint_set_stroke_width(sb_paint_t *paint, float width);
 bool sb_paint_antialiasing(const sb_paint_t *paint);
 
 void sb_paint_set_antialiasing(sb_paint_t *paint, bool value);
+
+enum sb_stroke_sizing sb_paint_stroke_sizing(const sb_paint_t *paint);
+
+void sb_paint_set_stroke_sizing(sb_paint_t *paint, enum sb_stroke_sizing val);
 
 void sb_paint_free(sb_paint_t *paint);
 

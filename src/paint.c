@@ -10,6 +10,7 @@ struct sb_paint_t {
     sb_color_t fill_color;
     sb_color_t stroke_color;
     float stroke_width;
+    enum sb_stroke_sizing stroke_sizing;
     bool antialiasing;
 };
 
@@ -28,6 +29,8 @@ sb_paint_t* sb_paint_new()
     paint->stroke_color.a = 1.0f;
 
     paint->stroke_width = 0.0f;
+
+    paint->stroke_sizing = SB_STROKE_SIZING_INNER;
 
     paint->antialiasing = false;
 
@@ -72,6 +75,16 @@ void sb_paint_set_stroke_width(sb_paint_t *paint, float width)
 void sb_paint_set_antialiasing(sb_paint_t *paint, bool value)
 {
     paint->antialiasing = value;
+}
+
+enum sb_stroke_sizing sb_paint_stroke_sizing(const sb_paint_t *paint)
+{
+    return paint->stroke_sizing;
+}
+
+void sb_paint_set_stroke_sizing(sb_paint_t *paint, enum sb_stroke_sizing val)
+{
+    paint->stroke_sizing = val;
 }
 
 void sb_paint_free(sb_paint_t *paint)
