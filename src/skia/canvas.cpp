@@ -49,6 +49,13 @@ void sb_canvas_set_position(sb_canvas_t *canvas, const sb_point_t *position)
     canvas->position = *position;
 }
 
+void sb_canvas_clear(sb_canvas_t *canvas, sb_color_t color)
+{
+    canvas->sk_canvas->saveLayer(nullptr, nullptr);
+    canvas->sk_canvas->clear(sb_color_to_SkColor4f(color));
+    canvas->sk_canvas->restore();
+}
+
 sb_paint_t* sb_canvas_paint(sb_canvas_t *canvas)
 {
     return canvas->paint;

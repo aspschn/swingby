@@ -1,5 +1,5 @@
-#ifndef _SWINGBY_CANVAS_H
-#define _SWINGBY_CANVAS_H
+#ifndef SWINGBY_CANVAS_H
+#define SWINGBY_CANVAS_H
 
 #include <swingby/common.h>
 #include <swingby/rect.h>
@@ -25,6 +25,11 @@ void sb_canvas_set_scale(sb_canvas_t *canvas, float scale);
 /// \brief Set the origin position to the canvas.
 SB_EXPORT
 void sb_canvas_set_position(sb_canvas_t *canvas, const sb_point_t *position);
+
+/// \memberof sb_canvas_t
+/// \brief Clear the canvas background with the given color.
+SB_EXPORT
+void sb_canvas_clear(sb_canvas_t *canvas, sb_color_t color);
 
 /// \memberof sb_canvas_t
 /// \brief Get the default paint of the canvas.
@@ -73,4 +78,4 @@ void sb_canvas_free(sb_canvas_t *canvas);
 }
 #endif
 
-#endif /* _SWINGBY_CANVAS_H */
+#endif /* SWINGBY_CANVAS_H */
