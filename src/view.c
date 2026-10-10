@@ -30,6 +30,14 @@ struct sb_view_t {
     sb_list_t *filters;
     /// \brief Clip child views. Default is false.
     bool clip;
+    struct {
+        enum sb_view_clipping_type type;
+        union {
+            sb_rect_t rect;
+            sb_rounded_rect_t rounded_rect;
+            void *path;
+        };
+    } clipping;
     /// \brief View's visibility.
     bool visible;
     bool antialiased;

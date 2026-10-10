@@ -42,6 +42,13 @@ enum sb_view_render_type {
     SB_VIEW_RENDER_TYPE_GL,
 };
 
+/// \brief View's clipping region type.
+enum sb_view_clipping_type {
+    SB_VIEW_CLIPPING_TYPE_RECT,
+    SB_VIEW_CLIPPING_TYPE_ROUNDED_RECT,
+    SB_VIEW_CLIPPING_TYPE_PATH,
+};
+
 /// \struct sb_view_t
 /// \brief A minimum render unit.
 typedef struct sb_view_t sb_view_t;
