@@ -4,8 +4,11 @@
 
 #include <skia/include/core/SkCanvas.h>
 #include <skia/include/core/SkRRect.h>
+#include <skia/include/core/SkTextBlob.h>
 
 #include <swingby/rect.h>
+#include <swingby/glyph.h>
+#include <swingby/log.h>
 
 #include "converts.h"
 #include "include/core/SkPaint.h"
@@ -178,6 +181,65 @@ void sb_canvas_draw_line(sb_canvas_t *canvas,
         (p1->y + canvas->position.y) * scale,
         (p2->x + canvas->position.x) * scale,
         (p2->y + canvas->position.y) * scale,
+        sk_paint
+    );
+}
+
+void sb_canvas_draw_glyph_runs(sb_canvas_t *canvas,
+                               const sb_glyph_block_t *block,
+                               sb_point_t position)
+{
+    SkTextBlobBuilder builder;
+
+    float baseline = sb_glyph_block_baseline(block);
+    for (int i = 0; i < sb_glyph_block_count(block); ++i) {
+        const sb_glyph_run2_t *run = sb_glyph_block_at(block, i);
+        // Get font.
+        const sb_font_t *font = sb_glyph_run2_font(run);
+        // if (metrics == NULL) {
+        //     metrics = sb_font_metrics_new(font);
+        // }
+
+        int ttc = font->ttc_index;
+        sk_sp<SkTypeface> typeface =
+            *(sk_sp<SkTypeface>*)sb_font_font_cache_find(font->path, ttc);
+        // Null check.
+        if (typeface == nullptr) {
+            sb_log_warn(
+                "sb_skia_draw_glyphs - Invalid typeface: \"%s (%d)\".\n",
+                font->path, font->ttc_index
+            );
+            return;
+        }
+        SkFont sk_font = SkFont(typeface, font->size * canvas->scale);
+        sk_font.setSubpixel(true);
+
+        uint32_t glyph_count = sb_glyph_run2_count(run);
+        const sb_glyph_id_t *ids = sb_glyph_run2_glyphs(run);
+        const sb_point_t *positions = sb_glyph_run2_positions(run);
+
+        auto& sk_run = builder.allocRunPos(sk_font, glyph_count);
+        for (int glyph_idx = 0; glyph_idx < glyph_count; ++glyph_idx) {
+            sk_run.glyphs[glyph_idx] = ids[glyph_idx];
+            sk_run.points()[glyph_idx] = SkPoint::Make(
+                positions[glyph_idx].x * canvas->scale,
+                (baseline + positions[glyph_idx].y) * canvas->scale
+            );
+        }
+    }
+
+    sk_sp<SkTextBlob> blob = builder.make();
+    if (blob.get() == nullptr) {
+        sb_log_warn("draw_glyphs - blob is null!\n");
+        // TODO: metrics free.
+        return;
+    }
+    SkPaint sk_paint;
+    sk_paint.setColor(SK_ColorBLACK);
+    canvas->sk_canvas->drawTextBlob(
+        blob.get(),
+        position.x * canvas->scale,
+        position.y * canvas->scale,
         sk_paint
     );
 }

@@ -28,6 +28,9 @@ void sb_font_metrics_free(sb_font_metrics_t *metrics);
 
 void* sb_font_font_mgr_instance();
 
+/// \brief Find cached font or create new and store to the cache.
+///
+/// \return `sk_sp<SkTypeface>` as a void pointer.
 void* sb_font_font_cache_find(const char *font_path, int ttc_index);
 
 #ifdef __cplusplus

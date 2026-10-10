@@ -5,6 +5,8 @@
 #include <swingby/rect.h>
 #include <swingby/paint.h>
 
+typedef struct sb_glyph_block_t sb_glyph_block_t;
+
 /// \struct A drawing area.
 typedef struct sb_canvas_t sb_canvas_t;
 
@@ -62,6 +64,12 @@ void sb_canvas_draw_line(sb_canvas_t *canvas,
                          const sb_point_t *p1,
                          const sb_point_t *p2,
                          const sb_paint_t *paint);
+
+/// \memberof sb_canvas_t
+SB_EXPORT
+void sb_canvas_draw_glyph_runs(sb_canvas_t *canvas,
+                               const sb_glyph_block_t *block,
+                               sb_point_t position);
 
 /// \memberof sb_canvas_t
 SB_EXPORT
