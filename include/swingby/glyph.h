@@ -1,5 +1,5 @@
-#ifndef _SWINGBY_GLYPH_H
-#define _SWINGBY_GLYPH_H
+#ifndef SWINGBY_GLYPH_H
+#define SWINGBY_GLYPH_H
 
 #include <stdint.h>
 
@@ -39,7 +39,7 @@ uint64_t sb_glyph_block_count(const sb_glyph_block_t *block);
 void sb_glyph_block_add(sb_glyph_block_t *block, sb_glyph_run_t *run);
 
 const sb_glyph_run_t* sb_glyph_block_at(const sb_glyph_block_t *block,
-                                         uint64_t index);
+                                        uint64_t index);
 
 float sb_glyph_block_baseline(const sb_glyph_block_t *block);
 
@@ -51,4 +51,4 @@ void sb_glyph_block_free(sb_glyph_block_t *block);
 }
 #endif // __cplusplus
 
-#endif /* _SWINGBY_GLYPH_H */
+#endif /* SWINGBY_GLYPH_H */
