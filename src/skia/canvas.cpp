@@ -198,11 +198,10 @@ void sb_canvas_draw_glyphs(sb_canvas_t *canvas,
 {
     SkTextBlobBuilder builder;
 
-    float baseline = sb_glyph_block_baseline(block);
     for (int i = 0; i < sb_glyph_block_count(block); ++i) {
-        const sb_glyph_run2_t *run = sb_glyph_block_at(block, i);
+        const sb_glyph_run_t *run = sb_glyph_block_at(block, i);
         // Get font.
-        const sb_font_t *font = sb_glyph_run2_font(run);
+        const sb_font_t *font = sb_glyph_run_font(run);
 
         int ttc = font->ttc_index;
         sk_sp<SkTypeface> typeface =
@@ -218,9 +217,9 @@ void sb_canvas_draw_glyphs(sb_canvas_t *canvas,
         SkFont sk_font = SkFont(typeface, font->size * canvas->scale);
         sk_font.setSubpixel(true);
 
-        uint32_t glyph_count = sb_glyph_run2_count(run);
-        const sb_glyph_id_t *ids = sb_glyph_run2_glyphs(run);
-        const sb_point_t *positions = sb_glyph_run2_positions(run);
+        uint32_t glyph_count = sb_glyph_run_count(run);
+        const sb_glyph_id_t *ids = sb_glyph_run_glyphs(run);
+        const sb_point_t *positions = sb_glyph_run_positions(run);
 
         auto& sk_run = builder.allocRunPos(sk_font, glyph_count);
         for (int glyph_idx = 0; glyph_idx < glyph_count; ++glyph_idx) {
@@ -243,7 +242,7 @@ void sb_canvas_draw_glyphs(sb_canvas_t *canvas,
     canvas->sk_canvas->drawTextBlob(
         blob.get(),
         position.x * canvas->scale,
-        (baseline - position.y) * canvas->scale,
+        position.y * canvas->scale,
         sk_paint
     );
 }

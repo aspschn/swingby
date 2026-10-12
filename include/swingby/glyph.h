@@ -10,87 +10,35 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct sb_glyph_t sb_glyph_t;
-
-typedef struct sb_glyph_run_t sb_glyph_run_t;
-
-typedef struct sb_glyph_line_t sb_glyph_line_t;
-
-// typedef struct sb_glyph_layout_t sb_glyph_layout_t;
-
 typedef struct sb_list_t sb_list_t;
-
-struct sb_glyph_t {
-    uint32_t id;
-    float advance;
-    sb_point_t offset;
-};
 
 typedef uint32_t sb_glyph_id_t;
 
-typedef struct sb_glyph_run2_t sb_glyph_run2_t;
+typedef struct sb_glyph_run_t sb_glyph_run_t;
 
 typedef struct sb_glyph_block_t sb_glyph_block_t;
-
-typedef struct sb_glyph_block_t sb_glyph_layout_t;
 
 
 sb_glyph_run_t* sb_glyph_run_new(uint32_t count, const sb_font_t *font);
 
-uint32_t sb_glyph_run_count(const sb_glyph_run_t *glyph_run);
+uint32_t sb_glyph_run_count(const sb_glyph_run_t *run);
 
-sb_glyph_t* sb_glyph_run_glyphs(sb_glyph_run_t *glyph_run);
+sb_glyph_id_t* sb_glyph_run_glyphs(const sb_glyph_run_t *run);
 
-const sb_font_t* sb_glyph_run_font(const sb_glyph_run_t *glyph_run);
+sb_point_t* sb_glyph_run_positions(const sb_glyph_run_t *run);
 
-void sb_glyph_run_free(sb_glyph_run_t *glyph_run);
+const sb_font_t* sb_glyph_run_font(const sb_glyph_run_t *run);
 
+void sb_glyph_run_free(sb_glyph_run_t *run);
 
-sb_glyph_line_t* sb_glyph_line_new();
-
-void sb_glyph_line_add_run(sb_glyph_line_t *line, sb_glyph_run_t *run);
-
-uint32_t sb_glyph_line_run_count(const sb_glyph_line_t *line);
-
-const sb_list_t* sb_glyph_line_runs(const sb_glyph_line_t *line);
-
-const sb_point_t* sb_glyph_line_baseline(const sb_glyph_line_t *line);
-
-void sb_glyph_line_set_baseline(sb_glyph_line_t *line,
-                                const sb_point_t *baseline);
-
-void sb_glyph_line_free(sb_glyph_line_t *line);
-
-
-sb_glyph_layout_t* sb_glyph_layout_new();
-
-void sb_glyph_layout_add_line(sb_glyph_layout_t *layout, sb_glyph_line_t *line);
-
-uint32_t sb_glyph_layout_line_count(const sb_glyph_layout_t *layout);
-
-const sb_list_t* sb_glyph_layout_lines(const sb_glyph_layout_t *layout);
-
-/// \brief Clear all contents inside the layout, keeping the layout itself.
-void sb_glyph_layout_clear_lines(sb_glyph_layout_t *layout);
-
-/// \brief Free the layout. Lines and runs will automatically be freed.
-void sb_glyph_layout_free(sb_glyph_layout_t *layout);
-
-
-sb_glyph_run2_t* sb_glyph_run2_new(uint32_t count, const sb_font_t *font);
-uint32_t sb_glyph_run2_count(const sb_glyph_run2_t *run);
-sb_glyph_id_t* sb_glyph_run2_glyphs(const sb_glyph_run2_t *run);
-sb_point_t* sb_glyph_run2_positions(const sb_glyph_run2_t *run);
-const sb_font_t* sb_glyph_run2_font(const sb_glyph_run2_t *run);
-void sb_glyph_run2_free(sb_glyph_run2_t *run);
 
 sb_glyph_block_t* sb_glyph_block_new();
 
 uint64_t sb_glyph_block_count(const sb_glyph_block_t *block);
 
-void sb_glyph_block_add(sb_glyph_block_t *block, sb_glyph_run2_t *run);
+void sb_glyph_block_add(sb_glyph_block_t *block, sb_glyph_run_t *run);
 
-const sb_glyph_run2_t* sb_glyph_block_at(const sb_glyph_block_t *block,
+const sb_glyph_run_t* sb_glyph_block_at(const sb_glyph_block_t *block,
                                          uint64_t index);
 
 float sb_glyph_block_baseline(const sb_glyph_block_t *block);

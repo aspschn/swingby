@@ -11,158 +11,11 @@
 extern "C" {
 #endif // __cplusplus
 
-//!<====================
-//!< Legacy Glyph APIs
-//!<====================
-
-struct sb_glyph_run_t {
-    sb_glyph_t *glyphs;
-    uint32_t count;
-    sb_font_t font;
-};
-
-struct sb_glyph_line_t {
-    sb_list_t *runs;
-    sb_point_t baseline;
-};
-
-// struct sb_glyph_layout_t {
-//     sb_list_t *lines;
-// };
-
-sb_glyph_run_t* sb_glyph_run_new(uint32_t count, const sb_font_t *font)
-{
-    sb_glyph_run_t *glyph_run = malloc(sizeof(sb_glyph_run_t));
-
-    glyph_run->glyphs = malloc(sizeof(sb_glyph_t) * count);
-    glyph_run->count = count;
-    glyph_run->font = *font;
-
-    return glyph_run;
-}
-
-uint32_t sb_glyph_run_count(const sb_glyph_run_t *glyph_run)
-{
-    return glyph_run->count;
-}
-
-sb_glyph_t* sb_glyph_run_glyphs(sb_glyph_run_t *glyph_run)
-{
-    return glyph_run->glyphs;
-}
-
-const sb_font_t* sb_glyph_run_font(const sb_glyph_run_t *glyph_run)
-{
-    return &glyph_run->font;
-}
-
-void sb_glyph_run_free(sb_glyph_run_t *glyph_run)
-{
-    free(glyph_run->glyphs);
-    free(glyph_run);
-}
-
-
-sb_glyph_line_t* sb_glyph_line_new()
-{
-    sb_glyph_line_t *line = malloc(sizeof(sb_glyph_line_t));
-
-    line->runs = sb_list_new();
-    line->baseline.x = 0.0f;
-    line->baseline.y = 0.0f;
-
-    return line;
-}
-
-void sb_glyph_line_add_run(sb_glyph_line_t *line, sb_glyph_run_t *run)
-{
-    sb_list_push(line->runs, run);
-}
-
-uint32_t sb_glyph_line_run_count(const sb_glyph_line_t *line)
-{
-    return sb_list_length(line->runs);
-}
-
-const sb_list_t* sb_glyph_line_runs(const sb_glyph_line_t *line)
-{
-    return line->runs;
-}
-
-const sb_point_t* sb_glyph_line_baseline(const sb_glyph_line_t *line)
-{
-    return &line->baseline;
-}
-
-void sb_glyph_line_set_baseline(sb_glyph_line_t *line,
-                                const sb_point_t *baseline)
-{
-    line->baseline = *baseline;
-}
-
-void sb_glyph_line_free(sb_glyph_line_t *line)
-{
-    while (sb_list_length(line->runs) > 0) {
-        uint64_t last = sb_list_length(line->runs) - 1;
-        sb_glyph_run_t *run = sb_list_remove(line->runs, last);
-        sb_glyph_run_free(run);
-    }
-    sb_list_free(line->runs);
-
-    free(line);
-}
-
-
-sb_glyph_block_t* sb_glyph_layout_new()
-{
-    return sb_glyph_block_new();
-}
-
-/*
-sb_glyph_layout_t* sb_glyph_layout_new()
-{
-    sb_glyph_layout_t *layout = malloc(sizeof(sb_glyph_layout_t));
-
-    layout->lines = sb_list_new();
-
-    return layout;
-}
-
-void sb_glyph_layout_add_line(sb_glyph_layout_t *layout, sb_glyph_line_t *line)
-{
-    sb_list_push(layout->lines, line);
-}
-
-uint32_t sb_glyph_layout_line_count(const sb_glyph_layout_t *layout)
-{
-    return sb_list_length(layout->lines);
-}
-
-const sb_list_t* sb_glyph_layout_lines(const sb_glyph_layout_t *layout)
-{
-    return layout->lines;
-}
-*/
-
-void sb_glyph_layout_clear_lines(sb_glyph_layout_t *layout)
-{
-    // NO-OP
-}
-
-/*
-void sb_glyph_layout_free(sb_glyph_layout_t *layout)
-{
-    sb_glyph_layout_clear_lines(layout);
-
-    free(layout);
-}
-*/
-
 //!<==================
 //!< New Glyph APIs
 //!<==================
 
-struct sb_glyph_run2_t {
+struct sb_glyph_run_t {
     sb_glyph_id_t *glyphs;
     sb_point_t *positions;
     sb_font_t font;
@@ -174,9 +27,9 @@ struct sb_glyph_block_t {
     float baseline;
 };
 
-sb_glyph_run2_t* sb_glyph_run2_new(uint32_t count, const sb_font_t *font)
+sb_glyph_run_t* sb_glyph_run_new(uint32_t count, const sb_font_t *font)
 {
-    sb_glyph_run2_t *run = malloc(sizeof(sb_glyph_run2_t));
+    sb_glyph_run_t *run = malloc(sizeof(sb_glyph_run_t));
     run->count = count;
     run->glyphs = malloc(sizeof(sb_glyph_id_t) * count);
     run->positions = malloc(sizeof(sb_point_t) * count);
@@ -185,27 +38,27 @@ sb_glyph_run2_t* sb_glyph_run2_new(uint32_t count, const sb_font_t *font)
     return run;
 }
 
-uint32_t sb_glyph_run2_count(const sb_glyph_run2_t *run)
+uint32_t sb_glyph_run_count(const sb_glyph_run_t *run)
 {
     return run->count;
 }
 
-sb_glyph_id_t* sb_glyph_run2_glyphs(const sb_glyph_run2_t *run)
+sb_glyph_id_t* sb_glyph_run_glyphs(const sb_glyph_run_t *run)
 {
     return run->glyphs;
 }
 
-sb_point_t* sb_glyph_run2_positions(const sb_glyph_run2_t *run)
+sb_point_t* sb_glyph_run_positions(const sb_glyph_run_t *run)
 {
     return run->positions;
 }
 
-const sb_font_t* sb_glyph_run2_font(const sb_glyph_run2_t *run)
+const sb_font_t* sb_glyph_run_font(const sb_glyph_run_t *run)
 {
     return &run->font;
 }
 
-void sb_glyph_run2_free(sb_glyph_run2_t *run)
+void sb_glyph_run_free(sb_glyph_run_t *run)
 {
     free(run->glyphs);
     free(run->positions);
@@ -229,7 +82,7 @@ uint64_t sb_glyph_block_count(const sb_glyph_block_t *block)
     return sb_list_length(block->runs);
 }
 
-void sb_glyph_block_add(sb_glyph_block_t *block, sb_glyph_run2_t *run)
+void sb_glyph_block_add(sb_glyph_block_t *block, sb_glyph_run_t *run)
 {
     sb_list_push(block->runs, run);
 }
@@ -239,10 +92,10 @@ float sb_glyph_block_baseline(const sb_glyph_block_t *block)
     return block->baseline;
 }
 
-const sb_glyph_run2_t* sb_glyph_block_at(const sb_glyph_block_t *block,
+const sb_glyph_run_t* sb_glyph_block_at(const sb_glyph_block_t *block,
                                          uint64_t index)
 {
-    return (const sb_glyph_run2_t*)sb_list_at(block->runs, index);
+    return (const sb_glyph_run_t*)sb_list_at(block->runs, index);
 }
 
 void sb_glyph_block_set_baseline(sb_glyph_block_t *block, float baseline)
@@ -252,7 +105,7 @@ void sb_glyph_block_set_baseline(sb_glyph_block_t *block, float baseline)
 
 static void runs_free_func(void *run)
 {
-    sb_glyph_run2_free(run);
+    sb_glyph_run_free(run);
 }
 
 void sb_glyph_block_free(sb_glyph_block_t *block)
