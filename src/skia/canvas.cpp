@@ -189,6 +189,13 @@ void sb_canvas_draw_glyph_runs(sb_canvas_t *canvas,
                                const sb_glyph_block_t *block,
                                sb_point_t position)
 {
+    sb_canvas_draw_glyphs(canvas, block, position);
+}
+
+void sb_canvas_draw_glyphs(sb_canvas_t *canvas,
+                           const sb_glyph_block_t *block,
+                           sb_point_t position)
+{
     SkTextBlobBuilder builder;
 
     float baseline = sb_glyph_block_baseline(block);
@@ -196,9 +203,6 @@ void sb_canvas_draw_glyph_runs(sb_canvas_t *canvas,
         const sb_glyph_run2_t *run = sb_glyph_block_at(block, i);
         // Get font.
         const sb_font_t *font = sb_glyph_run2_font(run);
-        // if (metrics == NULL) {
-        //     metrics = sb_font_metrics_new(font);
-        // }
 
         int ttc = font->ttc_index;
         sk_sp<SkTypeface> typeface =
@@ -223,7 +227,7 @@ void sb_canvas_draw_glyph_runs(sb_canvas_t *canvas,
             sk_run.glyphs[glyph_idx] = ids[glyph_idx];
             sk_run.points()[glyph_idx] = SkPoint::Make(
                 positions[glyph_idx].x * canvas->scale,
-                (baseline + positions[glyph_idx].y) * canvas->scale
+                positions[glyph_idx].y * canvas->scale
             );
         }
     }
@@ -239,7 +243,7 @@ void sb_canvas_draw_glyph_runs(sb_canvas_t *canvas,
     canvas->sk_canvas->drawTextBlob(
         blob.get(),
         position.x * canvas->scale,
-        position.y * canvas->scale,
+        (baseline - position.y) * canvas->scale,
         sk_paint
     );
 }

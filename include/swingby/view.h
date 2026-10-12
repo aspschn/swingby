@@ -18,7 +18,7 @@ typedef struct sb_image_t sb_image_t;
 typedef struct sb_list_t sb_list_t;
 typedef struct sb_filter_t sb_filter_t;
 typedef struct sb_event_t sb_event_t;
-typedef struct sb_glyph_layout_t sb_glyph_layout_t;
+typedef struct sb_glyph_block_t sb_glyph_layout_t;
 typedef struct sb_canvas_t sb_canvas_t;
 
 typedef struct sb_view_radius_t {

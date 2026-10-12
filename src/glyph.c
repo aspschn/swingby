@@ -26,9 +26,9 @@ struct sb_glyph_line_t {
     sb_point_t baseline;
 };
 
-struct sb_glyph_layout_t {
-    sb_list_t *lines;
-};
+// struct sb_glyph_layout_t {
+//     sb_list_t *lines;
+// };
 
 sb_glyph_run_t* sb_glyph_run_new(uint32_t count, const sb_font_t *font)
 {
@@ -113,6 +113,12 @@ void sb_glyph_line_free(sb_glyph_line_t *line)
 }
 
 
+sb_glyph_block_t* sb_glyph_layout_new()
+{
+    return sb_glyph_block_new();
+}
+
+/*
 sb_glyph_layout_t* sb_glyph_layout_new()
 {
     sb_glyph_layout_t *layout = malloc(sizeof(sb_glyph_layout_t));
@@ -136,22 +142,21 @@ const sb_list_t* sb_glyph_layout_lines(const sb_glyph_layout_t *layout)
 {
     return layout->lines;
 }
+*/
 
 void sb_glyph_layout_clear_lines(sb_glyph_layout_t *layout)
 {
-    while (sb_list_length(layout->lines) > 0) {
-        uint64_t last = sb_list_length(layout->lines) - 1;
-        sb_glyph_line_t *line = sb_list_remove(layout->lines, last);
-        sb_glyph_line_free(line);
-    }
+    // NO-OP
 }
 
+/*
 void sb_glyph_layout_free(sb_glyph_layout_t *layout)
 {
     sb_glyph_layout_clear_lines(layout);
 
     free(layout);
 }
+*/
 
 //!<==================
 //!< New Glyph APIs
@@ -243,6 +248,18 @@ const sb_glyph_run2_t* sb_glyph_block_at(const sb_glyph_block_t *block,
 void sb_glyph_block_set_baseline(sb_glyph_block_t *block, float baseline)
 {
     block->baseline = baseline;
+}
+
+static void runs_free_func(void *run)
+{
+    sb_glyph_run2_free(run);
+}
+
+void sb_glyph_block_free(sb_glyph_block_t *block)
+{
+    sb_list_clear(block->runs, runs_free_func);
+    sb_list_free(block->runs);
+    free(block);
 }
 
 #ifdef __cplusplus

@@ -32,6 +32,8 @@
 #include <swingby/glyph.h>
 #include <swingby/log.h>
 #include <swingby/bench.h>
+// For draw glyphs. Temporary include.
+#include <swingby/canvas.h>
 
 #include "../helpers/shared.h"
 #include "../impl/image-impl.hpp"
@@ -400,10 +402,17 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
 void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
                          const sb_rect_t *rect,
                          float scale,
-                         const sb_glyph_layout_t *layout)
+                         const sb_glyph_block_t *block)
 {
-    SkCanvas *canvas = _get_canvas(renderer);
+    // SkCanvas *canvas = _get_canvas(renderer);
+    sb_canvas_t *canvas = sb_canvas_new(_get_canvas(renderer));
+    sb_canvas_set_scale(canvas, scale);
 
+    sb_canvas_draw_glyphs(canvas, block, rect->position);
+
+    sb_canvas_free(canvas);
+
+    /*
     SkTextBlobBuilder builder;
     sb_font_metrics_t *metrics = NULL;
 
@@ -476,6 +485,7 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
     if (metrics != NULL) {
         sb_font_metrics_free(metrics);
     }
+    */
 }
 
 void sb_skia_draw_texture(sb_skia_renderer_t *renderer,

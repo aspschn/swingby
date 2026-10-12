@@ -67,11 +67,13 @@ void* sb_font_font_mgr_instance()
 
 void* sb_font_font_cache_find(const char *font_path, int ttc_index)
 {
+    SkFontMgr *mgr = (SkFontMgr*)sb_font_font_mgr_instance();
+
     std::string str = font_path;
     std::pair<std::string, int> key = std::make_pair(str, ttc_index);
     auto found = _font_cache.find(key);
     if (found == _font_cache.end()) {
-        sk_sp<SkTypeface> typeface = _font_mgr_instance->makeFromFile(
+        sk_sp<SkTypeface> typeface = mgr->makeFromFile(
             str.c_str(), ttc_index);
         if (typeface == nullptr) {
             return nullptr;

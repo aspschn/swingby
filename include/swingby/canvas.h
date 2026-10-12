@@ -67,6 +67,13 @@ void sb_canvas_draw_line(sb_canvas_t *canvas,
 
 /// \memberof sb_canvas_t
 SB_EXPORT
+void sb_canvas_draw_glyphs(sb_canvas_t *canvas,
+                           const sb_glyph_block_t *block,
+                           sb_point_t position);
+
+/// \memberof sb_canvas_t
+/// \brief Deprecated. Use `sb_canvas_draw_glyphs` instead.
+SB_EXPORT
 void sb_canvas_draw_glyph_runs(sb_canvas_t *canvas,
                                const sb_glyph_block_t *block,
                                sb_point_t position);
