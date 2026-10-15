@@ -407,8 +407,10 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
     // SkCanvas *canvas = _get_canvas(renderer);
     sb_canvas_t *canvas = sb_canvas_new(_get_canvas(renderer));
     sb_canvas_set_scale(canvas, scale);
+    sb_canvas_set_position(canvas, &rect->position);
 
-    sb_canvas_draw_glyphs(canvas, block, rect->position);
+    sb_point_t zero = { .x = 0.0f, .y = 0.0f };
+    sb_canvas_draw_glyphs(canvas, block, zero);
 
     sb_canvas_free(canvas);
 

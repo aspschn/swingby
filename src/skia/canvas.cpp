@@ -239,12 +239,20 @@ void sb_canvas_draw_glyphs(sb_canvas_t *canvas,
     }
     SkPaint sk_paint;
     sk_paint.setColor(SK_ColorBLACK);
+
+    canvas->sk_canvas->save();
+    canvas->sk_canvas->translate(
+        canvas->position.x * canvas->scale,
+        canvas->position.y * canvas->scale
+    );
+
     canvas->sk_canvas->drawTextBlob(
         blob.get(),
         position.x * canvas->scale,
         position.y * canvas->scale,
         sk_paint
     );
+    canvas->sk_canvas->restore();
 }
 
 void sb_canvas_save(sb_canvas_t *canvas)
