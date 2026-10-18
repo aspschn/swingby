@@ -1,5 +1,5 @@
-#ifndef _SWINBGY_APPLICATION_H
-#define _SWINBGY_APPLICATION_H
+#ifndef SWINBGY_APPLICATION_H
+#define SWINBGY_APPLICATION_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -211,4 +211,4 @@ SB_INTERNAL
 sb_output_t* sb_application_find_output_by_wl_output(
     sb_application_t *application, struct wl_output *wl_output);
 
-#endif /* _SWINBGY_APPLICATION_H */
+#endif /* SWINBGY_APPLICATION_H */

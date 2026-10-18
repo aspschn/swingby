@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <unistd.h>
 #include <sys/mman.h>
@@ -35,7 +34,6 @@
 #include "xcursor/xcursor.h"
 
 #include "helpers/shared.h"
-#include "helpers/application.h"
 
 #include "private/output-priv.h"
 #include "private/pointer-priv.h"
