@@ -8,8 +8,6 @@
 #include "skia/include/core/SkBitmap.h"
 #include "skia/include/core/SkImage.h"
 #include "skia/include/core/SkCanvas.h"
-#include "skia/include/core/SkFontMgr.h"
-#include "skia/include/core/SkTypeface.h"
 #include "skia/include/core/SkFont.h"
 #include "skia/include/core/SkTextBlob.h"
 
@@ -20,7 +18,6 @@
 #include "skia/include/gpu/ganesh/SkImageGanesh.h"
 
 #include "skia/include/effects/SkImageFilters.h"
-#include "skia/include/ports/SkFontMgr_directory.h"
 
 #include "./renderer.h"
 #include "./raster-renderer.h"
@@ -216,7 +213,6 @@ void sb_skia_draw_rect3(sb_skia_renderer_t *renderer,
     sb_color_t color = sb_view_color(view);
     const sb_view_radius_t *radius = sb_view_radius(view);
     const sb_list_t *filters = sb_view_filters(view);
-    bool clip = sb_view_clip(view);
 
     enum sb_rounding_policy p_policy = sb_view_position_rounding_policy(view);
     enum sb_rounding_policy s_policy = sb_view_size_rounding_policy(view);
@@ -363,7 +359,7 @@ void sb_skia_draw_image3(sb_skia_renderer_t *renderer,
     // Make texture.
     auto gl_renderer =
         (sb_skia_gl_renderer_t*)sb_skia_renderer_current(renderer);
-
+    (void)gl_renderer;
     // sb_skia_gl_renderer_make_image_texture(gl_renderer, impl);
 
     // TODO: RRect.
@@ -413,81 +409,6 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
     sb_canvas_draw_glyphs(canvas, block, zero);
 
     sb_canvas_free(canvas);
-
-    /*
-    SkTextBlobBuilder builder;
-    sb_font_metrics_t *metrics = NULL;
-
-    // float total_x = 0.0f;
-    const sb_list_t *lines = sb_glyph_layout_lines(layout);
-    auto line_count = sb_glyph_layout_line_count(layout);
-    if (line_count <= 0) {
-        return;
-    }
-    for (uint32_t i = 0; i < line_count; ++i) {
-        float total_x = 0.0f;
-        auto *line = (sb_glyph_line_t*)sb_list_at(lines, i);
-        const sb_list_t *runs = sb_glyph_line_runs(line);
-        auto run_count = sb_glyph_line_run_count(line);
-        for (uint32_t j = 0; j < run_count; ++j) {
-            auto *run = (sb_glyph_run_t*)sb_list_at(runs, j);
-            auto glyph_count = sb_glyph_run_count(run);
-            auto glyphs = sb_glyph_run_glyphs(run);
-
-            // Get font.
-            const sb_font_t *font = sb_glyph_run_font(run);
-            if (metrics == NULL) {
-                metrics = sb_font_metrics_new(font);
-            }
-
-            int ttc = font->ttc_index;
-            sk_sp<SkTypeface> typeface =
-                *(sk_sp<SkTypeface>*)sb_font_font_cache_find(font->path, ttc);
-            // Null check.
-            if (typeface == nullptr) {
-                sb_log_warn(
-                    "sb_skia_draw_glyphs - Invalid typeface: \"%s (%d)\".\n",
-                    font->path, font->ttc_index
-                );
-                return;
-            }
-            SkFont sk_font = SkFont(typeface, font->size * scale);
-
-            auto& sk_run = builder.allocRunPos(sk_font, glyph_count);
-            for (uint32_t i = 0; i < glyph_count; ++i) {
-                const sb_point_t *baseline = sb_glyph_line_baseline(line);
-                sk_run.glyphs[i] = glyphs[i].id;
-                sk_run.points()[i] = SkPoint::Make(
-                    total_x + (glyphs[i].offset.x * scale),
-                    (baseline->y + glyphs[i].offset.y) * scale
-                );
-                total_x += (glyphs[i].advance * scale); // + (glyphs[i].offset.x * scale);
-            }
-        }
-    }
-
-    sk_sp<SkTextBlob> blob = builder.make();
-    if (blob.get() == nullptr) {
-        sb_log_warn("draw_glyphs - blob is null!\n");
-        // TODO: metrics free.
-        return;
-    }
-
-    sb_bench_t *bench = sb_bench_new("sb_skia_draw_glyphs");
-    SkPaint paint;
-    paint.setColor(SK_ColorBLACK);
-    canvas->drawTextBlob(
-        blob.get(),
-        rect->position.x * scale,
-        metrics->ascent * scale,
-        paint
-    );
-    sb_bench_end(bench);
-
-    if (metrics != NULL) {
-        sb_font_metrics_free(metrics);
-    }
-    */
 }
 
 void sb_skia_draw_texture(sb_skia_renderer_t *renderer,

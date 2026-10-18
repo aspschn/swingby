@@ -252,18 +252,6 @@ static void _draw_recursive(sb_surface_t *surface,
     }
 
     if (render_type == SB_VIEW_RENDER_TYPE_SINGLE_COLOR) {
-        const sb_view_radius_t *radius = NULL;
-        const sb_list_t *filters = NULL;
-        {
-            // Set radius or NULL.
-            if (!sb_view_radius_is_zero(sb_view_radius(view))) {
-                radius = sb_view_radius(view);
-            }
-            // Set filters or NULL.
-            if (sb_list_length((sb_list_t*)sb_view_filters(view))) {
-                filters = sb_view_filters(view);
-            }
-        }
         sb_skia_draw_rect3(
             surface->skia_renderer,
             view,
