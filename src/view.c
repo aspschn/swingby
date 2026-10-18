@@ -160,7 +160,6 @@ void sb_view_set_geometry(sb_view_t *view, sb_rect_t geometry)
 
     sb_surface_t *surface = sb_view_surface(view);
     if (surface == NULL) {
-        sb_log_warn("sb_view_set_geometry() - surface is NULL\n");
         return;
     }
     sb_surface_update(surface);
@@ -370,7 +369,6 @@ void sb_view_set_color(sb_view_t *view, sb_color_t color)
 
     sb_surface_t *surface = sb_view_surface(view);
     if (surface == NULL) {
-        sb_log_warn("sb_view_set_color() - surface is NULL.\n");
         return;
     }
     sb_surface_update(surface);
