@@ -113,6 +113,18 @@ static const struct wl_surface_listener surface_listener = {
     .preferred_buffer_transform = preferred_buffer_transform_handler,
 };
 
+//!<=================
+//!< Shm Buffer
+//!<=================
+
+static void buffer_release_handler(void *data,
+                                   struct wl_buffer *wl_buffer);
+
+static const struct wl_buffer_listener buffer_listener = {
+    .release = buffer_release_handler,
+};
+
+
 //!<======================
 //!< Fractional Scale
 //!<======================
@@ -235,6 +247,7 @@ static void _raster_init(sb_surface_t *surface)
         surface->size.height,
         stride,
         WL_SHM_FORMAT_ARGB8888);
+    wl_buffer_add_listener(surface->wl_buffer, &buffer_listener, NULL);
 
     close(fd);
 
@@ -988,6 +1001,15 @@ static void preferred_buffer_transform_handler(void *data,
                                                struct wl_surface *wl_surface,
                                                uint32_t transform)
 {
+}
+
+//!<=================
+//!< Shm Buffer
+//!<=================
+
+static void buffer_release_handler(void *data, struct wl_buffer *buffer)
+{
+    // TODO.
 }
 
 //!<======================

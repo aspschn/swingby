@@ -223,13 +223,6 @@ static const struct wl_shm_listener shm_listener = {
     .format = shm_format_handler,
 };
 
-static void buffer_release_handler(void *data,
-                                   struct wl_buffer *wl_buffer);
-
-static const struct wl_buffer_listener buffer_listener = {
-    .release = buffer_release_handler,
-};
-
 //!<====================
 //!< Text Input
 //!<====================
@@ -1068,11 +1061,6 @@ static void seat_name_handler(void *data,
 static void shm_format_handler(void *data, struct wl_shm *wl_shm, uint32_t format)
 {
     sb_log_debug("Shm format: %d\n", format);
-}
-
-static void buffer_release_handler(void *data, struct wl_buffer *buffer)
-{
-    // TODO.
 }
 
 //!<====================
