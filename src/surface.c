@@ -43,9 +43,9 @@
 #define SWINGBY_BACKEND_DEFAULT "opengl"
 
 struct sb_surface_t {
-    struct wl_surface *_wl_surface;
-    struct wl_egl_window *_wl_egl_window;
-    EGLSurface _egl_surface;
+    struct wl_surface *wl_surface;
+    struct wl_egl_window *wl_egl_window;
+    EGLSurface egl_surface;
     struct wl_shm_pool *wl_shm_pool;
     struct wl_buffer *wl_buffer;
     struct wp_fractional_scale_v1 *wp_fractional_scale_v1;
@@ -58,7 +58,7 @@ struct sb_surface_t {
     // sb_egl_context_t *egl_context;
     sb_skia_renderer_t *skia_renderer;
     sb_size_i_t size;
-    sb_view_t *_root_view;
+    sb_view_t *root_view;
     float scale;
     bool is_fractional_scale;
     sb_view_t *focused_view;
@@ -402,7 +402,7 @@ void _add_frame_callback(sb_surface_t *surface)
         sb_log_warn("Frame callback is not NULL!\n");
         return;
     }
-    surface->frame_callback = wl_surface_frame(surface->_wl_surface);
+    surface->frame_callback = wl_surface_frame(surface->wl_surface);
     wl_callback_add_listener(surface->frame_callback, &callback_listener,
         (void*)surface);
     sb_log_debug(" = frame_callback now %p\n", surface->frame_callback);
@@ -422,7 +422,7 @@ void _draw_frame(sb_surface_t *surface)
         sb_size_i_t buffer_size = sb_surface_buffer_size(surface);
         sb_skia_gl_renderer_begin(renderer,
             egl,
-            surface->_egl_surface,
+            surface->egl_surface,
             buffer_size.width,
             buffer_size.height
         );
@@ -430,11 +430,11 @@ void _draw_frame(sb_surface_t *surface)
         sb_color_t clear_color = { 0.0f, 0.0f, 0.0f, 0.0f };
         sb_skia_clear(surface->skia_renderer, &clear_color);
 
-        _draw_recursive(surface, surface->_root_view);
+        _draw_recursive(surface, surface->root_view);
 
         sb_skia_gl_renderer_end(renderer);
 
-        eglSwapBuffers(egl->egl_display, surface->_egl_surface);
+        eglSwapBuffers(egl->egl_display, surface->egl_surface);
     }
 
     if (backend == SB_SKIA_BACKEND_RASTER) {
@@ -453,7 +453,7 @@ void _draw_frame(sb_surface_t *surface)
         sb_color_t clear_color = { 0x00, 0x00, 0x00, 0x00 };
         sb_skia_clear(surface->skia_renderer, &clear_color);
 
-        _draw_recursive(surface, surface->_root_view);
+        _draw_recursive(surface, surface->root_view);
 
         // Copy pixels.
         void *pixels = sb_skia_raster_renderer_buffer(renderer);
@@ -476,7 +476,7 @@ static void _fit_viewport(sb_surface_t *surface)
                 sb_application_wp_viewporter(app);
 
             surface->wp_viewport = wp_viewporter_get_viewport(viewporter,
-                surface->_wl_surface);
+                surface->wl_surface);
         }
 
         // wp_viewport_set_source(surface->wp_viewport,
@@ -518,11 +518,11 @@ sb_surface_t* sb_surface_new()
     sb_application_t *app = sb_application_instance();
 
     // Create wl_surface.
-    surface->_wl_surface = wl_compositor_create_surface(
+    surface->wl_surface = wl_compositor_create_surface(
         sb_application_wl_compositor(app));
 
     // Add surface listeners.
-    wl_surface_add_listener(surface->_wl_surface, &surface_listener,
+    wl_surface_add_listener(surface->wl_surface, &surface_listener,
         (void*)surface);
 
     struct wp_fractional_scale_manager_v1 *scale_manager =
@@ -531,7 +531,7 @@ sb_surface_t* sb_surface_new()
         surface->wp_fractional_scale_v1 =
             wp_fractional_scale_manager_v1_get_fractional_scale(
                 scale_manager,
-                surface->_wl_surface
+                surface->wl_surface
             );
 
         wp_fractional_scale_v1_add_listener(surface->wp_fractional_scale_v1,
@@ -557,21 +557,21 @@ sb_surface_t* sb_surface_new()
         sb_egl_t *egl = sb_application_egl(app);
 
         // Create wl_egl_window.
-        surface->_wl_egl_window = wl_egl_window_create(surface->_wl_surface,
+        surface->wl_egl_window = wl_egl_window_create(surface->wl_surface,
            surface->size.width,
            surface->size.height);
 
         // Create EGL surface.
-        surface->_egl_surface = eglCreateWindowSurface(
+        surface->egl_surface = eglCreateWindowSurface(
             egl->egl_display,
             egl->egl_config,
-            surface->_wl_egl_window,
+            surface->wl_egl_window,
             NULL);
 
         EGLBoolean res = eglMakeCurrent(
             egl->egl_display,
-            surface->_egl_surface,
-            surface->_egl_surface,
+            surface->egl_surface,
+            surface->egl_surface,
             egl->egl_context
         );
         if (!res) {
@@ -589,12 +589,12 @@ sb_surface_t* sb_surface_new()
     // Root view.
     sb_rect_t geo = sb_rect_make(0.0f, 0.0f,
         (float)surface->size.width, (float)surface->size.height);
-    surface->_root_view = sb_view_new(NULL, geo);
-    sb_view_set_position_rounding_policy(surface->_root_view,
+    surface->root_view = sb_view_new(NULL, geo);
+    sb_view_set_position_rounding_policy(surface->root_view,
         SB_ROUNDING_POLICY_ROUND);
-    sb_view_set_size_rounding_policy(surface->_root_view,
+    sb_view_set_size_rounding_policy(surface->root_view,
         SB_ROUNDING_POLICY_ROUND);
-    sb_view_set_surface(surface->_root_view, surface);
+    sb_view_set_surface(surface->root_view, surface);
 
     // Focused view.
     surface->focused_view = NULL;
@@ -603,14 +603,14 @@ sb_surface_t* sb_surface_new()
     surface->event_listeners = sb_list_new();
 
     sb_log_debug("sb_surface_new() - surface: %p\n", surface);
-    sb_log_debug("sb_surface_new() - root_view: %p\n", surface->_root_view);
+    sb_log_debug("sb_surface_new() - root_view: %p\n", surface->root_view);
     return surface;
 }
 
 void sb_surface_set_wl_surface(sb_surface_t *surface,
                                struct wl_surface *wl_surface)
 {
-    surface->_wl_surface = wl_surface;
+    surface->wl_surface = wl_surface;
 }
 
 sb_size_i_t sb_surface_size(const sb_surface_t *surface)
@@ -631,7 +631,7 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
 
     // Set the root view's size.
     sb_rect_t new_geo = sb_rect_make(0.0f, 0.0f, size.width, size.height);
-    sb_view_set_geometry(surface->_root_view, new_geo);
+    sb_view_set_geometry(surface->root_view, new_geo);
 
     // Create event.
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE,
@@ -650,7 +650,7 @@ void sb_surface_set_size(sb_surface_t *surface, sb_size_i_t size)
     _fit_viewport(surface);
     if (strcmp(surface->backend, "opengl") == 0) {
         sb_size_i_t buffer_size = sb_surface_buffer_size(surface);
-        wl_egl_window_resize(surface->_wl_egl_window,
+        wl_egl_window_resize(surface->wl_egl_window,
             buffer_size.width,
             buffer_size.height,
             0, 0);
@@ -670,12 +670,12 @@ sb_size_i_t sb_surface_buffer_size(const sb_surface_t *surface)
 
 sb_view_t* sb_surface_root_view(sb_surface_t *surface)
 {
-    return surface->_root_view;
+    return surface->root_view;
 }
 
 void sb_surface_commit(sb_surface_t *surface)
 {
-    wl_surface_commit(surface->_wl_surface);
+    wl_surface_commit(surface->wl_surface);
 }
 
 void sb_surface_attach(sb_surface_t *surface)
@@ -686,9 +686,9 @@ void sb_surface_attach(sb_surface_t *surface)
     if (strcmp(surface->backend, "raster") == 0) {
         _draw_frame(surface);
 
-        wl_surface_attach(surface->_wl_surface, surface->wl_buffer, 0, 0);
-        wl_surface_damage_buffer(surface->_wl_surface, 0, 0, surface->size.width, surface->size.height);
-        wl_surface_commit(surface->_wl_surface);
+        wl_surface_attach(surface->wl_surface, surface->wl_buffer, 0, 0);
+        wl_surface_damage_buffer(surface->wl_surface, 0, 0, surface->size.width, surface->size.height);
+        wl_surface_commit(surface->wl_surface);
     }
 
     if (strcmp(surface->backend, "opengl") == 0) {
@@ -699,8 +699,8 @@ void sb_surface_attach(sb_surface_t *surface)
 
 void sb_surface_detach(sb_surface_t *surface)
 {
-    wl_surface_attach(surface->_wl_surface, NULL, 0, 0);
-    wl_surface_commit(surface->_wl_surface);
+    wl_surface_attach(surface->wl_surface, NULL, 0, 0);
+    wl_surface_commit(surface->wl_surface);
 
     // Destroy frame callback.
     if (surface->frame_callback != NULL) {
@@ -736,13 +736,13 @@ void sb_surface_set_scale(sb_surface_t *surface, float scale)
     surface->scale = scale;
     sb_log_debug("scale == %f\n", scale);
     if (surface->is_fractional_scale == false) {
-        wl_surface_set_buffer_scale(surface->_wl_surface, scale);
+        wl_surface_set_buffer_scale(surface->wl_surface, scale);
     }
 
     _fit_viewport(surface);
 
     sb_size_i_t buffer_size = sb_surface_buffer_size(surface);
-    wl_egl_window_resize(surface->_wl_egl_window,
+    wl_egl_window_resize(surface->wl_egl_window,
         buffer_size.width,
         buffer_size.height,
         0, 0);
@@ -802,8 +802,8 @@ void sb_surface_set_focused_view(sb_surface_t *surface, sb_view_t *view)
 
 void sb_surface_free(sb_surface_t *surface)
 {
-    wl_egl_window_destroy(surface->_wl_egl_window);
-    wl_surface_destroy(surface->_wl_surface);
+    wl_egl_window_destroy(surface->wl_egl_window);
+    wl_surface_destroy(surface->wl_surface);
 
     // TODO: Free the views.
 
@@ -890,7 +890,7 @@ void sb_surface_on_leave(sb_surface_t *surface, sb_event_t *event)
 
 struct wl_surface* sb_surface_wl_surface(sb_surface_t *surface)
 {
-    return surface->_wl_surface;
+    return surface->wl_surface;
 }
 
 //!<=================
