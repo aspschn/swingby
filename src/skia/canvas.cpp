@@ -124,6 +124,11 @@ void sb_canvas_draw_rounded_rect(sb_canvas_t *canvas,
 
     SkPaint sk_paint;
 
+    // Antialiasing.
+    if (sb_paint_antialiasing(paint)) {
+        sk_paint.setAntiAlias(true);
+    }
+
     // Draw fill.
     const sb_color_t *fill_color = sb_paint_fill_color(paint);
     SkColor4f color = sb_color_to_SkColor4f(*fill_color);
