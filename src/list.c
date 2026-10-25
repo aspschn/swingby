@@ -68,6 +68,17 @@ void* sb_list_remove(sb_list_t *list, uint64_t index)
     return item;
 }
 
+void sb_list_reverse(sb_list_t *list)
+{
+    int length = sb_list_length(list);
+    void *tmp = NULL;
+    for (int i = 0; i < length / 2; ++i) {
+        tmp = list->data[i];
+        list->data[i] = list->data[length - i - 1];
+        list->data[length - i - 1] = tmp;
+    }
+}
+
 void sb_list_clear(sb_list_t *list, void (*free_func)(void*))
 {
     while (list->length > 0) {
