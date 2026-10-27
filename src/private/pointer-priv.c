@@ -90,6 +90,53 @@ static void _post_pointer_leave_event(sb_view_t *view,
     sb_application_post_event(sb_application_instance(), event);
 }
 
+/// \brief Get the list of path from root view to the given view.
+static sb_list_t* _get_tree(const sb_view_t *view)
+{
+    sb_list_t *tree = sb_list_new();
+    const sb_view_t *curr = view;
+    while (curr != NULL) {
+        sb_list_push(tree, (void*)curr);
+        curr = sb_view_parent((sb_view_t*)curr);
+    }
+    sb_list_reverse(tree);
+
+    return tree;
+}
+
+static int _same_ancestor_len(const sb_list_t *a, const sb_list_t *b)
+{
+    int min_len = 0;
+    int max_len = 0;
+    // Get min/max.
+    {
+        int len_a = sb_list_length(a);
+        int len_b = sb_list_length(b);
+        if (len_a == len_b) {
+            min_len = len_a;
+            max_len = len_a;
+        } else if (len_a > len_b) {
+            min_len = len_b;
+            max_len = len_a;
+        } else {
+            min_len = len_a;
+            max_len = len_b;
+        }
+    }
+
+    int ret = 0;
+    for (int i = 0; i < min_len; ++i) {
+        const sb_view_t *view_a = sb_list_at(a, i);
+        const sb_view_t *view_b = sb_list_at(b, i);
+        if (view_a != view_b) {
+            return ret;
+        }
+        ret += 1;
+    }
+
+    return ret;
+}
+
 //!<============
 //!< Pointer
 //!<============
@@ -228,17 +275,31 @@ static void pointer_motion_handler(void *data,
 
     // Check difference.
     if (view != pointer->view) {
-        // Post the leave event for the previous view.
-        // TODO: Leave position.
-        _post_pointer_leave_event(pointer->view, 0.0f, 0.0f);
+        if (pointer->view == NULL) {
+            return;
+        }
+        sb_list_t *old_path = _get_tree(pointer->view);
+        sb_list_t *new_path = _get_tree(view);
+        size_t same_len = _same_ancestor_len(old_path, new_path);
+        size_t old_len = sb_list_length(old_path);
+        size_t new_len = sb_list_length(new_path);
 
-        pointer->view = view;
+        // TODO: Set proper positions.
+        // Post leave events.
+        for (size_t i = old_len; i > same_len; --i) {
+            _post_pointer_leave_event(sb_list_at(old_path, i - 1), 0.0f, 0.0f);
+        }
+        // Post enter events.
+        for (size_t i = same_len; i < new_len; ++i) {
+            _post_pointer_enter_event(sb_list_at(new_path, i), 0.0f, 0.0f);
+        }
+        // Free the lists.
+        sb_list_free(new_path);
+        sb_list_free(old_path);
 
-        // Cursor shape.
         _change_cursor_shape(pointer, wl_pointer, sb_view_cursor_shape(view));
 
-        // Post the event.
-        _post_pointer_enter_event(view, pos.x, pos.y);
+        pointer->view = view;
     }
 }
 

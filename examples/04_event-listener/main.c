@@ -28,12 +28,35 @@ static void on_double_click(sb_event_t *event, void *user_data)
     sb_view_set_color(event->target, new_color);
 }
 
+static void on_outer_enter(sb_event_t *event, void *user_data)
+{
+    fprintf(stderr, "black rect entered\n");
+}
+
+static void on_outer_leave(sb_event_t *event, void *user_data)
+{
+    fprintf(stderr, "black rect leaved\n");
+}
+
+static void on_inner_enter(sb_event_t *event, void *user_data)
+{
+    fprintf(stderr, "red rect entered\n");
+}
+
+static void on_inner_leave(sb_event_t *event, void *user_data)
+{
+    fprintf(stderr, "red rect leaved\n");
+}
+
 int main(int argc, char *argv[])
 {
     sb_application_t *app = sb_application_new(argc, argv);
 
     sb_desktop_surface_t *surface = sb_desktop_surface_new(
         SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
+
+    const sb_view_t *root_view = sb_surface_root_view(
+        sb_desktop_surface_surface(surface));
 
     sb_rect_t geometry = { { 10.0f, 10.0f }, { 50.0f, 50.0f } };
     sb_view_t *view = sb_view_new(
@@ -66,6 +89,33 @@ int main(int argc, char *argv[])
 
     sb_view_add_event_listener(double_click_view,
         SB_EVENT_TYPE_POINTER_DOUBLE_CLICK, on_double_click, NULL);
+
+    // Pointer enter/leave test.
+    sb_view_t *outer = sb_view_new(
+        root_view,
+        sb_rect_make(20.0f, 100.0f, 50.0f, 50.0f)
+    );
+    color.r = 0.0f;
+    color.g = 0.0f;
+    color.b = 0.0f;
+    color.a = 1.0f;
+    sb_view_set_color(outer, color);
+
+    sb_view_t *inner = sb_view_new(
+        outer,
+        sb_rect_make(10.0f, 10.0f, 30.0f, 30.0f)
+    );
+    color.r = 1.0f;
+    sb_view_set_color(inner, color);
+
+    sb_view_add_event_listener(outer,
+        SB_EVENT_TYPE_POINTER_ENTER, on_outer_enter, NULL);
+    sb_view_add_event_listener(outer,
+        SB_EVENT_TYPE_POINTER_LEAVE, on_outer_leave, NULL);
+    sb_view_add_event_listener(inner,
+        SB_EVENT_TYPE_POINTER_ENTER, on_inner_enter, NULL);
+    sb_view_add_event_listener(inner,
+        SB_EVENT_TYPE_POINTER_LEAVE, on_inner_leave, NULL);
 
     sb_desktop_surface_show(surface);
 
