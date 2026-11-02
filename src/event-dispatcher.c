@@ -261,14 +261,6 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
         sb_event_t *event = (sb_event_t*)sb_queue_dequeue(
             event_dispatcher->queue);
 
-        if (event->target_type == SB_EVENT_TARGET_TYPE_SURFACE_ROLE) {
-            const sb_surface_role_header_t *role =
-                sb_surface_role_header(event->target);
-            role->event_filter(event, event->target);
-
-            return;
-        }
-
         if (event->target_type == SB_EVENT_TARGET_TYPE_APPLICATION) {
             switch (event->type) {
             case SB_EVENT_TYPE_NEXT_TICK:
@@ -278,29 +270,12 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
             default:
                 break;
             }
-        } else if (event->target_type == SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE) {
-            switch (event->type) {
-            case SB_EVENT_TYPE_RESIZE:
-                sb_desktop_surface_on_resize(event->target, event);
-                break;
-            case SB_EVENT_TYPE_RESIZE_REQUEST:
-                sb_desktop_surface_on_resize_request(event->target, event);
-                break;
-            case SB_EVENT_TYPE_STATE_CHANGE:
-                sb_desktop_surface_on_state_change(event->target,
-                    event);
-                break;
-            case SB_EVENT_TYPE_SHOW:
-                sb_desktop_surface_on_show(event->target, event);
-                sb_event_free(event);
-                break;
-            case SB_EVENT_TYPE_HIDE:
-                sb_desktop_surface_on_hide(event->target, event);
-                sb_event_free(event);
-                break;
-            default:
-                break;
-            }
+        } else if (event->target_type == SB_EVENT_TARGET_TYPE_SURFACE_ROLE) {
+            const sb_surface_role_header_t *role =
+                sb_surface_role_header(event->target);
+            role->event_filter(event, event->target);
+
+            sb_event_free(event);
         } else if (event->target_type == SB_EVENT_TARGET_TYPE_SURFACE) {
             switch (event->type) {
             case SB_EVENT_TYPE_POINTER_ENTER:

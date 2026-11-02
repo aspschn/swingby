@@ -20,6 +20,7 @@ set(SWINGBY_HEADERS
     include/swingby/surface.h
     include/swingby/desktop-surface.h
     include/swingby/toplevel.h
+    include/swingby/popup.h
     include/swingby/view.h
     include/swingby/image.h
     include/swingby/pixmap.h
@@ -52,6 +53,7 @@ set(SWINGBY_SOURCES
     src/desktop-surface.c
     src/surface-role.c
     src/toplevel.c
+    src/popup.c
     src/surface.c
     src/common.c
     src/log.c

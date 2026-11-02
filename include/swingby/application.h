@@ -12,6 +12,7 @@ struct wl_output;
 struct wl_registry_listener;
 
 typedef struct sb_surface_t sb_surface_t;
+typedef struct sb_surface_role_header_t sb_surface_role_header_t;
 typedef struct sb_desktop_surface_t sb_desktop_surface_t;
 typedef struct sb_event_t sb_event_t;
 typedef struct sb_list_t sb_list_t;
@@ -59,6 +60,16 @@ sb_application_t* sb_application_instance();
 SB_EXPORT
 struct wl_registry* sb_application_get_registry_extension(sb_application_t *app,
     const struct wl_registry_listener *listener, void *user_data);
+
+/// \memberof sb_application_t
+/// \brief Register a surface role.
+void sb_application_register_surface_role(sb_application_t *application,
+                                          sb_surface_role_header_t *role);
+
+/// \memberof sb_application_t
+/// \brief Unregister a surface role.
+void sb_application_unregister_surface_role(sb_application_t *application,
+                                            sb_surface_role_header_t *role);
 
 /// \memberof sb_application_t
 /// \brief Register a desktop surface.
@@ -114,10 +125,6 @@ void sb_application_remove_timer(sb_application_t *application, uint32_t id);
 /// \memberof sb_application_t
 void sb_application_post_event(sb_application_t *application,
                                sb_event_t *event);
-
-void sb_application_post_event2(sb_application_t *application,
-                                sb_event_t *event,
-                                sb_event_listener_t listener);
 
 /// \memberof sb_application_t
 /// \brief Get the `struct wl_display` of the application.

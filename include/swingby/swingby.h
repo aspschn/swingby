@@ -23,6 +23,7 @@
 #include <swingby/surface.h>
 #include <swingby/surface-role.h>
 #include <swingby/toplevel.h>
+#include <swingby/popup.h>
 #include <swingby/view.h>
 
 #endif /* SWINGBY_SWINGBY_H */

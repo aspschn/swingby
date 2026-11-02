@@ -19,6 +19,7 @@
 
 #include <swingby/log.h>
 #include <swingby/surface.h>
+#include <swingby/surface-role.h>
 #include <swingby/desktop-surface.h>
 #include <swingby/view.h>
 #include <swingby/list.h>
@@ -70,6 +71,8 @@ struct sb_application_t {
         const char *commit_text;
     } text_input;
     struct sb_xkb_context_t *xkb_context;
+    /// \brief List of the surface roles.
+    sb_list_t *surface_roles;
     /// \brief List of the toplevel desktop surfaces.
     sb_list_t *toplevels;
     /// \brief List of the popup desktop surfaces.
@@ -293,6 +296,15 @@ static sb_surface_t* _find_surface(sb_application_t *app,
             break;
         }
     }
+    // Search surface roles.
+    list = app->surface_roles;
+    for (size_t i = 0; i < sb_list_length(list); ++i) {
+        const sb_surface_role_header_t *role = sb_list_at(list, i);
+        if (sb_surface_wl_surface(role->surface) == wl_surface) {
+            found = role->surface;
+            break;
+        }
+    }
     // Search others.
     list = app->other_surfaces;
     for (int i = 0; i < sb_list_length(list); ++i) {
@@ -378,6 +390,8 @@ sb_application_t* sb_application_new(int argc, char *argv[])
     xdg_wm_base_add_listener(app->_xdg_wm_base, &app_xdg_wm_base_listener,
         NULL);
 
+    // Surface role list.
+    app->surface_roles = sb_list_new();
     // Desktop surface list.
     app->toplevels = sb_list_new();
     app->popups = sb_list_new();
@@ -500,13 +514,27 @@ void sb_application_post_event(sb_application_t *application,
     sb_event_dispatcher_post_event(application->event_dispatcher, event);
 }
 
-void sb_application_post_event2(sb_application_t *application,
-                                sb_event_t *event,
-                                sb_event_listener_t listener)
+void sb_application_register_surface_role(sb_application_t *application,
+                                          sb_surface_role_header_t *role)
 {
-    sb_event_dispatcher_register(application->event_dispatcher,
-        event->target, listener);
-    sb_event_dispatcher_post_event(application->event_dispatcher, event);
+    sb_list_push(application->surface_roles, role);
+}
+
+void sb_application_unregister_surface_role(sb_application_t *application,
+                                            sb_surface_role_header_t *role)
+{
+    sb_list_t *list = application->surface_roles;
+    uint64_t length = sb_list_length(list);
+    int64_t index = -1;
+    for (uint64_t i = 0; i < length; ++i) {
+        if (sb_list_at(list, i) == role) {
+            index = i;
+            break;
+        }
+    }
+    if (index != -1) {
+        sb_list_remove(list, index);
+    }
 }
 
 void sb_application_register_desktop_surface(sb_application_t *application,
@@ -704,10 +732,18 @@ int sb_application_exec(sb_application_t *application)
             SB_EVENT_TYPE_NEXT_TICK);
         sb_application_post_event(application, tick_event);
 
-        // Exit event loop when last toplevel desktop surface closed.
+        // Exit event loop when last toplevel surface closed.
         bool auto_quit = application->quit_on_last_toplevel_closed;
-        if (auto_quit && sb_list_length(application->toplevels) == 0) {
-            sb_log_debug("Last toplevel desktop surface closed.\n");
+        size_t count = 0;
+        const sb_list_t *roles = application->surface_roles;
+        for (size_t i = 0; i < sb_list_length(roles); ++i) {
+            const sb_surface_role_header_t *role = sb_list_at(roles, i);
+            if (strcmp(role->name, "toplevel") == 0) {
+                ++count;
+            }
+        }
+        if (auto_quit && count == 0) {
+            sb_log_debug("Last toplevel surface closed.\n");
             break;
         }
 

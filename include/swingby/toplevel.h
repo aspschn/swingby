@@ -117,7 +117,7 @@ void sb_toplevel_set_maximized(sb_toplevel_t *toplevel);
 /// \memberof sb_toplevel_t
 /// \brief Restore the toplevel surface from maximized state.
 SB_EXPORT
-void sb_toplevel_toplevel_unset_maximized(sb_toplevel_t *toplevel);
+void sb_toplevel_unset_maximized(sb_toplevel_t *toplevel);
 
 /// \memberof sb_toplevel_t
 /// \brief Minimize the toplevel surface.

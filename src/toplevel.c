@@ -138,10 +138,9 @@ sb_toplevel_t* sb_toplevel_new()
     toplevel->role.surface = toplevel->surface;
     toplevel->role.event_filter = toplevel_on_event;
 
-    // sb_application_register_desktop_surface(sb_application_instance(),
-    //     d_surface);
-    sb_application_register_surface(sb_application_instance(),
-        toplevel->surface);
+    // Register this role to application.
+    sb_application_register_surface_role(sb_application_instance(),
+        &toplevel->role);
 
     return toplevel;
 }
@@ -269,12 +268,10 @@ void sb_toplevel_close(sb_toplevel_t *toplevel)
 
     sb_application_t *app = sb_application_instance();
 
-    sb_toplevel_hide(toplevel);
-    // sb_application_unregister_desktop_surface(app, desktop_surface);
-    sb_application_unregister_surface(app, toplevel->surface);
+    sb_application_unregister_surface_role(app, &toplevel->role);
 }
 
-void sb_toplevel_toplevel_move(sb_toplevel_t *toplevel)
+void sb_toplevel_move(sb_toplevel_t *toplevel)
 {
     sb_application_t *app = sb_application_instance();
 
@@ -545,7 +542,6 @@ static void xdg_toplevel_close_handler(void *data,
     sb_toplevel_t *toplevel = (sb_toplevel_t*)data;
 
     sb_toplevel_close(toplevel);
-    // sb_desktop_surface_toplevel_close(desktop_surface);
 }
 
 #ifdef __cplusplus
