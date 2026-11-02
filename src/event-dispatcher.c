@@ -16,6 +16,7 @@
 #include <swingby/application.h>
 #include <swingby/view.h>
 #include <swingby/desktop-surface.h>
+#include <swingby/surface-role.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -259,6 +260,14 @@ sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher)
     while (event_dispatcher->queue->length != 0) {
         sb_event_t *event = (sb_event_t*)sb_queue_dequeue(
             event_dispatcher->queue);
+
+        if (event->target_type == SB_EVENT_TARGET_TYPE_SURFACE_ROLE) {
+            const sb_surface_role_header_t *role =
+                sb_surface_role_header(event->target);
+            role->event_filter(event, event->target);
+
+            return;
+        }
 
         if (event->target_type == SB_EVENT_TARGET_TYPE_APPLICATION) {
             switch (event->type) {

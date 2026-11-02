@@ -500,6 +500,15 @@ void sb_application_post_event(sb_application_t *application,
     sb_event_dispatcher_post_event(application->event_dispatcher, event);
 }
 
+void sb_application_post_event2(sb_application_t *application,
+                                sb_event_t *event,
+                                sb_event_listener_t listener)
+{
+    sb_event_dispatcher_register(application->event_dispatcher,
+        event->target, listener);
+    sb_event_dispatcher_post_event(application->event_dispatcher, event);
+}
+
 void sb_application_register_desktop_surface(sb_application_t *application,
     sb_desktop_surface_t *desktop_surface)
 {

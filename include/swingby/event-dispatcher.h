@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <swingby/event.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,6 +34,10 @@ sb_event_dispatcher_t* sb_event_dispatcher_new();
 
 void sb_event_dispatcher_post_event(sb_event_dispatcher_t *event_dispatcher,
                                     sb_event_t *event);
+
+void sb_event_dispatcher_register(sb_event_dispatcher_t *event_dispatcher,
+                                  void *object,
+                                  sb_event_listener_t listener);
 
 void
 sb_event_dispatcher_process_events(sb_event_dispatcher_t *event_dispatcher);

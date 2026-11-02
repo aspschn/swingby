@@ -15,6 +15,7 @@ typedef struct sb_output_t sb_output_t;
 
 enum sb_event_target_type {
     SB_EVENT_TARGET_TYPE_APPLICATION        = 1,
+    SB_EVENT_TARGET_TYPE_SURFACE_ROLE       = 2,
     SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE    = 2,
     SB_EVENT_TARGET_TYPE_SURFACE            = 3,
     SB_EVENT_TARGET_TYPE_VIEW               = 4,

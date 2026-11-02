@@ -1,3 +1,4 @@
+#include "swingby/application.h"
 #include <stdio.h>
 
 #include <swingby/swingby.h>
@@ -52,15 +53,14 @@ int main(int argc, char *argv[])
 {
     sb_application_t *app = sb_application_new(argc, argv);
 
-    sb_desktop_surface_t *surface = sb_desktop_surface_new(
-        SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
+    sb_toplevel_t *toplevel = sb_toplevel_new();
+    sb_surface_t *surface = sb_toplevel_surface(toplevel);
 
-    const sb_view_t *root_view = sb_surface_root_view(
-        sb_desktop_surface_surface(surface));
+    sb_view_t *root_view = sb_surface_root_view(surface);
 
     sb_rect_t geometry = { { 10.0f, 10.0f }, { 50.0f, 50.0f } };
     sb_view_t *view = sb_view_new(
-        sb_surface_root_view(sb_desktop_surface_surface(surface)), geometry);
+        sb_surface_root_view(surface), geometry);
     sb_color_t color = { 1.0f, 0.0f, 0.0f, 1.0f };
     sb_view_set_color(view, color);
 
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     geometry.size.width = 30.0f;
     geometry.size.height = 30.0f;
     sb_view_t *double_click_view = sb_view_new(
-        sb_surface_root_view(sb_desktop_surface_surface(surface)), geometry);
+        sb_surface_root_view(surface), geometry);
     sb_view_set_color(double_click_view, color);
 
     fprintf(stderr, "Click the smallest rectangle and see the change.\n");
@@ -117,7 +117,9 @@ int main(int argc, char *argv[])
     sb_view_add_event_listener(inner,
         SB_EVENT_TYPE_POINTER_LEAVE, on_inner_leave, NULL);
 
-    sb_desktop_surface_show(surface);
+    sb_toplevel_show(toplevel);
+
+    sb_application_set_quit_on_last_toplevel_closed(app, false);
 
     return sb_application_exec(app);
 }

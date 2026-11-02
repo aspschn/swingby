@@ -115,6 +115,10 @@ void sb_application_remove_timer(sb_application_t *application, uint32_t id);
 void sb_application_post_event(sb_application_t *application,
                                sb_event_t *event);
 
+void sb_application_post_event2(sb_application_t *application,
+                                sb_event_t *event,
+                                sb_event_listener_t listener);
+
 /// \memberof sb_application_t
 /// \brief Get the `struct wl_display` of the application.
 struct wl_display* sb_application_wl_display(
