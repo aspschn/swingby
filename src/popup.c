@@ -12,6 +12,8 @@
 #include <swingby/list.h>
 #include <swingby/log.h>
 
+#include "helpers/shared.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -26,6 +28,14 @@ struct sb_popup_t {
     bool grabbable;
     sb_list_t *event_listeners;
 };
+
+static void popup_on_event(sb_event_t *event, void *user_data)
+{
+    sb_popup_t *popup = user_data;
+
+    _event_listener_filter_for_each(popup->event_listeners,
+        event->type, event);
+}
 
 //!<==============
 //!< XDG Surface
@@ -75,7 +85,7 @@ sb_popup_t* sb_popup_new()
 
     popup->role.name = "popup";
     popup->role.surface = sb_surface_new();
-    popup->role.event_filter = NULL;
+    popup->role.event_filter = popup_on_event;
 
     popup->xdg_popup = NULL;
 

@@ -24,54 +24,6 @@ struct sb_desktop_surface_t {
 };
 
 
-//!<=====================
-//!< Helper Functions
-//!<=====================
-
-static sb_event_t* _state_change_event_new(
-    sb_desktop_surface_t *desktop_surface,
-    enum sb_desktop_surface_toplevel_state state,
-    bool value,
-    int32_t width,
-    int32_t height)
-{
-    sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_DESKTOP_SURFACE,
-        desktop_surface,
-        SB_EVENT_TYPE_STATE_CHANGE);
-    event->state_change.state = state;
-    event->state_change.value = value;
-    event->state_change.size.width = width;
-    event->state_change.size.height = height;
-
-    return event;
-}
-
-static void _set_toplevel_parent(sb_desktop_surface_t *parent,
-                                 sb_desktop_surface_t *child)
-{
-    /*
-    if (parent->_xdg_toplevel == NULL) {
-        sb_log_warn("Parent must show before child show.\n");
-        return;
-    }
-    xdg_toplevel_set_parent(child->_xdg_toplevel, parent->_xdg_toplevel);
-    */
-}
-
-static void _event_listener_filter_for_each(sb_list_t *listeners,
-                                            enum sb_event_type type,
-                                            sb_event_t *event)
-{
-    uint64_t length = sb_list_length(listeners);
-    for (uint64_t i = 0; i < length; ++i) {
-        sb_event_listener_tuple_t *tuple = sb_list_at(listeners, i);
-        if (tuple->type == type) {
-            tuple->listener(event, tuple->user_data);
-        }
-    }
-}
-
-
 sb_desktop_surface_t* sb_desktop_surface_new(sb_desktop_surface_role role)
 {
     sb_desktop_surface_t *d_surface = malloc(sizeof(sb_desktop_surface_t));
@@ -117,6 +69,8 @@ sb_desktop_surface_surface(sb_desktop_surface_t *desktop_surface)
             sb_surface_role_header(desktop_surface->popup);
         return role->surface;
     }
+
+    return NULL;
 }
 
 void sb_desktop_surface_show(sb_desktop_surface_t *desktop_surface)
