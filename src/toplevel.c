@@ -241,7 +241,8 @@ void sb_toplevel_set_wm_geometry(sb_toplevel_t *toplevel, sb_rect_i_t geometry)
     toplevel->wm_geometry = geometry;
 
     if (toplevel->xdg_surface == NULL) {
-        sb_log_warn("XDG surface of the desktop surface is NULL!\n");
+        sb_log_warn("XDG surface of the toplevel is NULL!\n");
+        return;
     }
 
     xdg_surface_set_window_geometry(toplevel->xdg_surface,

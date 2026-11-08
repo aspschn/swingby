@@ -37,7 +37,7 @@ static void on_click(sb_event_t *event, void *user_data)
         SB_EVENT_TYPE_HIDE, on_hide, popup);
     */
 
-    sb_point_t pos;
+    sb_point_i_t pos;
     pos.x = 30;
     pos.y = 30;
     sb_popup_set_position(popup, pos);
@@ -95,7 +95,11 @@ static void on_pointer_enter(sb_event_t *event, void *user_data)
     // Set position.
     const sb_view_t *view = user_data;
     const sb_point_t position = sb_view_absolute_position(view);
-    sb_popup_set_position(tooltip, position);
+    const sb_point_i_t pos = {
+        .x = position.x,
+        .y = position.y,
+    };
+    sb_popup_set_position(tooltip, pos);
 
     sb_popup_show(tooltip);
 }

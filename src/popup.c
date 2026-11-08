@@ -26,7 +26,7 @@ struct sb_popup_t {
     struct xdg_surface *xdg_surface;
     struct xdg_popup *xdg_popup;
     sb_rect_i_t wm_geometry;
-    sb_point_t position;
+    sb_point_i_t position;
     bool grabbable;
     sb_list_t *event_listeners;
 };
@@ -120,14 +120,44 @@ sb_surface_t* sb_popup_surface(sb_popup_t *popup)
     return popup->role.surface;
 }
 
-sb_point_t sb_popup_position(const sb_popup_t *popup)
+sb_point_i_t sb_popup_position(const sb_popup_t *popup)
 {
     return popup->position;
 }
 
-void sb_popup_set_position(sb_popup_t *popup, sb_point_t position)
+void sb_popup_set_position(sb_popup_t *popup, sb_point_i_t position)
 {
     popup->position = position;
+}
+
+void sb_popup_set_grabbable(sb_popup_t *popup, bool value)
+{
+    popup->grabbable = value;
+}
+
+void sb_popup_grab_for_button(sb_popup_t *popup)
+{
+    if (popup->xdg_popup == NULL) {
+        return;
+    }
+    if (popup->grabbable == false) {
+        sb_log_warn("sb_popup_grab_for_button"
+                    " - Popup is not set as grabbable.\n");
+        return;
+    }
+
+    xdg_popup_grab(popup->xdg_popup,
+        sb_application_wl_seat(sb_application_instance()),
+        sb_application_pointer_button_serial(sb_application_instance()));
+
+    sb_surface_commit(popup->role.surface);
+    wl_display_roundtrip(sb_application_wl_display(sb_application_instance()));
+    sb_surface_attach(popup->role.surface);
+}
+
+void sb_popup_grab_for_key(sb_popup_t *popup)
+{
+    // TODO.
 }
 
 void sb_popup_show(sb_popup_t *popup)
