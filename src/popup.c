@@ -1,6 +1,7 @@
 #include <swingby/popup.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <wayland-client.h>
 #include <wayland-protocols/stable/xdg-shell.h>
@@ -8,6 +9,7 @@
 #include <swingby/application.h>
 #include <swingby/surface.h>
 #include <swingby/surface-role.h>
+#include <swingby/toplevel.h>
 #include <swingby/rect.h>
 #include <swingby/list.h>
 #include <swingby/log.h>
@@ -83,6 +85,8 @@ sb_popup_t* sb_popup_new()
 {
     sb_popup_t *popup = malloc(sizeof(sb_popup_t));
 
+    popup->parent = NULL;
+
     popup->role.name = "popup";
     popup->role.surface = sb_surface_new();
     popup->role.event_filter = popup_on_event;
@@ -100,11 +104,39 @@ sb_popup_t* sb_popup_new()
 
     popup->event_listeners = sb_list_new();
 
+    sb_application_register_surface_role(sb_application_instance(),
+        &popup->role);
+
     return popup;
+}
+
+void sb_popup_set_parent(sb_popup_t *popup, sb_surface_role_header_t *parent)
+{
+    popup->parent = parent;
+}
+
+sb_surface_t* sb_popup_surface(sb_popup_t *popup)
+{
+    return popup->role.surface;
+}
+
+sb_point_t sb_popup_position(const sb_popup_t *popup)
+{
+    return popup->position;
+}
+
+void sb_popup_set_position(sb_popup_t *popup, sb_point_t position)
+{
+    popup->position = position;
 }
 
 void sb_popup_show(sb_popup_t *popup)
 {
+    if (popup->parent == NULL) {
+        sb_log_warn("sb_popup_t has no parent!\n");
+        return;
+    }
+
     // Wayland objects.
     sb_application_t *app = sb_application_instance();
     struct xdg_wm_base *xdg_wm_base = sb_application_xdg_wm_base(app);
@@ -139,10 +171,18 @@ void sb_popup_show(sb_popup_t *popup)
         xdg_positioner_set_gravity(positioner,
             XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
 
-/*
-        popup->xdg_popup = xdg_surface_get_popup(xdg_surface,
-            popup->parent->xdg_surface, positioner);
-*/
+        sb_surface_role_header_t *parent = popup->parent;
+        if (strcmp(parent->name, "toplevel") == 0) {
+            sb_toplevel_t *toplevel = (sb_toplevel_t*)parent;
+            popup->xdg_popup = xdg_surface_get_popup(xdg_surface,
+                sb_toplevel_xdg_surface(toplevel), positioner);
+        } else if (strcmp(parent->name, "popup") == 0) {
+            sb_popup_t *popup = (sb_popup_t*)parent;
+            popup->xdg_popup = xdg_surface_get_popup(xdg_surface,
+                ((sb_popup_t*)popup->parent)->xdg_surface, positioner);
+        } else {
+            sb_log_warn("sb_popup_show - parent must be toplevel or popup.\n");
+        }
 
         xdg_popup_add_listener(popup->xdg_popup, &xdg_popup_listener,
             (void*)popup);
@@ -151,15 +191,14 @@ void sb_popup_show(sb_popup_t *popup)
     }
 
     // Commit.
-    if (true) {
-        // Show directly for a non grabbable popup.
-        if (!popup->grabbable) {
-            // Must commit and roundtrip.
-            sb_surface_commit(popup->role.surface);
-            wl_display_roundtrip(sb_application_wl_display(app));
 
-            sb_surface_attach(popup->role.surface);
-        }
+    // Show directly for a non grabbable popup.
+    if (!popup->grabbable) {
+        // Must commit and roundtrip.
+        sb_surface_commit(popup->role.surface);
+        wl_display_roundtrip(sb_application_wl_display(app));
+
+        sb_surface_attach(popup->role.surface);
     }
 
     sb_event_t *event = sb_event_new(SB_EVENT_TARGET_TYPE_SURFACE_ROLE,

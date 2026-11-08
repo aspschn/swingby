@@ -140,6 +140,8 @@ SB_EXPORT
 void sb_toplevel_show_window_menu(sb_toplevel_t *toplevel,
                                   sb_point_i_t position);
 
+struct xdg_surface* sb_toplevel_xdg_surface(const sb_toplevel_t *toplevel);
+
 void sb_toplevel_free(sb_toplevel_t *toplevel);
 
 SB_EXPORT

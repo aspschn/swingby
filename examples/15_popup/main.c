@@ -1,19 +1,18 @@
 #include <stdbool.h>
-#include <stdio.h>
 
 #include <swingby/swingby.h>
 
 sb_view_t *item = NULL;
 
 bool popup_on = false;
-sb_desktop_surface_t *toplevel;
-sb_desktop_surface_t *popup = NULL;
-sb_desktop_surface_t *tooltip = NULL;
+sb_toplevel_t *g_toplevel;
+sb_popup_t *popup = NULL;
+sb_popup_t *tooltip = NULL;
 
 static void on_hide(sb_event_t *event, void *user_data)
 {
     if (popup != NULL) {
-        sb_desktop_surface_free(popup);
+        // sb_popup_free(popup);
         popup_on = false;
         popup = NULL;
     }
@@ -22,23 +21,26 @@ static void on_hide(sb_event_t *event, void *user_data)
 static void on_click(sb_event_t *event, void *user_data)
 {
     if (popup_on == true && popup != NULL) {
-        sb_desktop_surface_hide(popup);
+        sb_popup_hide(popup);
         // sb_desktop_surface_free(popup);
         popup = NULL;
         popup_on = false;
         return;
     }
-    popup = sb_desktop_surface_new(
-        SB_DESKTOP_SURFACE_ROLE_POPUP);
-    sb_desktop_surface_set_parent(popup, toplevel);
+    sb_toplevel_t *toplevel = user_data;
 
-    sb_desktop_surface_add_event_listener(popup,
-        SB_EVENT_TYPE_HIDE, on_hide, NULL);
+    popup = sb_popup_new();
+    sb_popup_set_parent(popup, (sb_surface_role_header_t*)toplevel);
+
+    /*
+    sb_popup_add_event_listener(popup,
+        SB_EVENT_TYPE_HIDE, on_hide, popup);
+    */
 
     sb_point_t pos;
     pos.x = 30;
     pos.y = 30;
-    sb_desktop_surface_popup_set_position(popup, &pos);
+    sb_popup_set_position(popup, pos);
 
     sb_color_t color;
     color.r = 1.0f;
@@ -52,14 +54,14 @@ static void on_click(sb_event_t *event, void *user_data)
     geometry.size.width = 50;
     geometry.size.height = 50;
 
-    sb_surface_t *popup_surface = sb_desktop_surface_surface(popup);
+    sb_surface_t *popup_surface = sb_popup_surface(popup);
     sb_surface_set_size(popup_surface, geometry.size);
 
     sb_view_t *popup_root_view = sb_surface_root_view(popup_surface);
     sb_view_set_color(popup_root_view, color);
-    sb_desktop_surface_popup_set_grabbable(popup, true);
-    sb_desktop_surface_show(popup);
-    sb_desktop_surface_popup_grab_for_button(popup);
+    // sb_popup_set_grabbable(popup, true);
+    sb_popup_show(popup);
+    // sb_popup_grab_for_button(popup);
 
     popup_on = true;
 }
@@ -70,37 +72,37 @@ static void on_pointer_enter(sb_event_t *event, void *user_data)
         return;
     }
 
-    tooltip = sb_desktop_surface_new(SB_DESKTOP_SURFACE_ROLE_POPUP);
-    sb_desktop_surface_set_parent(tooltip, toplevel);
+    tooltip = sb_popup_new();
+    sb_popup_set_parent(tooltip, (sb_surface_role_header_t*)g_toplevel);
 
     // Set geometry.
     sb_rect_i_t geometry = {
-        .pos = { 30, 30 },
+        .position = { 30, 30 },
         .size = { 50, 15 },
     };
     sb_surface_set_size(
-        sb_desktop_surface_surface(tooltip),
+        sb_popup_surface(tooltip),
         geometry.size
     );
 
     // Set color.
     sb_color_t color = { .r = 0.5f, .g = 0.5f, .b = 0.0f, .a = 1.0f };
     sb_view_set_color(
-        sb_surface_root_view(sb_desktop_surface_surface(tooltip)),
+        sb_surface_root_view(sb_popup_surface(tooltip)),
         color
     );
 
     // Set position.
     const sb_view_t *view = user_data;
     const sb_point_t position = sb_view_absolute_position(view);
-    sb_desktop_surface_popup_set_position(tooltip, &position);
+    sb_popup_set_position(tooltip, position);
 
-    sb_desktop_surface_show(tooltip);
+    sb_popup_show(tooltip);
 }
 
 static void on_pointer_leave(sb_event_t *event, void *user_data)
 {
-    sb_desktop_surface_hide(tooltip);
+    sb_popup_hide(tooltip);
     tooltip = NULL;
 }
 
@@ -108,13 +110,12 @@ int main(int argc, char *argv[])
 {
     sb_application_t *app = sb_application_new(argc, argv);
 
-    sb_desktop_surface_t *surface = sb_desktop_surface_new(
-        SB_DESKTOP_SURFACE_ROLE_TOPLEVEL);
-    toplevel = surface;
+    sb_toplevel_t *toplevel = sb_toplevel_new();
+    g_toplevel = toplevel;
 
     sb_rect_t geometry = { { 0.0f, 0.0f }, { 150.0f, 150.0f } };
     sb_view_t *view = sb_view_new(
-        sb_surface_root_view(sb_desktop_surface_surface(surface)), geometry);
+        sb_surface_root_view(sb_toplevel_surface(toplevel)), geometry);
     sb_color_t color = { 0.0f, 1.0f, 0.0f, 1.0f };
     sb_view_set_color(view, color);
     // Clip true.
@@ -134,7 +135,7 @@ int main(int argc, char *argv[])
         sb_view_set_color(item, color);
 
         sb_view_add_event_listener(item,
-            SB_EVENT_TYPE_POINTER_PRESS, on_click, NULL);
+            SB_EVENT_TYPE_POINTER_PRESS, on_click, toplevel);
     }
     // Tooltip area.
     {
@@ -154,7 +155,7 @@ int main(int argc, char *argv[])
             SB_EVENT_TYPE_POINTER_LEAVE, on_pointer_leave, NULL);
     }
 
-    sb_desktop_surface_show(surface);
+    sb_toplevel_show(toplevel);
 
     return sb_application_exec(app);
 }

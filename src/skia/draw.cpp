@@ -401,6 +401,11 @@ void sb_skia_draw_glyphs(sb_skia_renderer_t *renderer,
                          const sb_glyph_block_t *block)
 {
     // SkCanvas *canvas = _get_canvas(renderer);
+    if (block == NULL) {
+        sb_log_warn("sb_skia_draw_glyphs - block is null.\n");
+        return;
+    }
+
     sb_canvas_t *canvas = sb_canvas_new(_get_canvas(renderer));
     sb_canvas_set_scale(canvas, scale);
     sb_canvas_set_position(canvas, &rect->position);

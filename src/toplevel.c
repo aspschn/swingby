@@ -383,6 +383,11 @@ void sb_toplevel_show_window_menu(sb_toplevel_t *toplevel,
     );
 }
 
+struct xdg_surface* sb_toplevel_xdg_surface(const sb_toplevel_t *toplevel)
+{
+    return toplevel->xdg_surface;
+}
+
 void sb_toplevel_free(sb_toplevel_t *toplevel)
 {
     sb_surface_free(toplevel->surface);
